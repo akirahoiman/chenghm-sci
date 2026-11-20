@@ -1,0 +1,2596 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="showroom">
+  <title>6G-IoV 混合模糊—數位分身預測式任務卸載全景儀表板</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* Showroom Clean Light Tokens */
+      --background: #fbfbfd;
+      --surface-container-low: #f5f5f7;
+      --surface-container: #e8e8ed;
+      --surface-container-high: #dcdce1;
+      --surface-panel: rgba(251, 251, 253, 0.90);
+      --surface-panel-strong: rgba(245, 245, 247, 0.95);
+
+      /* Ink */
+      --on-surface: #1d1d1f;
+      --on-surface-variant: #6e6e73;
+
+      /* Rules & Grid */
+      --outline: #d2d2d7;
+      --outline-variant: #e5e5ea;
+
+      /* Accents */
+      --primary: #006bd6;
+      --on-primary: #ffffff;
+      --primary-container: #e8f1fd;
+      --on-primary-container: #0058b0;
+      --secondary: #bf4800;
+      --secondary-container: #fff1e8;
+      --tertiary: #1d1d1f;
+
+      /* Semantic */
+      --positive: #248a3d;
+      --positive-container: #e7f6ec;
+      --warning: #b25000;
+      --warning-container: #fff4e5;
+      --error: #d70015;
+      --on-error: #ffffff;
+      --error-container: #fde8ea;
+
+      /* Data Series & Canvas Physics Palette */
+      --data-1: #006bd6;
+      --data-2: #bf4800;
+      --data-3: #248a3d;
+      --data-4: #8944ab;
+      --data-context: #aeaeb2;
+      --city-road: #e6e7ec;
+      --city-road-edge: #cfd1da;
+      --city-block: #f0f1f5;
+      --city-block-stroke: #dfe1ea;
+      --dt-accent: #0077b6;
+      --thz-wave: #006bd6;
+
+      /* Focus */
+      --focus: #006bd6;
+
+      /* Typography */
+      --font-headline: 'Noto Sans TC', 'Inter Tight', sans-serif;
+      --font-body: 'Noto Sans TC', 'Inter', sans-serif;
+      --font-label: 'IBM Plex Mono', 'Noto Sans TC', monospace;
+
+      --display-size: clamp(1.125rem, 0.95rem + 0.6vw, 1.45rem);
+      --headline-size: clamp(1rem, 0.9rem + 0.35vw, 1.2rem);
+      --subhead-size: 0.9375rem;
+      --body-size: 0.875rem;
+      --label-size: 0.75rem;
+
+      /* Spacing Scale */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 0.875rem;
+      --space-lg: 1.25rem;
+      --space-xl: 1.75rem;
+      --space-2xl: 2.5rem;
+
+      /* Shape */
+      --rounded: 9999px;
+      --rounded-md: 0.875rem;
+      --rounded-lg: 1.25rem;
+      --rounded-full: 9999px;
+
+      /* Effects */
+      --headline-tracking: -0.025em;
+      --figure-tracking: -0.03em;
+      --panel-shadow: 0 12px 32px rgb(29 29 31 / 0.08);
+      --tile-shadow-hover: 0 8px 24px rgb(29 29 31 / 0.10);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 240ms;
+      --dur-long: 480ms;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.45;
+      overflow-x: clip;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header { position: static !important; }
+
+    button, input, select {
+      font-family: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* 16:9 100vh Zero-Scroll Panoramic Shell */
+    .panoramic-shell {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      background: var(--background);
+    }
+
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--background);
+      border-bottom: 1px solid var(--outline-variant);
+      z-index: 20;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      min-width: 0;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: var(--rounded-full);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .brand-titles {
+      min-width: 0;
+    }
+
+    .brand-titles h1 {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 700;
+      letter-spacing: var(--headline-tracking);
+      line-height: 1.15;
+      color: var(--on-surface);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-titles .subtitle {
+      margin: 0;
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-nav-pills {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs);
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-full);
+    }
+
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      min-height: 36px;
+      padding: var(--space-xs) var(--space-md);
+      border: 0;
+      border-radius: var(--rounded-full);
+      background: transparent;
+      color: var(--on-surface-variant);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+      white-space: nowrap;
+    }
+
+    .nav-pill:hover {
+      color: var(--on-surface);
+      background: var(--surface-container);
+    }
+
+    .nav-pill.is-active {
+      background: var(--background);
+      color: var(--primary);
+      font-weight: 600;
+      box-shadow: var(--panel-shadow);
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      flex-shrink: 0;
+    }
+
+    .btn-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+      min-height: 38px;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded-full);
+      border: 0;
+      font-size: var(--label-size);
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+
+    .btn-pill:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+    .btn-primary:hover { background: var(--on-primary-container); }
+
+    .btn-secondary {
+      background: var(--surface-container-low);
+      color: var(--on-surface);
+    }
+    .btn-secondary:hover { background: var(--surface-container); }
+
+    .btn-danger-outline {
+      background: var(--error-container);
+      color: var(--error);
+    }
+    .btn-danger-outline:hover {
+      background: var(--error);
+      color: var(--on-error);
+    }
+
+    /* Main Panoramic Stage */
+    .stage-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      background: var(--background);
+    }
+
+    #iov-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Left Side Tags (Zoom Camera Controls) */
+    .side-tags {
+      position: absolute;
+      left: var(--space-lg);
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      z-index: 15;
+    }
+
+    .side-tag {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-md) var(--space-xs) var(--space-sm);
+      border: 0;
+      border-radius: var(--rounded-full);
+      background: var(--surface-panel);
+      backdrop-filter: blur(14px);
+      color: var(--on-surface-variant);
+      box-shadow: var(--panel-shadow);
+      cursor: pointer;
+      text-align: left;
+      transition: transform var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+    }
+
+    .side-tag:hover {
+      transform: translateX(4px);
+      color: var(--on-surface);
+    }
+
+    .side-tag.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+      transform: translateX(6px);
+    }
+
+    .side-tag-idx {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container);
+      color: var(--on-surface);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .side-tag.is-active .side-tag-idx {
+      background: var(--on-primary);
+      color: var(--primary);
+    }
+
+    .side-tag-meta {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .side-tag-title {
+      font-size: var(--label-size);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .side-tag-zoom {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      opacity: 0.82;
+    }
+
+    /* Live Telemetry HUD Pill (Top-Left of Stage) */
+    .telemetry-hud {
+      position: absolute;
+      top: var(--space-md);
+      left: var(--space-lg);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded-full);
+      background: var(--surface-panel);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--panel-shadow);
+      z-index: 14;
+      max-width: calc(100% - 540px);
+    }
+
+    .hud-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-variant-numeric: tabular-nums;
+      color: var(--on-surface);
+    }
+
+    .hud-chip .muted {
+      color: var(--on-surface-variant);
+      font-family: var(--font-body);
+    }
+
+    .hud-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--outline);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 2px var(--space-sm);
+      border-radius: var(--rounded-full);
+      font-size: var(--label-size);
+      font-weight: 600;
+    }
+
+    .status-badge.ok {
+      background: var(--positive-container);
+      color: var(--positive);
+    }
+
+    .status-badge.warn {
+      background: var(--warning-container);
+      color: var(--warning);
+    }
+
+    .status-badge.alert {
+      background: var(--error);
+      color: var(--on-error);
+    }
+
+    /* Proactive Handover Banner (Top-Center when C_stab < 0.75) */
+    .handover-banner {
+      position: absolute;
+      top: var(--space-md);
+      left: 50%;
+      transform: translateX(-50%) translateY(-16px);
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-xs) var(--space-lg);
+      border-radius: var(--rounded-full);
+      background: var(--error);
+      color: var(--on-error);
+      font-size: var(--label-size);
+      font-weight: 600;
+      box-shadow: var(--panel-shadow);
+      z-index: 18;
+      transition: opacity var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out);
+      white-space: nowrap;
+    }
+
+    .handover-banner.is-visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Floating Analytical Overlay Dock (Right side of Stage) */
+    .panel-dock {
+      position: absolute;
+      top: var(--space-md);
+      right: var(--space-lg);
+      bottom: var(--space-md);
+      width: clamp(360px, 34vw, 490px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 15;
+      pointer-events: none;
+    }
+
+    .view-panel {
+      display: none;
+      flex-direction: column;
+      gap: var(--space-sm);
+      max-height: 100%;
+      overflow-y: auto;
+      padding: var(--space-md);
+      border-radius: var(--rounded-lg);
+      background: var(--surface-panel);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--panel-shadow);
+      pointer-events: auto;
+      animation: panelReveal var(--dur-long) var(--ease-out);
+    }
+
+    .view-panel.is-active {
+      display: flex;
+    }
+
+    @keyframes panelReveal {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-sm);
+    }
+
+    .panel-eyebrow {
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--secondary);
+      margin-bottom: 2px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 700;
+      letter-spacing: var(--headline-tracking);
+      color: var(--on-surface);
+      line-height: 1.15;
+    }
+
+    .panel-desc {
+      margin: 0;
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      line-height: 1.45;
+    }
+
+    /* Showroom KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .kpi-tile {
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-md);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .kpi-label {
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      font-weight: 500;
+    }
+
+    .kpi-value {
+      font-family: var(--font-headline);
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: var(--figure-tracking);
+      font-variant-numeric: tabular-nums;
+      color: var(--on-surface);
+      line-height: 1.1;
+    }
+
+    .kpi-delta {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--positive);
+    }
+
+    .kpi-delta.primary {
+      color: var(--primary);
+    }
+
+    /* Sub-cards inside panel */
+    .sub-tile {
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-md);
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    .sub-tile-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-xs);
+    }
+
+    .sub-tile-title {
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+
+    /* Canvas / SVG Legend strip */
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-xs) var(--space-sm);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: var(--rounded-full);
+      flex-shrink: 0;
+    }
+
+    .swatch.blue { background: var(--primary); }
+    .swatch.orange { background: var(--secondary); }
+    .swatch.green { background: var(--positive); }
+    .swatch.purple { background: var(--data-4); }
+    .swatch.red { background: var(--error); }
+    .swatch.dt { background: var(--dt-accent); }
+
+    /* Fuzzy Controls */
+    .mode-switch {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 4px;
+      padding: 4px;
+      background: var(--surface-container);
+      border-radius: var(--rounded-full);
+    }
+
+    .mode-btn {
+      min-height: 32px;
+      border: 0;
+      border-radius: var(--rounded-full);
+      background: transparent;
+      color: var(--on-surface-variant);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+
+    .mode-btn.is-active {
+      background: var(--background);
+      color: var(--on-surface);
+      font-weight: 600;
+    }
+
+    .preset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+
+    .preset-chip {
+      min-height: 30px;
+      padding: 2px var(--space-sm);
+      border: 0;
+      border-radius: var(--rounded-full);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+
+    .preset-chip:hover {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .fuzzy-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 96px;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-xs) var(--space-sm);
+      background: var(--background);
+      border-radius: var(--rounded-md);
+    }
+
+    .fuzzy-row-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .fuzzy-label-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      font-size: var(--label-size);
+    }
+
+    .fuzzy-label-name {
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+
+    .fuzzy-label-val {
+      font-family: var(--font-label);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+    }
+
+    .fuzzy-slider {
+      width: 100%;
+      accent-color: var(--primary);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .fuzzy-mini-svg {
+      width: 96px;
+      height: 40px;
+      display: block;
+    }
+
+    .suitability-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 150px;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--background);
+      border-radius: var(--rounded-md);
+    }
+
+    .suitability-score-num {
+      font-family: var(--font-headline);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: var(--figure-tracking);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .suitability-score-num.ok { color: var(--positive); }
+    .suitability-score-num.warn { color: var(--warning); }
+    .suitability-score-num.alert { color: var(--error); }
+
+    /* Charts & SVG Containers */
+    .chart-box {
+      width: 100%;
+      min-height: 148px;
+      background: var(--background);
+      border-radius: var(--rounded-md);
+      padding: var(--space-sm);
+    }
+
+    .chart-box.tall {
+      min-height: 210px;
+    }
+
+    .metric-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .metric-tab {
+      min-height: 30px;
+      padding: 2px var(--space-sm);
+      border: 0;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container);
+      color: var(--on-surface-variant);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .metric-tab.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+      font-weight: 600;
+    }
+
+    .checkpoint-flow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-xs);
+    }
+
+    .cp-step {
+      background: var(--background);
+      border-radius: var(--rounded-md);
+      padding: var(--space-xs) var(--space-sm);
+      font-size: var(--label-size);
+    }
+
+    .cp-step strong {
+      display: block;
+      font-family: var(--font-label);
+      color: var(--primary);
+      font-size: 0.8125rem;
+    }
+
+    /* Bottom Bar */
+    .bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-xs) var(--space-lg);
+      background: var(--surface-container-low);
+      border-top: 1px solid var(--outline-variant);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      z-index: 20;
+    }
+
+    .bottom-specs {
+      font-family: var(--font-label);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bottom-log {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-label);
+      color: var(--on-surface);
+      white-space: nowrap;
+    }
+
+    /* Responsive Fallback for Smaller Viewports */
+    @media (max-width: 1024px) {
+      .top-nav-pills { display: none; }
+      .telemetry-hud { max-width: calc(100% - 400px); }
+    }
+
+    @media (max-width: 640px) {
+      .panoramic-shell {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+        grid-template-rows: auto auto auto auto;
+      }
+      .top-bar {
+        flex-wrap: wrap;
+        padding: var(--space-sm) var(--space-md);
+      }
+      .stage-wrapper {
+        height: 46vh;
+        min-height: 300px;
+      }
+      .side-tags {
+        left: var(--space-sm);
+        top: auto;
+        bottom: var(--space-sm);
+        transform: none;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .side-tag-zoom { display: none; }
+      .telemetry-hud {
+        left: var(--space-sm);
+        right: var(--space-sm);
+        max-width: none;
+        border-radius: var(--rounded-md);
+      }
+      .panel-dock {
+        position: static;
+        width: 100%;
+        padding: var(--space-md);
+        pointer-events: auto;
+      }
+      .view-panel {
+        max-height: none;
+      }
+      .bottom-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="panoramic-shell">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="brand-group">
+        <span class="brand-badge">6G-IoV · Hybrid Fuzzy–DT</span>
+        <div class="brand-titles">
+          <h1>6G 車聯網混合模糊—數位分身預測式卸載儀表板</h1>
+          <p class="subtitle">Tang, Lin &amp; Cheng · Vehicular Communications 59 (2026) · 實時 10 秒前瞻預測與主動式邊緣遷移</p>
+        </div>
+      </div>
+
+      <nav class="top-nav-pills" aria-label="主要模組導覽">
+        <button type="button" class="nav-pill is-active" data-view="overview" onclick="switchView('overview')">全景總覽</button>
+        <button type="button" class="nav-pill" data-view="trajectory" onclick="switchView('trajectory')">10s 軌跡與衰落</button>
+        <button type="button" class="nav-pill" data-view="fuzzy" onclick="switchView('fuzzy')">五維模糊推論</button>
+        <button type="button" class="nav-pill" data-view="ablation" onclick="switchView('ablation')">主動遷移與消融</button>
+      </nav>
+
+      <div class="top-controls">
+        <button type="button" id="btn-trigger-drop" class="btn-pill btn-danger-outline" onclick="triggerAnomaly()">
+          <i data-lucide="alert-triangle" width="15" height="15" aria-hidden="true"></i>
+          <span>模擬 θ&lt;0.75 警告</span>
+        </button>
+        <button type="button" id="btn-play-pause" class="btn-pill btn-primary" onclick="togglePlay()">
+          <i id="play-icon" data-lucide="pause" width="15" height="15" aria-hidden="true"></i>
+          <span id="play-label">暫停模擬</span>
+        </button>
+        <button type="button" class="btn-pill btn-secondary" onclick="resetSimulation()" aria-label="重置模擬">
+          <i data-lucide="rotate-ccw" width="15" height="15" aria-hidden="true"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Panoramic 6G-IoV Stage -->
+    <main class="stage-wrapper">
+      <canvas id="iov-canvas" aria-label="6G 智慧城市與 V2X 車聯網實時模擬畫布"></canvas>
+
+      <!-- Live Telemetry HUD -->
+      <div class="telemetry-hud" aria-live="polite">
+        <span class="hud-chip"><span class="muted">同步週期</span> T<sub>sync</sub>=100ms</span>
+        <span class="hud-divider"></span>
+        <span class="hud-chip"><span class="muted">目標節點</span> <strong id="hud-en">EN-A</strong></span>
+        <span class="hud-divider"></span>
+        <span class="hud-chip"><span class="muted">穩定度 C<sub>stab</sub></span> <strong id="hud-stab">0.91</strong></span>
+        <span class="hud-divider"></span>
+        <span class="hud-chip"><span class="muted">適合度 S</span> <strong id="hud-score">0.84</strong></span>
+        <span id="hud-status" class="status-badge ok">正常卸載 (S ≥ 0.75)</span>
+      </div>
+
+      <!-- Proactive Handover Red Warning Banner -->
+      <div id="handover-banner" class="handover-banner" role="alert">
+        <i data-lucide="shield-alert" width="16" height="16" aria-hidden="true"></i>
+        <span id="handover-banner-text">警告：連結穩定度低於 θ=0.75，正透過 THz 執行 Checkpoint (&lt;20 KB) 主動遷移至 EN-B！</span>
+      </div>
+
+      <!-- Left Side Tags with Smooth Camera Zoom -->
+      <aside class="side-tags" aria-label="側邊鏡頭視角標籤">
+        <button type="button" class="side-tag is-active" data-view="overview" onclick="switchView('overview')">
+          <span class="side-tag-idx">01</span>
+          <span class="side-tag-meta">
+            <span class="side-tag-title">6G 全景視角</span>
+            <span class="side-tag-zoom">Zoom 1.00×</span>
+          </span>
+        </button>
+        <button type="button" class="side-tag" data-view="trajectory" onclick="switchView('trajectory')">
+          <span class="side-tag-idx">02</span>
+          <span class="side-tag-meta">
+            <span class="side-tag-title">10s 軌跡與衰落</span>
+            <span class="side-tag-zoom">Zoom 1.45×</span>
+          </span>
+        </button>
+        <button type="button" class="side-tag" data-view="fuzzy" onclick="switchView('fuzzy')">
+          <span class="side-tag-idx">03</span>
+          <span class="side-tag-meta">
+            <span class="side-tag-title">五維模糊推論</span>
+            <span class="side-tag-zoom">Zoom 1.35×</span>
+          </span>
+        </button>
+        <button type="button" class="side-tag" data-view="ablation" onclick="switchView('ablation')">
+          <span class="side-tag-idx">04</span>
+          <span class="side-tag-meta">
+            <span class="side-tag-title">遷移與消融實驗</span>
+            <span class="side-tag-zoom">Zoom 1.15×</span>
+          </span>
+        </button>
+      </aside>
+
+      <!-- Right Floating Clean Light Analytical Panel Dock -->
+      <section class="panel-dock" aria-label="模組數據與互動控制台">
+        <!-- Panel 1: Overview -->
+        <div id="panel-overview" class="view-panel is-active">
+          <div class="panel-header">
+            <div>
+              <div class="panel-eyebrow">核心效能指標 · 50 次獨立模擬均值</div>
+              <h2 class="panel-title">Hybrid Fuzzy–DT 全景架構表現</h2>
+            </div>
+          </div>
+          <p class="panel-desc">將數位分身 10 秒前瞻狀態（未來距離、穩定度、殘餘算力）直接嵌入 Mamdani 模糊引擎，實現零探索延遲之主動式資源編排。</p>
+
+          <div class="kpi-grid">
+            <div class="kpi-tile">
+              <span class="kpi-label">端到端延遲</span>
+              <span class="kpi-value">23.6 ms</span>
+              <span class="kpi-delta">↓ 降低 32%（對比反應式基準）</span>
+            </div>
+            <div class="kpi-tile">
+              <span class="kpi-label">任務丟包率 TDR</span>
+              <span class="kpi-value">5.3 %</span>
+              <span class="kpi-delta">↓ 下降 41%（主動遷移抑制）</span>
+            </div>
+            <div class="kpi-tile">
+              <span class="kpi-label">系統總能耗</span>
+              <span class="kpi-value">-28 %</span>
+              <span class="kpi-delta primary">6G V2X 節能優化達標</span>
+            </div>
+            <div class="kpi-tile">
+              <span class="kpi-label">封包投遞率 PDR</span>
+              <span class="kpi-value">96.8 %</span>
+              <span class="kpi-delta">↑ 領先基準 15.9–25.1%</span>
+            </div>
+          </div>
+
+          <div class="sub-tile">
+            <div class="sub-tile-head">
+              <span class="sub-tile-title">即時 THz 通道衰落與模糊決策波形</span>
+              <span class="hud-chip" id="live-thz-rate">10 Gbps · IEEE 802.11ad</span>
+            </div>
+            <div class="chart-box" style="min-height: 112px;">
+              <svg id="overview-wave-svg" viewBox="0 0 380 96" width="100%" height="96" aria-label="即時太赫茲波形與適合度趨勢"></svg>
+            </div>
+          </div>
+
+          <div class="sub-tile">
+            <div class="sub-tile-head">
+              <span class="sub-tile-title">物理層與數位分身視覺圖例</span>
+            </div>
+            <div class="legend-grid">
+              <div class="legend-item"><span class="swatch blue"></span>UNs 行駛車輛與 THz 脈衝</div>
+              <div class="legend-item"><span class="swatch dt"></span>DT 雙向同步點陣光波</div>
+              <div class="legend-item"><span class="swatch green"></span>10s 前瞻軌跡鬼影車道</div>
+              <div class="legend-item"><span class="swatch red"></span>θ&lt;0.75 警告與 &lt;20KB 遷移封包</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: 10s Trajectory & Nakagami-m -->
+        <div id="panel-trajectory" class="view-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-eyebrow">模組 A · 混合式數位分身預測層</div>
+              <h2 class="panel-title">10 秒軌跡預測與 Nakagami-m 衰落</h2>
+            </div>
+          </div>
+          <p class="panel-desc">採用雙層堆疊 LSTM（位置 MAE &lt; 4 m、速度 MAE &lt; 1.2 m/s）結合距離相依 Nakagami-m 衰落模型，量化 Δt ≤ 10 s 內之太赫茲鏈路成功機率 P<sub>ij</sub>。</p>
+
+          <div class="sub-tile">
+            <div class="fuzzy-label-line">
+              <label for="slider-horizon" class="fuzzy-label-name">前瞻預測視界 Δt (0–10 秒)</label>
+              <span id="val-horizon" class="fuzzy-label-val">10.0 s · 宏觀協同</span>
+            </div>
+            <input id="slider-horizon" type="range" class="fuzzy-slider" min="1" max="10" step="0.5" value="10" oninput="onHorizonChange(this.value)">
+            <div class="fuzzy-label-line" style="margin-top: 6px;">
+              <span class="panel-desc">0–3s 精準決策 · 3–6s 遷移規劃 · 6–10s 協同調度</span>
+              <span id="val-sigma" class="fuzzy-label-val">σ<sub>pred</sub> = 3.8 m</span>
+            </div>
+          </div>
+
+          <div class="sub-tile">
+            <div class="fuzzy-label-line">
+              <label for="slider-speed" class="fuzzy-label-name">車隊相對速度 v<sub>rel</sub> (20–120 km/h)</label>
+              <span id="val-speed" class="fuzzy-label-val">62 km/h</span>
+            </div>
+            <input id="slider-speed" type="range" class="fuzzy-slider" min="20" max="120" step="2" value="62" oninput="onSpeedChange(this.value)">
+          </div>
+
+          <div class="sub-tile">
+            <div class="sub-tile-head">
+              <span class="sub-tile-title">Nakagami-m 鏈路成功機率 P<sub>ij</sub> vs 未來距離</span>
+              <span id="traj-pij-badge" class="status-badge ok">P<sub>ij</sub> = 0.91</span>
+            </div>
+            <div class="chart-box tall" style="min-height: 205px;">
+              <svg id="nakagami-svg" viewBox="0 0 400 190" width="100%" height="190" aria-label="Nakagami-m 鏈路成功機率曲線"></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3: 5-Input Fuzzy Inference System -->
+        <div id="panel-fuzzy" class="view-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-eyebrow">模組 B · Mamdani 推論與重心法解模糊</div>
+              <h2 class="panel-title">五大模糊隸屬函數實時調控</h2>
+            </div>
+          </div>
+
+          <div class="mode-switch" role="group" aria-label="參數輸入模式">
+            <button type="button" id="mode-auto-btn" class="mode-btn is-active" onclick="setControlMode('auto')">連動實時車流</button>
+            <button type="button" id="mode-manual-btn" class="mode-btn" onclick="setControlMode('manual')">手動精細調控</button>
+          </div>
+
+          <div class="preset-row">
+            <button type="button" class="preset-chip" onclick="applyFuzzyPreset('urllc')">URLLC 緊急避障</button>
+            <button type="button" class="preset-chip" onclick="applyFuzzyPreset('handover')">臨界切換 (θ&lt;0.75)</button>
+            <button type="button" class="preset-chip" onclick="applyFuzzyPreset('congested')">高密度壅塞邊緣</button>
+          </div>
+
+          <!-- 5 Fuzzy Sliders + Live Membership SVGs -->
+          <div class="fuzzy-row">
+            <div class="fuzzy-row-meta">
+              <div class="fuzzy-label-line">
+                <label for="f-delay" class="fuzzy-label-name">1. 預測延遲 D<sub>pred</sub> (ms)</label>
+                <span id="f-delay-val" class="fuzzy-label-val">3.2 ms</span>
+              </div>
+              <input id="f-delay" type="range" class="fuzzy-slider" min="0" max="30" step="0.5" value="3.2" oninput="onFuzzySlider('delay', this.value)">
+            </div>
+            <svg id="mf-delay-svg" class="fuzzy-mini-svg" viewBox="0 0 96 40" aria-hidden="true"></svg>
+          </div>
+
+          <div class="fuzzy-row">
+            <div class="fuzzy-row-meta">
+              <div class="fuzzy-label-line">
+                <label for="f-energy" class="fuzzy-label-name">2. 殘餘算力/能量 E<sub>res</sub> (%)</label>
+                <span id="f-energy-val" class="fuzzy-label-val">78 %</span>
+              </div>
+              <input id="f-energy" type="range" class="fuzzy-slider" min="0" max="100" step="1" value="78" oninput="onFuzzySlider('energy', this.value)">
+            </div>
+            <svg id="mf-energy-svg" class="fuzzy-mini-svg" viewBox="0 0 96 40" aria-hidden="true"></svg>
+          </div>
+
+          <div class="fuzzy-row">
+            <div class="fuzzy-row-meta">
+              <div class="fuzzy-label-line">
+                <label for="f-priority" class="fuzzy-label-name">3. 任務優先度 P (0–1)</label>
+                <span id="f-priority-val" class="fuzzy-label-val">0.88</span>
+              </div>
+              <input id="f-priority" type="range" class="fuzzy-slider" min="0" max="1" step="0.02" value="0.88" oninput="onFuzzySlider('priority', this.value)">
+            </div>
+            <svg id="mf-priority-svg" class="fuzzy-mini-svg" viewBox="0 0 96 40" aria-hidden="true"></svg>
+          </div>
+
+          <div class="fuzzy-row">
+            <div class="fuzzy-row-meta">
+              <div class="fuzzy-label-line">
+                <label for="f-distance" class="fuzzy-label-name">4. 未來距離 d<sub>fut</sub> (m)</label>
+                <span id="f-distance-val" class="fuzzy-label-val">92 m</span>
+              </div>
+              <input id="f-distance" type="range" class="fuzzy-slider" min="0" max="600" step="5" value="92" oninput="onFuzzySlider('distance', this.value)">
+            </div>
+            <svg id="mf-distance-svg" class="fuzzy-mini-svg" viewBox="0 0 96 40" aria-hidden="true"></svg>
+          </div>
+
+          <div class="fuzzy-row">
+            <div class="fuzzy-row-meta">
+              <div class="fuzzy-label-line">
+                <label for="f-stability" class="fuzzy-label-name">5. 連結穩定度 C<sub>stab</sub> (0–1)</label>
+                <span id="f-stability-val" class="fuzzy-label-val">0.91</span>
+              </div>
+              <input id="f-stability" type="range" class="fuzzy-slider" min="0" max="1" step="0.01" value="0.91" oninput="onFuzzySlider('stability', this.value)">
+            </div>
+            <svg id="mf-stability-svg" class="fuzzy-mini-svg" viewBox="0 0 96 40" aria-hidden="true"></svg>
+          </div>
+
+          <!-- Defuzzification Output -->
+          <div class="suitability-card">
+            <div>
+              <div class="kpi-label">Suitability Score (重心解模糊 S)</div>
+              <div id="fis-score-big" class="suitability-score-num ok">0.84</div>
+              <div id="fis-decision-text" class="panel-desc" style="margin-top: 2px;">S ≥ 0.75 · 允許卸載至最佳邊緣節點</div>
+            </div>
+            <svg id="mf-output-svg" viewBox="0 0 150 66" width="150" height="66" aria-label="輸出解模糊多邊形"></svg>
+          </div>
+        </div>
+
+        <!-- Panel 4: Proactive Handover & Ablation Benchmark -->
+        <div id="panel-ablation" class="view-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-eyebrow">模組 C &amp; D · 預警遷移與實驗對照</div>
+              <h2 class="panel-title">Checkpoint 遷移與消融實驗對比</h2>
+            </div>
+          </div>
+
+          <div class="sub-tile">
+            <div class="sub-tile-head">
+              <span class="sub-tile-title">輕量化 Checkpoint 預警遷移機制 (θ = 0.75)</span>
+              <button type="button" class="preset-chip" onclick="triggerAnomaly()">立即發射遷移封包</button>
+            </div>
+            <div class="checkpoint-flow">
+              <div class="cp-step">
+                <strong>S<sub>state</sub> &lt; 20 KB</strong>
+                <span>序列化計算進度與 I/O 緩衝</span>
+              </div>
+              <div class="cp-step">
+                <strong>T<sub>mig</sub> &lt; 0.02 ms</strong>
+                <span>10 Gbps THz 零中斷轉移</span>
+              </div>
+              <div class="cp-step">
+                <strong>EN-A → EN-B</strong>
+                <span>防範斷線重傳與任務丟失</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sub-tile">
+            <div class="sub-tile-head">
+              <span class="sub-tile-title">消融變體與前沿基準效能比較 (Table 7 &amp; 5)</span>
+            </div>
+            <div class="metric-tabs" role="tablist" aria-label="選擇比較指標">
+              <button type="button" class="metric-tab is-active" data-metric="latency" onclick="setAblationMetric('latency')">端到端延遲</button>
+              <button type="button" class="metric-tab" data-metric="dropout" onclick="setAblationMetric('dropout')">丟包率</button>
+              <button type="button" class="metric-tab" data-metric="pdr" onclick="setAblationMetric('pdr')">投遞率 PDR</button>
+              <button type="button" class="metric-tab" data-metric="tcr" onclick="setAblationMetric('tcr')">完成率 TCR</button>
+              <button type="button" class="metric-tab" data-metric="scaling" onclick="setAblationMetric('scaling')">負載擴展</button>
+            </div>
+            <div class="chart-box tall" style="min-height: 225px; margin-top: 8px;">
+              <svg id="ablation-svg" viewBox="0 0 420 215" width="100%" height="215" aria-label="消融實驗與基準比較長條圖"></svg>
+            </div>
+            <p id="ablation-insight" class="panel-desc" style="margin-top: 6px;">
+              Full Hybrid-Fuzzy-DT 延遲僅 23.6 ms（p &lt; 0.001）；移除 DT 預測 (A1) 延遲升至 32.1 ms，移除模糊推論 (A2) 則重創完成率。
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Telemetry & Spec Footer -->
+    <footer class="bottom-bar">
+      <div class="bottom-specs">
+        模擬設定：5 km × 3 km SUMO/OSM 城市高速公路 · 500–1500 車輛 · 81 條模糊規則 · 8–12 ms DT 推論 · 0.4–0.6 ms 模糊決策
+      </div>
+      <div class="bottom-log">
+        <span id="event-log-text">系統同步中：DT 層每 100 ms 接收 V2X 信標並預測 10 s 軌跡</span>
+        <span>· 快捷鍵 [1–4] 鏡頭 / [Space] 暫停</span>
+      </div>
+    </footer>
+  </div>
+
+  <api-shim></api-shim>
+  <script>
+    (function () {
+      'use strict';
+
+      // Read CSS tokens cleanly for Canvas & SVG rendering
+      function cssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      }
+
+      const PALETTE = {
+        bg: cssVar('--background'),
+        surfaceLow: cssVar('--surface-container-low'),
+        surface: cssVar('--surface-container'),
+        ink: cssVar('--on-surface'),
+        muted: cssVar('--on-surface-variant'),
+        outline: cssVar('--outline'),
+        outlineVariant: cssVar('--outline-variant'),
+        primary: cssVar('--primary'),
+        primaryContainer: cssVar('--primary-container'),
+        secondary: cssVar('--secondary'),
+        positive: cssVar('--positive'),
+        positiveContainer: cssVar('--positive-container'),
+        warning: cssVar('--warning'),
+        error: cssVar('--error'),
+        errorContainer: cssVar('--error-container'),
+        data2: cssVar('--data-2'),
+        data3: cssVar('--data-3'),
+        data4: cssVar('--data-4'),
+        dataContext: cssVar('--data-context'),
+        road: cssVar('--city-road'),
+        roadEdge: cssVar('--city-road-edge'),
+        block: cssVar('--city-block'),
+        blockStroke: cssVar('--city-block-stroke'),
+        dtAccent: cssVar('--dt-accent')
+      };
+
+      // Exact Table 2 Membership Functions
+      const MF_DEFS = {
+        delay: {
+          min: 0, max: 30, unit: 'ms',
+          terms: [
+            { name: 'Low', label: '低', type: 'trap', p: [0, 0, 3, 6], color: PALETTE.positive },
+            { name: 'Med', label: '中', type: 'tri', p: [4, 10, 16], color: PALETTE.warning },
+            { name: 'High', label: '高', type: 'trap', p: [14, 18, 30, 30], color: PALETTE.error }
+          ]
+        },
+        energy: {
+          min: 0, max: 100, unit: '%',
+          terms: [
+            { name: 'Low', label: '低', type: 'trap', p: [0, 0, 15, 25], color: PALETTE.error },
+            { name: 'Med', label: '中', type: 'tri', p: [20, 40, 60], color: PALETTE.warning },
+            { name: 'High', label: '高', type: 'trap', p: [55, 70, 100, 100], color: PALETTE.positive }
+          ]
+        },
+        priority: {
+          min: 0, max: 1, unit: '',
+          terms: [
+            { name: 'Low', label: '低', type: 'trap', p: [0, 0, 0.3, 0.45], color: PALETTE.muted },
+            { name: 'Med', label: '中', type: 'tri', p: [0.4, 0.6, 0.8], color: PALETTE.primary },
+            { name: 'High', label: '高', type: 'trap', p: [0.75, 0.9, 1, 1], color: PALETTE.secondary }
+          ]
+        },
+        distance: {
+          min: 0, max: 600, unit: 'm',
+          terms: [
+            { name: 'Close', label: '近', type: 'trap', p: [0, 0, 80, 150], color: PALETTE.positive },
+            { name: 'Med', label: '中', type: 'tri', p: [100, 250, 400], color: PALETTE.primary },
+            { name: 'Far', label: '遠', type: 'trap', p: [350, 450, 600, 600], color: PALETTE.error }
+          ]
+        },
+        stability: {
+          min: 0, max: 1, unit: '',
+          terms: [
+            { name: 'Unstable', label: '不穩', type: 'trap', p: [0, 0, 0.4, 0.6], color: PALETTE.error },
+            { name: 'Med', label: '中', type: 'tri', p: [0.5, 0.7, 0.85], color: PALETTE.warning },
+            { name: 'Stable', label: '穩', type: 'trap', p: [0.8, 0.92, 1, 1], color: PALETTE.positive }
+          ]
+        },
+        output: {
+          min: 0, max: 1, unit: '',
+          terms: [
+            { name: 'Low', label: '低', type: 'trap', p: [0, 0, 0.3, 0.45], color: PALETTE.error },
+            { name: 'Med', label: '中', type: 'tri', p: [0.4, 0.6, 0.8], color: PALETTE.warning },
+            { name: 'High', label: '高', type: 'trap', p: [0.75, 0.9, 1, 1], color: PALETTE.positive }
+          ]
+        }
+      };
+
+      // Paper Table 7 & Table 5 Benchmark Data
+      const ABLATION_DATA = {
+        latency: {
+          title: '端到端平均延遲 (ms · 越低越佳)',
+          unit: 'ms',
+          max: 45,
+          lowerIsBetter: true,
+          insight: `Full Hybrid-Fuzzy-DT 延遲僅 23.6 ms（較反應式模糊降低 32%）；移除 DT 預測 (A1) 延遲升至 32.1 ms，印證前瞻預測對低延遲路由的關鍵貢獻。`,
+          rows: [
+            { label: 'Full Fuzzy-DT (本論文)', val: 23.6, highlight: true },
+            { label: 'A3 – 無主動遷移', val: 28.9, ablated: true },
+            { label: 'A1 – 無 DT 預測', val: 32.1, ablated: true },
+            { label: 'Cybertwin-DRL', val: 36.1 },
+            { label: 'A2 – 無模糊推論', val: 37.8, ablated: true },
+            { label: 'MARL-CO', val: 38.6 },
+            { label: 'Fuzzy-Intersection', val: 39.4 },
+            { label: 'RA-TO-6G', val: 41.2 }
+          ]
+        },
+        dropout: {
+          title: '任務丟包率 TDR (% · 越低越佳)',
+          unit: '%',
+          max: 25,
+          lowerIsBetter: true,
+          insight: `透過 θ=0.75 預警與 <20 KB Checkpoint 遷移，本架構丟包率僅 5.3%（下降 41%）；若關閉主動遷移 (A3) 丟包率即翻倍跳升至 11.9%。`,
+          rows: [
+            { label: 'Full Fuzzy-DT (本論文)', val: 5.3, highlight: true },
+            { label: 'A3 – 無主動遷移', val: 11.9, ablated: true },
+            { label: 'A1 – 無 DT 預測', val: 13.9, ablated: true },
+            { label: 'Cybertwin-DRL', val: 15.8 },
+            { label: 'A2 – 無模糊推論', val: 18.6, ablated: true },
+            { label: 'MARL-CO', val: 19.7 },
+            { label: 'Fuzzy-Intersection', val: 21.1 },
+            { label: 'RA-TO-6G', val: 22.4 }
+          ]
+        },
+        pdr: {
+          title: '封包投遞率 PDR (% · 越高越佳)',
+          unit: '%',
+          max: 100,
+          lowerIsBetter: false,
+          insight: `結合 Nakagami-m 衰落模型與模糊穩定度權重，在 140 veh/km 高密度下仍維持 96.8% 投遞率，顯著領先 MARL-CO (83.7%) 與 RA-TO-6G (81.3%)。`,
+          rows: [
+            { label: 'Full Fuzzy-DT (本論文)', val: 96.8, highlight: true },
+            { label: 'A3 – 無主動遷移', val: 90.7, ablated: true },
+            { label: 'A1 – 無 DT 預測', val: 89.4, ablated: true },
+            { label: 'Cybertwin-DRL', val: 87.1 },
+            { label: 'A2 – 無模糊推論', val: 84.2, ablated: true },
+            { label: 'MARL-CO', val: 83.7 },
+            { label: 'Fuzzy-Intersection', val: 82.6 },
+            { label: 'RA-TO-6G', val: 81.3 }
+          ]
+        },
+        tcr: {
+          title: '任務完成率 TCR (% · 越高越佳)',
+          unit: '%',
+          max: 100,
+          lowerIsBetter: false,
+          insight: `Full Fuzzy-DT 任務完成率達 94.7%；移除模糊邏輯改以硬性門檻判斷 (A2) 時降至 81.4%，證明模糊隸屬重疊區間能有效吸收 DT 預測誤差。`,
+          rows: [
+            { label: 'Full Fuzzy-DT (本論文)', val: 94.7, highlight: true },
+            { label: 'A3 – 無主動遷移', val: 87.3, ablated: true },
+            { label: 'A1 – 無 DT 預測', val: 86.1, ablated: true },
+            { label: 'Cybertwin-DRL', val: 84.9 },
+            { label: 'A2 – 無模糊推論', val: 81.4, ablated: true },
+            { label: 'MARL-CO', val: 80.6 },
+            { label: 'Fuzzy-Intersection', val: 79.8 },
+            { label: 'RA-TO-6G', val: 78.2 }
+          ]
+        },
+        scaling: {
+          title: '不同任務負載 (100–500 任務) 之延遲與 PDR 表現 (Table 5)',
+          isScaling: true,
+          insight: `隨任務負載由 100 增至 500，延遲從 85 ms 平穩上升至 140 ms，能耗由 5.4 J 增至 9.1 J，PDR 仍維持 80.1% 以上之高擴展性。`,
+          points: [
+            { n: 100, lat: 85, drop: 4.2, eng: 5.4, pdr: 97.5 },
+            { n: 200, lat: 95, drop: 7.5, eng: 6.1, pdr: 94.2 },
+            { n: 300, lat: 110, drop: 12.5, eng: 7.3, pdr: 90.3 },
+            { n: 400, lat: 120, drop: 18.4, eng: 8.5, pdr: 85.6 },
+            { n: 500, lat: 140, drop: 24.3, eng: 9.1, pdr: 80.1 }
+          ]
+        }
+      };
+
+      // Global Simulation State
+      const sim = {
+        playing: true,
+        activeView: 'overview',
+        controlMode: 'auto',
+        ablationMetric: 'latency',
+        time: 0,
+        lastFrameTs: 0,
+        lastUiSyncTs: 0,
+        horizonSec: 10.0,
+        speedKmh: 62,
+        vehicleX: 190,
+        activeEN: 'EN-A',
+        handoverCooldown: 0,
+        forcedAnomalySec: 0,
+        inputs: {
+          delay: 3.2,
+          energy: 78,
+          priority: 0.88,
+          distance: 92,
+          stability: 0.91
+        },
+        score: 0.84,
+        waveHistory: [],
+        cam: { zoom: 1.0, cx: 0.5, cy: 0.5 },
+        targetCam: { zoom: 1.0, cx: 0.5, cy: 0.5 },
+        bgVehicles: [
+          { x: 120, lane: 0, dir: 1, speed: 58, label: 'UN-02' },
+          { x: 540, lane: 1, dir: 1, speed: 74, label: 'UN-03' },
+          { x: 820, lane: 2, dir: -1, speed: 66, label: 'UN-04' },
+          { x: 340, lane: 2, dir: -1, speed: 52, label: 'UN-05' },
+          { x: 960, lane: 0, dir: 1, speed: 80, label: 'UN-06' }
+        ],
+        dtPulses: [],
+        checkpointPackets: [],
+        thzPhase: 0
+      };
+
+      for (let i = 0; i < 48; i++) {
+        sim.waveHistory.push({ stab: 0.9, score: 0.84 });
+      }
+
+      // Camera Presets per Side Tag (Zoom In / Zoom Out)
+      const VIEW_CAMERAS = {
+        overview: { zoom: 1.0, cx: 0.50, cy: 0.50 },
+        trajectory: { zoom: 1.45, cx: 0.42, cy: 0.62 },
+        fuzzy: { zoom: 1.35, cx: 0.44, cy: 0.38 },
+        ablation: { zoom: 1.15, cx: 0.48, cy: 0.52 }
+      };
+
+      // Membership evaluation (Eq. 13)
+      function evalMF(x, type, p) {
+        if (type === 'tri') {
+          const [a, b, c] = p;
+          if (x <= a || x >= c) return 0;
+          if (x === b) return 1;
+          return x < b ? (x - a) / (b - a) : (c - x) / (c - b);
+        } else {
+          const [a, b, c, d] = p;
+          if (x < a || x > d) return 0;
+          if (x >= b && x <= c) return 1;
+          if (x < b) return b === a ? 1 : (x - a) / (b - a);
+          return d === c ? 1 : (d - x) / (d - c);
+        }
+      }
+
+      function getAllMemberships(varName, val) {
+        const terms = MF_DEFS[varName].terms;
+        return terms.map(t => evalMF(val, t.type, t.p));
+      }
+
+      // Mamdani 81-Rule Inspired Fuzzy Inference & Centroid Defuzzification
+      function computeFIS(inp) {
+        const dMF = getAllMemberships('delay', inp.delay);       // [Low, Med, High]
+        const eMF = getAllMemberships('energy', inp.energy);     // [Low, Med, High]
+        const pMF = getAllMemberships('priority', inp.priority); // [Low, Med, High]
+        const distMF = getAllMemberships('distance', inp.distance); // [Close, Med, Far]
+        const sMF = getAllMemberships('stability', inp.stability); // [Unstable, Med, Stable]
+
+        let lowAgg = 0;
+        let medAgg = 0;
+        let highAgg = 0;
+
+        // Evaluate structured 3^5 combinations mapped monotonically to the paper's 81 expert rules
+        for (let di = 0; di < 3; di++) {
+          if (dMF[di] <= 0.001) continue;
+          for (let ei = 0; ei < 3; ei++) {
+            if (eMF[ei] <= 0.001) continue;
+            for (let pi = 0; pi < 3; pi++) {
+              if (pMF[pi] <= 0.001) continue;
+              for (let xi = 0; xi < 3; xi++) {
+                if (distMF[xi] <= 0.001) continue;
+                for (let si = 0; si < 3; si++) {
+                  if (sMF[si] <= 0.001) continue;
+                  const strength = Math.min(dMF[di], eMF[ei], pMF[pi], distMF[xi], sMF[si]);
+
+                  // Representative Paper Rules (Sec 3.3.3):
+                  // Hard veto: IF Dpred is High OR Eres is Low OR Cstab is Unstable THEN Low
+                  if (di === 2 || ei === 0 || si === 0 || xi === 2) {
+                    // Slight moderation if priority/stability compensate, else Low
+                    if (di === 2 && si === 0) {
+                      lowAgg = Math.max(lowAgg, strength);
+                    } else if ((ei === 0 || si === 0 || di === 2) && !(si === 2 && di === 0 && xi === 0)) {
+                      lowAgg = Math.max(lowAgg, strength * 0.95);
+                    } else {
+                      medAgg = Math.max(medAgg, strength * 0.85);
+                    }
+                    continue;
+                  }
+
+                  // Positive score index (higher = better suitability)
+                  // Delay: 0 best -> +2, 1 -> +1
+                  // Energy: 2 best -> +2, 1 -> +1
+                  // Distance: 0 best -> +2, 1 -> +1
+                  // Stability: 2 best -> +2, 1 -> +1
+                  // Priority: 2 urgent -> +1.5, 1 -> +0.8
+                  const quality = (2 - di) * 1.2 + ei * 1.0 + (2 - xi) * 1.1 + si * 1.4 + pi * 0.6;
+                  if (quality >= 7.2) {
+                    highAgg = Math.max(highAgg, strength);
+                  } else if (quality >= 4.4) {
+                    medAgg = Math.max(medAgg, strength);
+                  } else {
+                    lowAgg = Math.max(lowAgg, strength);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Centroid defuzzification over 101 points in [0, 1]
+        const outTerms = MF_DEFS.output.terms;
+        let num = 0;
+        let den = 0;
+        const polyPts = [];
+        for (let i = 0; i <= 100; i++) {
+          const s = i / 100;
+          const mLow = Math.min(lowAgg, evalMF(s, outTerms[0].type, outTerms[0].p));
+          const mMed = Math.min(medAgg, evalMF(s, outTerms[1].type, outTerms[1].p));
+          const mHigh = Math.min(highAgg, evalMF(s, outTerms[2].type, outTerms[2].p));
+          const agg = Math.max(mLow, mMed, mHigh);
+          polyPts.push({ s, agg });
+          num += s * agg;
+          den += agg;
+        }
+
+        const score = den > 0.0001 ? num / den : 0.5;
+        return { score, lowAgg, medAgg, highAgg, polyPts };
+      }
+
+      // Nakagami-m THz Link Success Probability (Eq. 1, 2, 12 calibrated to 300 m THz cell)
+      function computeNakagamiSuccess(distMeters, speedKmh) {
+        const dNorm = Math.max(20, distMeters) / 235;
+        const vFactor = 1 + 0.42 * (speedKmh / 100);
+        const mShape = 2.6 * Math.exp(-0.45 * (distMeters / 300)) + 0.85;
+        const snrTerm = mShape / (Math.pow(dNorm, 2.65) * vFactor);
+        const prob = 1 - Math.exp(-snrTerm);
+        return Math.max(0.08, Math.min(0.99, prob));
+      }
+
+      // Persist / Restore State
+      async function saveState() {
+        if (!window.notebookAppApi || typeof window.notebookAppApi.setAppState !== 'function') return;
+        try {
+          await window.notebookAppApi.setAppState({
+            activeView: sim.activeView,
+            controlMode: sim.controlMode,
+            ablationMetric: sim.ablationMetric,
+            horizonSec: sim.horizonSec,
+            speedKmh: sim.speedKmh,
+            inputs: sim.inputs
+          });
+        } catch (_err) {
+          // Ignore transient host storage errors
+        }
+      }
+
+      async function initApp() {
+        if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === 'function') {
+          try {
+            const saved = await window.notebookAppApi.getAppState();
+            if (saved) {
+              if (saved.activeView && VIEW_CAMERAS[saved.activeView]) sim.activeView = saved.activeView;
+              if (saved.controlMode === 'auto' || saved.controlMode === 'manual') sim.controlMode = saved.controlMode;
+              if (saved.ablationMetric && ABLATION_DATA[saved.ablationMetric]) sim.ablationMetric = saved.ablationMetric;
+              if (typeof saved.horizonSec === 'number') sim.horizonSec = saved.horizonSec;
+              if (typeof saved.speedKmh === 'number') sim.speedKmh = saved.speedKmh;
+              if (saved.inputs && typeof saved.inputs === 'object') {
+                sim.inputs = Object.assign({}, sim.inputs, saved.inputs);
+              }
+            }
+          } catch (_err) {
+            // Proceed with defaults
+          }
+        }
+
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons();
+        }
+
+        applyViewUI(sim.activeView);
+        applyControlModeUI(sim.controlMode);
+        applyAblationMetricUI(sim.ablationMetric);
+        syncTrajectorySlidersUI();
+        syncFuzzySlidersUI();
+        renderAllSubCharts();
+        startLoop();
+
+        if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
+          window.notebookAppApi.notifyAppReady();
+        }
+      }
+
+      // View & Camera Switching
+      function applyViewUI(view) {
+        sim.activeView = view;
+        sim.targetCam = VIEW_CAMERAS[view] || VIEW_CAMERAS.overview;
+
+        document.querySelectorAll('.side-tag').forEach(btn => {
+          btn.classList.toggle('is-active', btn.dataset.view === view);
+        });
+        document.querySelectorAll('.nav-pill').forEach(btn => {
+          btn.classList.toggle('is-active', btn.dataset.view === view);
+        });
+        document.querySelectorAll('.view-panel').forEach(panel => {
+          panel.classList.toggle('is-active', panel.id === 'panel-' + view);
+        });
+      }
+
+      window.switchView = function (view) {
+        applyViewUI(view);
+        renderAllSubCharts();
+        saveState();
+      };
+
+      window.togglePlay = function () {
+        sim.playing = !sim.playing;
+        const label = document.getElementById('play-label');
+        const btn = document.getElementById('btn-play-pause');
+        if (label) label.textContent = sim.playing ? '暫停模擬' : '播放模擬';
+        if (btn) {
+          const icon = btn.querySelector('svg, i');
+          if (icon) {
+            icon.setAttribute('data-lucide', sim.playing ? 'pause' : 'play');
+            if (window.lucide) window.lucide.createIcons();
+          }
+        }
+      };
+
+      window.resetSimulation = function () {
+        sim.vehicleX = 190;
+        sim.activeEN = 'EN-A';
+        sim.forcedAnomalySec = 0;
+        sim.horizonSec = 10;
+        sim.speedKmh = 62;
+        sim.controlMode = 'auto';
+        sim.checkpointPackets = [];
+        sim.inputs = { delay: 3.2, energy: 78, priority: 0.88, distance: 92, stability: 0.91 };
+        applyControlModeUI('auto');
+        syncTrajectorySlidersUI();
+        syncFuzzySlidersUI();
+        updateEventLog('模擬狀態已重置：UN-01 重新同步 EN-A');
+        renderAllSubCharts();
+        saveState();
+      };
+
+      window.triggerAnomaly = function () {
+        sim.forcedAnomalySec = 4.2;
+        sim.inputs.stability = 0.58;
+        sim.inputs.distance = 275;
+        launchCheckpointPacket(sim.activeEN, sim.activeEN === 'EN-A' ? 'EN-B' : 'EN-A');
+        updateEventLog('主動觸發異常測試：C_stab 跌破 θ=0.75，發送 <20 KB Checkpoint 遷移封包！');
+        syncFuzzySlidersUI();
+        renderAllSubCharts();
+      };
+
+      window.setControlMode = function (mode) {
+        sim.controlMode = mode;
+        applyControlModeUI(mode);
+        saveState();
+      };
+
+      function applyControlModeUI(mode) {
+        const autoBtn = document.getElementById('mode-auto-btn');
+        const manBtn = document.getElementById('mode-manual-btn');
+        if (autoBtn) autoBtn.classList.toggle('is-active', mode === 'auto');
+        if (manBtn) manBtn.classList.toggle('is-active', mode === 'manual');
+      }
+
+      window.applyFuzzyPreset = function (key) {
+        sim.controlMode = 'manual';
+        applyControlModeUI('manual');
+        if (key === 'urllc') {
+          sim.inputs = { delay: 2.5, energy: 85, priority: 0.94, distance: 65, stability: 0.95 };
+          updateEventLog('套用情境「URLLC 緊急避障」：高優先度與低延遲獲得高 Suitability Score');
+        } else if (key === 'handover') {
+          sim.inputs = { delay: 11.5, energy: 48, priority: 0.82, distance: 285, stability: 0.62 };
+          sim.forcedAnomalySec = 3.2;
+          launchCheckpointPacket('EN-A', 'EN-B');
+          updateEventLog('套用情境「臨界切換 θ<0.75」：觸發紅燈警示與輕量化 Checkpoint 遷移');
+        } else {
+          sim.inputs = { delay: 16.5, energy: 28, priority: 0.55, distance: 320, stability: 0.68 };
+          updateEventLog('套用情境「高密度壅塞邊緣」：算力殘餘偏低，系統建議改採備援節點');
+        }
+        syncFuzzySlidersUI();
+        renderAllSubCharts();
+        saveState();
+      };
+
+      window.onHorizonChange = function (val) {
+        sim.horizonSec = parseFloat(val);
+        syncTrajectorySlidersUI();
+        renderNakagamiChart();
+        saveState();
+      };
+
+      window.onSpeedChange = function (val) {
+        sim.speedKmh = parseFloat(val);
+        syncTrajectorySlidersUI();
+        renderNakagamiChart();
+        saveState();
+      };
+
+      window.onFuzzySlider = function (key, val) {
+        sim.controlMode = 'manual';
+        applyControlModeUI('manual');
+        sim.inputs[key] = parseFloat(val);
+        if (key === 'stability' && sim.inputs.stability < 0.75 && sim.checkpointPackets.length === 0) {
+          launchCheckpointPacket(sim.activeEN, sim.activeEN === 'EN-A' ? 'EN-B' : 'EN-A');
+        }
+        syncFuzzySlidersUI();
+        renderFuzzySVGs();
+        saveState();
+      };
+
+      window.setAblationMetric = function (metric) {
+        sim.ablationMetric = metric;
+        applyAblationMetricUI(metric);
+        renderAblationChart();
+        saveState();
+      };
+
+      function applyAblationMetricUI(metric) {
+        document.querySelectorAll('.metric-tab').forEach(btn => {
+          btn.classList.toggle('is-active', btn.dataset.metric === metric);
+        });
+      }
+
+      function syncTrajectorySlidersUI() {
+        const sH = document.getElementById('slider-horizon');
+        const vH = document.getElementById('val-horizon');
+        const vSig = document.getElementById('val-sigma');
+        const sSp = document.getElementById('slider-speed');
+        const vSp = document.getElementById('val-speed');
+
+        if (sH) sH.value = String(sim.horizonSec);
+        if (vH) {
+          const phase = sim.horizonSec <= 3 ? '精準決策' : (sim.horizonSec <= 6 ? '遷移規劃' : '宏觀協同');
+          vH.textContent = `${sim.horizonSec.toFixed(1)} s · ${phase}`;
+        }
+        if (vSig) {
+          const sigma = Math.sqrt(1.6 + 1.3 * sim.horizonSec);
+          vSig.innerHTML = `σ<sub>pred</sub> = ${sigma.toFixed(1)} m`;
+        }
+        if (sSp) sSp.value = String(sim.speedKmh);
+        if (vSp) vSp.textContent = `${Math.round(sim.speedKmh)} km/h`;
+      }
+
+      function syncFuzzySlidersUI() {
+        const map = [
+          ['f-delay', 'f-delay-val', sim.inputs.delay, `${sim.inputs.delay.toFixed(1)} ms`],
+          ['f-energy', 'f-energy-val', sim.inputs.energy, `${Math.round(sim.inputs.energy)} %`],
+          ['f-priority', 'f-priority-val', sim.inputs.priority, sim.inputs.priority.toFixed(2)],
+          ['f-distance', 'f-distance-val', sim.inputs.distance, `${Math.round(sim.inputs.distance)} m`],
+          ['f-stability', 'f-stability-val', sim.inputs.stability, sim.inputs.stability.toFixed(2)]
+        ];
+        map.forEach(([sId, vId, num, txt]) => {
+          const sEl = document.getElementById(sId);
+          const vEl = document.getElementById(vId);
+          if (sEl) sEl.value = String(num);
+          if (vEl) vEl.textContent = txt;
+        });
+      }
+
+      function updateEventLog(text) {
+        const el = document.getElementById('event-log-text');
+        if (el) el.textContent = text;
+      }
+
+      function launchCheckpointPacket(fromEN, toEN) {
+        sim.checkpointPackets.push({
+          from: fromEN,
+          to: toEN,
+          progress: 0,
+          sizeKB: (14.2 + Math.random() * 4.5).toFixed(1)
+        });
+      }
+
+      // Render Mini Membership Function SVG
+      function drawMiniMF(svgId, varName, curVal) {
+        const svg = document.getElementById(svgId);
+        if (!svg) return;
+        const def = MF_DEFS[varName];
+        const W = 96, H = 40, pad = 4;
+        const span = def.max - def.min;
+
+        let html = `<line x1="0" y1="${H - pad}" x2="${W}" y2="${H - pad}" stroke="${PALETTE.outlineVariant}" stroke-width="1"/>`;
+
+        def.terms.forEach(term => {
+          const pts = term.p.map((v, idx) => {
+            const x = ((v - def.min) / span) * W;
+            let y = H - pad;
+            if (term.type === 'tri' && idx === 1) y = pad;
+            if (term.type === 'trap' && (idx === 1 || idx === 2)) y = pad;
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+          }).join(' ');
+          html += `<polyline points="${pts}" fill="none" stroke="${term.color}" stroke-width="1.5" opacity="0.85"/>`;
+        });
+
+        const cx = ((Math.max(def.min, Math.min(def.max, curVal)) - def.min) / span) * W;
+        html += `<line x1="${cx.toFixed(1)}" y1="2" x2="${cx.toFixed(1)}" y2="${H - pad}" stroke="${PALETTE.ink}" stroke-width="1.5" stroke-dasharray="2,2"/>`;
+        html += `<circle cx="${cx.toFixed(1)}" cy="${H - pad}" r="2.5" fill="${PALETTE.ink}"/>`;
+        svg.innerHTML = html;
+      }
+
+      function renderFuzzySVGs() {
+        drawMiniMF('mf-delay-svg', 'delay', sim.inputs.delay);
+        drawMiniMF('mf-energy-svg', 'energy', sim.inputs.energy);
+        drawMiniMF('mf-priority-svg', 'priority', sim.inputs.priority);
+        drawMiniMF('mf-distance-svg', 'distance', sim.inputs.distance);
+        drawMiniMF('mf-stability-svg', 'stability', sim.inputs.stability);
+
+        const res = computeFIS(sim.inputs);
+        sim.score = res.score;
+
+        const scoreEl = document.getElementById('fis-score-big');
+        const decEl = document.getElementById('fis-decision-text');
+        const stateCls = res.score >= 0.75 ? 'ok' : (res.score >= 0.45 ? 'warn' : 'alert');
+
+        if (scoreEl) {
+          scoreEl.textContent = res.score.toFixed(2);
+          scoreEl.className = `suitability-score-num ${stateCls}`;
+        }
+        if (decEl) {
+          if (sim.inputs.stability < 0.75) {
+            decEl.textContent = `C_stab < 0.75 · 強制觸發 Checkpoint 主動遷移`;
+          } else if (res.score >= 0.75) {
+            decEl.textContent = `S ≥ 0.75 · 允許卸載至最佳邊緣節點 (${sim.activeEN})`;
+          } else if (res.score >= 0.45) {
+            decEl.textContent = `0.45 ≤ S < 0.75 · 建議評估備援邊緣節點`;
+          } else {
+            decEl.textContent = `S < 0.45 · 避免卸載 / 切換節點或本地處理`;
+          }
+        }
+
+        // Output Aggregation Polygon SVG
+        const outSvg = document.getElementById('mf-output-svg');
+        if (outSvg) {
+          const W = 150, H = 66, padB = 12, padT = 6;
+          const drawH = H - padB - padT;
+          let pathD = `M 0 ${H - padB}`;
+          res.polyPts.forEach(pt => {
+            const x = pt.s * W;
+            const y = H - padB - pt.agg * drawH;
+            pathD += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+          });
+          pathD += ` L ${W} ${H - padB} Z`;
+
+          const fillCol = stateCls === 'ok' ? PALETTE.positive : (stateCls === 'warn' ? PALETTE.warning : PALETTE.error);
+          const cx = res.score * W;
+          let svgStr = `<line x1="0" y1="${H - padB}" x2="${W}" y2="${H - padB}" stroke="${PALETTE.outline}" stroke-width="1"/>`;
+          // Reference 0.75 threshold
+          const tx = 0.75 * W;
+          svgStr += `<line x1="${tx}" y1="2" x2="${tx}" y2="${H - padB}" stroke="${PALETTE.error}" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>`;
+          svgStr += `<path d="${pathD}" fill="${fillCol}" fill-opacity="0.22" stroke="${fillCol}" stroke-width="1.6"/>`;
+          svgStr += `<line x1="${cx.toFixed(1)}" y1="2" x2="${cx.toFixed(1)}" y2="${H - padB}" stroke="${PALETTE.ink}" stroke-width="2"/>`;
+          svgStr += `<text x="2" y="${H - 2}" font-size="8" fill="${PALETTE.muted}" font-family="IBM Plex Mono">0</text>`;
+          svgStr += `<text x="${tx - 9}" y="${H - 2}" font-size="8" fill="${PALETTE.error}" font-family="IBM Plex Mono">0.75</text>`;
+          svgStr += `<text x="${W - 10}" y="${H - 2}" font-size="8" fill="${PALETTE.muted}" font-family="IBM Plex Mono">1</text>`;
+          outSvg.innerHTML = svgStr;
+        }
+      }
+
+      // Render Overview Waveform SVG
+      function renderOverviewWave() {
+        const svg = document.getElementById('overview-wave-svg');
+        if (!svg) return;
+        const W = 380, H = 96, pad = 12;
+        const n = sim.waveHistory.length;
+        const thY = H - pad - 0.75 * (H - pad * 2);
+
+        let stabPts = '';
+        let scorePts = '';
+        sim.waveHistory.forEach((pt, idx) => {
+          const x = (idx / (n - 1)) * (W - 10) + 5;
+          const yStab = H - pad - pt.stab * (H - pad * 2);
+          const yScore = H - pad - pt.score * (H - pad * 2);
+          stabPts += `${x.toFixed(1)},${yStab.toFixed(1)} `;
+          scorePts += `${x.toFixed(1)},${yScore.toFixed(1)} `;
+        });
+
+        let html = `<line x1="5" y1="${thY.toFixed(1)}" x2="${W - 5}" y2="${thY.toFixed(1)}" stroke="${PALETTE.error}" stroke-width="1" stroke-dasharray="4,3" opacity="0.8"/>`;
+        html += `<text x="${W - 88}" y="${(thY - 3).toFixed(1)}" font-size="9" fill="${PALETTE.error}" font-family="IBM Plex Mono">θ = 0.75 門檻</text>`;
+        html += `<polyline points="${stabPts}" fill="none" stroke="${PALETTE.primary}" stroke-width="2" stroke-linecap="round"/>`;
+        html += `<polyline points="${scorePts}" fill="none" stroke="${PALETTE.positive}" stroke-width="2" stroke-linecap="round"/>`;
+        html += `<text x="6" y="12" font-size="9" fill="${PALETTE.primary}" font-family="IBM Plex Mono">● C_stab 連結穩定度</text>`;
+        html += `<text x="140" y="12" font-size="9" fill="${PALETTE.positive}" font-family="IBM Plex Mono">● Suitability S</text>`;
+        svg.innerHTML = html;
+      }
+
+      // Render Nakagami-m Chart (View 2)
+      function renderNakagamiChart() {
+        const svg = document.getElementById('nakagami-svg');
+        if (!svg) return;
+        const W = 400, H = 190, pL = 38, pR = 16, pT = 18, pB = 28;
+        const plotW = W - pL - pR;
+        const plotH = H - pT - pB;
+
+        let html = '';
+        [0, 0.25, 0.5, 0.75, 1].forEach(yv => {
+          const y = pT + (1 - yv) * plotH;
+          const isThresh = yv === 0.75;
+          html += `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" stroke="${isThresh ? PALETTE.error : PALETTE.outlineVariant}" stroke-width="${isThresh ? 1.4 : 1}" ${isThresh ? 'stroke-dasharray="5,3"' : ''}/>`;
+          html += `<text x="${pL - 6}" y="${y + 3}" text-anchor="end" font-size="9" fill="${isThresh ? PALETTE.error : PALETTE.muted}" font-family="IBM Plex Mono">${yv.toFixed(2)}</text>`;
+        });
+
+        // 300 m THz boundary line
+        const x300 = pL + (300 / 600) * plotW;
+        html += `<line x1="${x300}" y1="${pT}" x2="${x300}" y2="${H - pB}" stroke="${PALETTE.secondary}" stroke-width="1.2" stroke-dasharray="3,3"/>`;
+        html += `<text x="${x300 + 4}" y="${pT + 10}" font-size="9" fill="${PALETTE.secondary}" font-family="IBM Plex Mono">300m THz 覆蓋極限</text>`;
+
+        // Curve for 30 km/h context & current speed
+        let ctxPts = '';
+        let curPts = '';
+        for (let d = 0; d <= 600; d += 15) {
+          const x = pL + (d / 600) * plotW;
+          const pCtx = computeNakagamiSuccess(d, 30);
+          const pCur = computeNakagamiSuccess(d, sim.speedKmh);
+          ctxPts += `${x.toFixed(1)},${(pT + (1 - pCtx) * plotH).toFixed(1)} `;
+          curPts += `${x.toFixed(1)},${(pT + (1 - pCur) * plotH).toFixed(1)} `;
+        }
+
+        html += `<polyline points="${ctxPts}" fill="none" stroke="${PALETTE.dataContext}" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+        html += `<polyline points="${curPts}" fill="none" stroke="${PALETTE.primary}" stroke-width="2.5" stroke-linecap="round"/>`;
+
+        // Current vehicle operating dot
+        const curD = Math.min(600, Math.max(0, sim.inputs.distance));
+        const curP = computeNakagamiSuccess(curD, sim.speedKmh);
+        const dotX = pL + (curD / 600) * plotW;
+        const dotY = pT + (1 - curP) * plotH;
+        const dotCol = curP < 0.75 ? PALETTE.error : PALETTE.positive;
+        html += `<circle cx="${dotX.toFixed(1)}" cy="${dotY.toFixed(1)}" r="5" fill="${dotCol}" stroke="${PALETTE.bg}" stroke-width="2"/>`;
+        html += `<text x="${Math.min(W - 90, dotX + 8).toFixed(1)}" y="${Math.max(pT + 12, dotY - 6).toFixed(1)}" font-size="9.5" font-weight="600" fill="${dotCol}" font-family="IBM Plex Mono">(${Math.round(curD)}m, ${curP.toFixed(2)})</text>`;
+
+        // X Axis ticks
+        [0, 150, 300, 450, 600].forEach(xv => {
+          const x = pL + (xv / 600) * plotW;
+          html += `<text x="${x}" y="${H - 10}" text-anchor="middle" font-size="9" fill="${PALETTE.muted}" font-family="IBM Plex Mono">${xv}m</text>`;
+        });
+
+        const badge = document.getElementById('traj-pij-badge');
+        if (badge) {
+          badge.innerHTML = `P<sub>ij</sub> = ${curP.toFixed(2)}`;
+          badge.className = `status-badge ${curP >= 0.75 ? 'ok' : 'alert'}`;
+        }
+
+        svg.innerHTML = html;
+      }
+
+      // Render Ablation & Benchmark Chart (View 4)
+      function renderAblationChart() {
+        const svg = document.getElementById('ablation-svg');
+        const insightEl = document.getElementById('ablation-insight');
+        if (!svg) return;
+
+        const cfg = ABLATION_DATA[sim.ablationMetric] || ABLATION_DATA.latency;
+        if (insightEl) insightEl.textContent = cfg.insight;
+
+        const W = 420, H = 215;
+
+        if (cfg.isScaling) {
+          // Dual-metric line & bar view for Table 5 (100-500 tasks)
+          const pL = 38, pR = 38, pT = 26, pB = 30;
+          const plotW = W - pL - pR;
+          const plotH = H - pT - pB;
+          let html = `<text x="${pL}" y="14" font-size="10" font-weight="600" fill="${PALETTE.ink}">${cfg.title}</text>`;
+          let latPts = '';
+          let pdrPts = '';
+
+          cfg.points.forEach((pt, idx) => {
+            const x = pL + (idx / (cfg.points.length - 1)) * plotW;
+            const yLat = pT + (1 - pt.lat / 160) * plotH;
+            const yPdr = pT + (1 - pt.pdr / 100) * plotH;
+            latPts += `${x},${yLat} `;
+            pdrPts += `${x},${yPdr} `;
+
+            html += `<line x1="${x}" y1="${pT}" x2="${x}" y2="${H - pB}" stroke="${PALETTE.outlineVariant}" stroke-width="1"/>`;
+            html += `<text x="${x}" y="${H - 12}" text-anchor="middle" font-size="9" fill="${PALETTE.muted}" font-family="IBM Plex Mono">${pt.n} 任務</text>`;
+          });
+
+          html += `<polyline points="${latPts}" fill="none" stroke="${PALETTE.secondary}" stroke-width="2.4"/>`;
+          html += `<polyline points="${pdrPts}" fill="none" stroke="${PALETTE.primary}" stroke-width="2.4"/>`;
+
+          cfg.points.forEach((pt, idx) => {
+            const x = pL + (idx / (cfg.points.length - 1)) * plotW;
+            const yLat = pT + (1 - pt.lat / 160) * plotH;
+            const yPdr = pT + (1 - pt.pdr / 100) * plotH;
+            html += `<circle cx="${x}" cy="${yLat}" r="3.5" fill="${PALETTE.secondary}"/>`;
+            html += `<text x="${x}" y="${yLat - 7}" text-anchor="middle" font-size="8.5" fill="${PALETTE.secondary}" font-family="IBM Plex Mono">${pt.lat}ms</text>`;
+            html += `<circle cx="${x}" cy="${yPdr}" r="3.5" fill="${PALETTE.primary}"/>`;
+            html += `<text x="${x}" y="${yPdr + 12}" text-anchor="middle" font-size="8.5" fill="${PALETTE.primary}" font-family="IBM Plex Mono">${pt.pdr}%</text>`;
+          });
+
+          svg.innerHTML = html;
+          return;
+        }
+
+        const pL = 138, pR = 46, pT = 24, pB = 10;
+        const barAreaW = W - pL - pR;
+        const rowH = (H - pT - pB) / cfg.rows.length;
+
+        let html = `<text x="4" y="14" font-size="10.5" font-weight="600" fill="${PALETTE.ink}">${cfg.title}</text>`;
+        cfg.rows.forEach((r, i) => {
+          const y = pT + i * rowH;
+          const bw = (r.val / cfg.max) * barAreaW;
+          const fill = r.highlight ? PALETTE.primary : (r.ablated ? PALETTE.secondary : PALETTE.dataContext);
+          const textWeight = r.highlight ? '700' : '500';
+          const textColor = r.highlight ? PALETTE.primary : PALETTE.ink;
+
+          html += `<text x="${pL - 8}" y="${y + rowH * 0.66}" text-anchor="end" font-size="9.5" font-weight="${textWeight}" fill="${textColor}">${r.label}</text>`;
+          html += `<rect x="${pL}" y="${y + 3}" width="${bw.toFixed(1)}" height="${Math.max(8, rowH - 7).toFixed(1)}" rx="4" fill="${fill}"/>`;
+          html += `<text x="${(pL + bw + 6).toFixed(1)}" y="${y + rowH * 0.66}" font-size="9.5" font-weight="${textWeight}" fill="${textColor}" font-family="IBM Plex Mono">${r.val}${cfg.unit === '%' ? '%' : ' ms'}</text>`;
+        });
+
+        svg.innerHTML = html;
+      }
+
+      function renderAllSubCharts() {
+        renderOverviewWave();
+        renderNakagamiChart();
+        renderFuzzySVGs();
+        renderAblationChart();
+      }
+
+      // Main 60fps Canvas Physics & 6G Smart City Renderer
+      function drawScene(ctx, W, H) {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = PALETTE.bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Smooth camera interpolation (Zoom In / Zoom Out)
+        sim.cam.zoom += (sim.targetCam.zoom - sim.cam.zoom) * 0.08;
+        sim.cam.cx += (sim.targetCam.cx - sim.cam.cx) * 0.08;
+        sim.cam.cy += (sim.targetCam.cy - sim.cam.cy) * 0.08;
+
+        ctx.save();
+        // World coordinate space: 1200 x 680 logical units
+        const worldW = 1200;
+        const worldH = 680;
+        const baseScale = Math.min(W / worldW, H / worldH);
+        const totalScale = baseScale * sim.cam.zoom;
+
+        const focusX = sim.cam.cx * worldW;
+        const focusY = sim.cam.cy * worldH;
+        const screenCenterX = W * 0.36; // Keep city action beautifully framed left-of-panel!
+        const screenCenterY = H * 0.50;
+
+        ctx.translate(screenCenterX, screenCenterY);
+        ctx.scale(totalScale, totalScale);
+        ctx.translate(-focusX, -focusY);
+
+        // 1. Smart City Vector Blocks & V2X Grid
+        ctx.strokeStyle = PALETTE.outlineVariant;
+        ctx.lineWidth = 1;
+        for (let gx = -200; gx <= 1400; gx += 60) {
+          ctx.beginPath();
+          ctx.moveTo(gx, -100);
+          ctx.lineTo(gx, 780);
+          ctx.stroke();
+        }
+        for (let gy = -100; gy <= 780; gy += 60) {
+          ctx.beginPath();
+          ctx.moveTo(-200, gy);
+          ctx.lineTo(1400, gy);
+          ctx.stroke();
+        }
+
+        // Architectural smart city blocks above and below the V2X highway corridor
+        const blocks = [
+          [70, 90, 140, 120], [240, 80, 160, 130], [790, 80, 170, 130], [990, 95, 140, 115],
+          [80, 500, 190, 110], [310, 510, 210, 100], [560, 505, 180, 105], [780, 500, 220, 110]
+        ];
+        blocks.forEach(([bx, by, bw, bh]) => {
+          ctx.fillStyle = PALETTE.block;
+          ctx.strokeStyle = PALETTE.blockStroke;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, 10);
+          ctx.fill();
+          ctx.stroke();
+        });
+
+        // Vertical Cross-Avenue
+        ctx.fillStyle = PALETTE.road;
+        ctx.fillRect(580, 0, 74, 680);
+        ctx.strokeStyle = PALETTE.roadEdge;
+        ctx.beginPath();
+        ctx.moveTo(580, 0); ctx.lineTo(580, 680);
+        ctx.moveTo(654, 0); ctx.lineTo(654, 680);
+        ctx.stroke();
+
+        // Main 3-Lane V2X Highway Corridor
+        const roadY = 300;
+        const roadH = 150;
+        ctx.fillStyle = PALETTE.road;
+        ctx.fillRect(-150, roadY, 1500, roadH);
+        ctx.strokeStyle = PALETTE.roadEdge;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-150, roadY); ctx.lineTo(1350, roadY);
+        ctx.moveTo(-150, roadY + roadH); ctx.lineTo(1350, roadY + roadH);
+        ctx.stroke();
+
+        // Lane dashes
+        ctx.setLineDash([18, 14]);
+        ctx.strokeStyle = PALETTE.bg;
+        ctx.lineWidth = 2;
+        [roadY + 50, roadY + 100].forEach(ly => {
+          ctx.beginPath();
+          ctx.moveTo(-150, ly);
+          ctx.lineTo(1350, ly);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+
+        // Edge Node Coordinates (EN-A, EN-B)
+        const enA = { x: 280, y: 268, name: 'EN-A (RSU-01)', load: sim.activeEN === 'EN-A' ? '64%' : '41%' };
+        const enB = { x: 740, y: 268, name: 'EN-B (RSU-02)', load: sim.activeEN === 'EN-B' ? '58%' : '29%' };
+        const dtNode = { x: 510, y: 120, name: 'Digital Twin 數位分身雲層' };
+
+        // 2. THz Cell Coverage & High-Frequency Pulse Rings from ENs
+        [enA, enB].forEach(en => {
+          const isTarget = (sim.activeEN === 'EN-A' && en === enA) || (sim.activeEN === 'EN-B' && en === enB);
+          const isWarn = isTarget && sim.inputs.stability < 0.75;
+
+          // Static 300m range circle
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(en.x, en.y + 40, 225, 0, Math.PI * 2);
+          ctx.fillStyle = isWarn ? 'rgba(215, 0, 21, 0.04)' : (isTarget ? 'rgba(0, 107, 214, 0.04)' : 'rgba(174, 174, 178, 0.03)');
+          ctx.fill();
+          ctx.setLineDash([6, 6]);
+          ctx.strokeStyle = isWarn ? PALETTE.error : (isTarget ? PALETTE.primary : PALETTE.outline);
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          ctx.restore();
+
+          // Expanding THz pulse ring
+          if (isTarget) {
+            for (let k = 0; k < 2; k++) {
+              const r = ((sim.thzPhase + k * 0.5) % 1) * 220;
+              const alpha = (1 - r / 220) * 0.35;
+              ctx.beginPath();
+              ctx.arc(en.x, en.y + 40, r, 0, Math.PI * 2);
+              ctx.strokeStyle = isWarn ? `rgba(215, 0, 21, ${alpha})` : `rgba(0, 107, 214, ${alpha})`;
+              ctx.lineWidth = 1.6;
+              ctx.stroke();
+            }
+          }
+        });
+
+        // 3. Draw Edge Nodes (EN-A & EN-B)
+        [enA, enB].forEach(en => {
+          const isTarget = (sim.activeEN === 'EN-A' && en === enA) || (sim.activeEN === 'EN-B' && en === enB);
+          ctx.fillStyle = PALETTE.bg;
+          ctx.strokeStyle = isTarget ? PALETTE.primary : PALETTE.outline;
+          ctx.lineWidth = isTarget ? 2.4 : 1.5;
+          ctx.beginPath();
+          ctx.roundRect(en.x - 24, en.y - 20, 48, 40, 10);
+          ctx.fill();
+          ctx.stroke();
+
+          // Antenna mast
+          ctx.strokeStyle = isTarget ? PALETTE.primary : PALETTE.muted;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(en.x, en.y - 20);
+          ctx.lineTo(en.x, en.y - 34);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(en.x, en.y - 36, 4, 0, Math.PI * 2);
+          ctx.fillStyle = isTarget ? PALETTE.primary : PALETTE.muted;
+          ctx.fill();
+
+          ctx.fillStyle = PALETTE.ink;
+          ctx.font = '600 11px "IBM Plex Mono", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(en.name, en.x, en.y + 34);
+          ctx.fillStyle = PALETTE.muted;
+          ctx.font = '500 10px "IBM Plex Mono", sans-serif';
+          ctx.fillText(`負載 ${en.load}`, en.x, en.y + 46);
+        });
+
+        // 4. Draw Digital Twin Cloud Hub + Bidirectional Dot-Matrix Light Waves
+        ctx.fillStyle = PALETTE.bg;
+        ctx.strokeStyle = PALETTE.dtAccent;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(dtNode.x - 115, dtNode.y - 30, 230, 56, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = PALETTE.dtAccent;
+        ctx.font = '700 12.5px "Noto Sans TC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(dtNode.name, dtNode.x, dtNode.y - 6);
+        ctx.fillStyle = PALETTE.muted;
+        ctx.font = '500 10px "IBM Plex Mono", sans-serif';
+        ctx.fillText(`LSTM + FFNN + Nakagami-m · Δt ≤ ${sim.horizonSec.toFixed(0)}s`, dtNode.x, dtNode.y + 12);
+
+        // Bidirectional dot-matrix light waves (DT <-> EN-A, EN-B, UN-01)
+        const un01 = { x: sim.vehicleX, y: roadY + 75 };
+        [enA, enB, un01].forEach((node, nIdx) => {
+          const sx = dtNode.x + (nIdx - 1) * 45;
+          const sy = dtNode.y + 26;
+          const ex = node.x;
+          const ey = node.y - (node === un01 ? 12 : 22);
+
+          ctx.save();
+          ctx.setLineDash([3, 6]);
+          ctx.strokeStyle = 'rgba(0, 119, 182, 0.35)';
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(ex, ey);
+          ctx.stroke();
+          ctx.restore();
+
+          // Upward physical beacon dots + downward DT predictive dots
+          for (let d = 0; d < 4; d++) {
+            const tUp = (sim.time * 0.7 + d * 0.25 + nIdx * 0.1) % 1;
+            const tDown = (sim.time * 0.7 + d * 0.25 + 0.5 + nIdx * 0.1) % 1;
+
+            const ux = ex + (sx - ex) * tUp;
+            const uy = ey + (sy - ey) * tUp;
+            ctx.beginPath();
+            ctx.arc(ux, uy, 2.8, 0, Math.PI * 2);
+            ctx.fillStyle = PALETTE.dtAccent;
+            ctx.fill();
+
+            const dx = sx + (ex - sx) * tDown;
+            const dy = sy + (ey - sy) * tDown;
+            ctx.beginPath();
+            ctx.arc(dx, dy, 2.8, 0, Math.PI * 2);
+            ctx.fillStyle = PALETTE.positive;
+            ctx.fill();
+          }
+        });
+
+        // 5. Ambient V2X Background Vehicles
+        sim.bgVehicles.forEach(v => {
+          const vy = roadY + 25 + v.lane * 50;
+          ctx.fillStyle = PALETTE.surface;
+          ctx.strokeStyle = PALETTE.outline;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.roundRect(v.x - 16, vy - 9, 32, 18, 5);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = PALETTE.muted;
+          ctx.font = '500 9px "IBM Plex Mono", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(v.label, v.x, vy - 13);
+        });
+
+        // 6. (a) 10-Second Lookahead Ghost Trajectory Lane ahead of UN-01
+        const ghostSpanPx = (sim.horizonSec / 10) * 260;
+        const ghostEndX = un01.x + ghostSpanPx;
+
+        // Uncertainty cone σ_pred^2
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(un01.x + 18, un01.y - 6);
+        ctx.lineTo(ghostEndX, un01.y - 18);
+        ctx.lineTo(ghostEndX, un01.y + 18);
+        ctx.lineTo(un01.x + 18, un01.y + 6);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(36, 138, 61, 0.10)';
+        ctx.fill();
+
+        // Dashed lookahead lane line
+        ctx.setLineDash([7, 5]);
+        ctx.strokeStyle = PALETTE.positive;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(un01.x + 18, un01.y);
+        ctx.lineTo(ghostEndX, un01.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Ghost vehicles at 3s, 6s, 10s
+        [0.3, 0.6, 1.0].forEach((frac, idx) => {
+          const gx = un01.x + frac * ghostSpanPx;
+          ctx.fillStyle = `rgba(36, 138, 61, ${0.32 - idx * 0.08})`;
+          ctx.strokeStyle = PALETTE.positive;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.roundRect(gx - 15, un01.y - 9, 30, 18, 5);
+          ctx.fill();
+          ctx.stroke();
+
+          const secTag = Math.round(frac * sim.horizonSec);
+          ctx.fillStyle = PALETTE.positive;
+          ctx.font = '600 9.5px "IBM Plex Mono", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`+${secTag}s`, gx, un01.y + 24);
+        });
+        ctx.restore();
+
+        // 7. Active THz High-Frequency Waveform Link between UN-01 and Active EN
+        const curEN = sim.activeEN === 'EN-A' ? enA : enB;
+        const isAlert = sim.inputs.stability < 0.75;
+        drawTHzWaveform(ctx, un01.x, un01.y - 10, curEN.x, curEN.y + 16, isAlert, sim.inputs.stability);
+
+        // 8. (c) Proactive Checkpoint (<20 KB) Migration Packet Animation (EN-A <-> EN-B)
+        sim.checkpointPackets.forEach(pkt => {
+          const src = pkt.from === 'EN-A' ? enA : enB;
+          const dst = pkt.to === 'EN-A' ? enA : enB;
+          const px = src.x + (dst.x - src.x) * pkt.progress;
+          const py = src.y - Math.sin(pkt.progress * Math.PI) * 58;
+
+          // Arc path
+          ctx.save();
+          ctx.setLineDash([5, 4]);
+          ctx.strokeStyle = PALETTE.error;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(src.x, src.y);
+          ctx.quadraticCurveTo((src.x + dst.x) / 2, src.y - 68, dst.x, dst.y);
+          ctx.stroke();
+          ctx.restore();
+
+          // Glowing packet pill
+          ctx.fillStyle = PALETTE.error;
+          ctx.beginPath();
+          ctx.roundRect(px - 42, py - 13, 84, 26, 13);
+          ctx.fill();
+          ctx.fillStyle = PALETTE.bg;
+          ctx.font = '700 10px "IBM Plex Mono", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`CP ${pkt.sizeKB}KB`, px, py + 3.5);
+        });
+
+        // 9. Focal User Vehicle UN-01
+        ctx.fillStyle = isAlert ? PALETTE.error : PALETTE.primary;
+        ctx.beginPath();
+        ctx.roundRect(un01.x - 20, un01.y - 11, 40, 22, 7);
+        ctx.fill();
+
+        // Windshield accent
+        ctx.fillStyle = PALETTE.bg;
+        ctx.beginPath();
+        ctx.roundRect(un01.x + 2, un01.y - 7, 10, 14, 3);
+        ctx.fill();
+
+        // UN-01 Label Badge
+        ctx.fillStyle = isAlert ? PALETTE.error : PALETTE.primary;
+        ctx.font = '700 11px "IBM Plex Mono", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`UN-01 (${Math.round(sim.speedKmh)} km/h)`, un01.x, un01.y - 18);
+
+        if (isAlert) {
+          ctx.fillStyle = PALETTE.error;
+          ctx.font = '700 10.5px "Noto Sans TC", sans-serif';
+          ctx.fillText('⚠ 穩定度 < θ=0.75 主動遷移', un01.x, un01.y + 38);
+        }
+
+        ctx.restore();
+      }
+
+      // Draw high-frequency modulated THz pulse waveform along link vector
+      function drawTHzWaveform(ctx, x1, y1, x2, y2, isAlert, stability) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.hypot(dx, dy);
+        if (len < 10) return;
+
+        const ux = dx / len;
+        const uy = dy / len;
+        const nx = -uy;
+        const ny = ux;
+
+        ctx.save();
+        ctx.beginPath();
+        const steps = 44;
+        const amp = isAlert ? 9 : 6;
+        const freq = isAlert ? 8 : 13;
+
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const env = Math.sin(t * Math.PI);
+          const wave = Math.sin(t * Math.PI * freq - sim.time * 16) * amp * env;
+          const px = x1 + dx * t + nx * wave;
+          const py = y1 + dy * t + ny * wave;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+
+        ctx.strokeStyle = isAlert ? PALETTE.error : PALETTE.primary;
+        ctx.lineWidth = isAlert ? 2.4 : 2.0;
+        ctx.stroke();
+
+        // Midpoint label
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2;
+        ctx.fillStyle = PALETTE.bg;
+        ctx.beginPath();
+        ctx.roundRect(mx - 44, my - 10, 88, 18, 9);
+        ctx.fill();
+        ctx.fillStyle = isAlert ? PALETTE.error : PALETTE.primary;
+        ctx.font = '600 9.5px "IBM Plex Mono", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`THz C=${stability.toFixed(2)}`, mx, my + 2.5);
+        ctx.restore();
+      }
+
+      // Single Animation Loop Owner
+      let animId = null;
+
+      function startLoop() {
+        if (animId) cancelAnimationFrame(animId);
+        sim.lastFrameTs = performance.now();
+        animId = requestAnimationFrame(tick);
+      }
+
+      function tick(now) {
+        const dt = Math.min(0.05, (now - sim.lastFrameTs) / 1000);
+        sim.lastFrameTs = now;
+
+        const canvas = document.getElementById('iov-canvas');
+        if (canvas) {
+          const dpr = window.devicePixelRatio || 1;
+          const rect = canvas.getBoundingClientRect();
+          const targetW = Math.max(1, Math.floor(rect.width * dpr));
+          const targetH = Math.max(1, Math.floor(rect.height * dpr));
+          if (canvas.width !== targetW || canvas.height !== targetH) {
+            canvas.width = targetW;
+            canvas.height = targetH;
+          }
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.save();
+            ctx.scale(dpr, dpr);
+            drawScene(ctx, rect.width, rect.height);
+            ctx.restore();
+          }
+        }
+
+        if (sim.playing) {
+          sim.time += dt;
+          sim.thzPhase = (sim.thzPhase + dt * 0.45) % 1;
+
+          // Move focal vehicle UN-01 smoothly across the 6G highway
+          const pxPerSec = (sim.speedKmh / 60) * 34;
+          sim.vehicleX += pxPerSec * dt;
+          if (sim.vehicleX > 950) {
+            sim.vehicleX = 110;
+            sim.activeEN = 'EN-A';
+            updateEventLog('UN-01 進入新路段，重新同步 EN-A (RSU-01) 數位分身信標');
+          }
+
+          // Ambient vehicles
+          sim.bgVehicles.forEach(v => {
+            v.x += v.dir * (v.speed / 60) * 28 * dt;
+            if (v.x > 1120) v.x = -40;
+            if (v.x < -60) v.x = 1100;
+          });
+
+          // Checkpoint packets progress
+          for (let i = sim.checkpointPackets.length - 1; i >= 0; i--) {
+            sim.checkpointPackets[i].progress += dt * 0.85;
+            if (sim.checkpointPackets[i].progress >= 1) {
+              const done = sim.checkpointPackets.splice(i, 1)[0];
+              sim.activeEN = done.to;
+              updateEventLog(`Checkpoint (${done.sizeKB} KB) 遷移完成：任務無縫切換至 ${done.to}`);
+            }
+          }
+
+          if (sim.handoverCooldown > 0) sim.handoverCooldown -= dt;
+          if (sim.forcedAnomalySec > 0) sim.forcedAnomalySec -= dt;
+
+          // Update telemetry every 100ms (Tsync = 100ms)
+          if (now - sim.lastUiSyncTs >= 100) {
+            sim.lastUiSyncTs = now;
+            stepTelemetry100ms();
+          }
+        }
+
+        animId = requestAnimationFrame(tick);
+      }
+
+      function stepTelemetry100ms() {
+        if (sim.controlMode === 'auto') {
+          const enCenterX = sim.activeEN === 'EN-A' ? 280 : 740;
+          const distPx = Math.abs(sim.vehicleX - enCenterX);
+          const distMeters = Math.min(580, Math.max(35, distPx * 1.15));
+
+          let stab = computeNakagamiSuccess(distMeters, sim.speedKmh);
+          if (sim.forcedAnomalySec > 0) {
+            stab = Math.min(stab, 0.59 + 0.04 * Math.sin(sim.time * 6));
+          }
+
+          // Auto proactive handover trigger when C_stab < 0.75
+          if (stab < 0.75 && sim.activeEN === 'EN-A' && sim.vehicleX > 430 && sim.handoverCooldown <= 0) {
+            sim.handoverCooldown = 5.0;
+            launchCheckpointPacket('EN-A', 'EN-B');
+            updateEventLog('DT 偵測 C_stab 跌破 θ=0.75，自動發射 <20 KB Checkpoint 遷移至 EN-B！');
+          }
+
+          sim.inputs.distance = Math.round(distMeters);
+          sim.inputs.stability = Number(stab.toFixed(2));
+          sim.inputs.delay = Number((2.2 + (distMeters / 300) * 8.5 + (sim.speedKmh / 120) * 2.5).toFixed(1));
+          sim.inputs.energy = Math.round(sim.activeEN === 'EN-A' ? 76 - (sim.vehicleX / 950) * 18 : 84);
+        }
+
+        const res = computeFIS(sim.inputs);
+        sim.score = res.score;
+        sim.waveHistory.push({ stab: sim.inputs.stability, score: sim.score });
+        if (sim.waveHistory.length > 48) sim.waveHistory.shift();
+
+        // Update Top Telemetry HUD
+        const enEl = document.getElementById('hud-en');
+        const stEl = document.getElementById('hud-stab');
+        const scEl = document.getElementById('hud-score');
+        const badgeEl = document.getElementById('hud-status');
+        const banner = document.getElementById('handover-banner');
+
+        if (enEl) enEl.textContent = sim.activeEN;
+        if (stEl) stEl.textContent = sim.inputs.stability.toFixed(2);
+        if (scEl) scEl.textContent = sim.score.toFixed(2);
+
+        const isAlert = sim.inputs.stability < 0.75;
+        if (badgeEl) {
+          if (isAlert) {
+            badgeEl.className = 'status-badge alert';
+            badgeEl.textContent = 'θ<0.75 主動遷移中';
+          } else if (sim.score >= 0.75) {
+            badgeEl.className = 'status-badge ok';
+            badgeEl.textContent = '正常卸載 (S ≥ 0.75)';
+          } else {
+            badgeEl.className = 'status-badge warn';
+            badgeEl.textContent = '評估備援 (0.45 ≤ S < 0.75)';
+          }
+        }
+        if (banner) {
+          banner.classList.toggle('is-visible', isAlert);
+        }
+
+        if (sim.activeView === 'overview') renderOverviewWave();
+        if (sim.activeView === 'trajectory') renderNakagamiChart();
+        if (sim.activeView === 'fuzzy') {
+          if (sim.controlMode === 'auto') syncFuzzySlidersUI();
+          renderFuzzySVGs();
+        }
+      }
+
+      // Keyboard Shortcuts (1-4 View Switch, Space Play/Pause)
+      document.addEventListener('keydown', function (e) {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        if (e.key === '1') window.switchView('overview');
+        else if (e.key === '2') window.switchView('trajectory');
+        else if (e.key === '3') window.switchView('fuzzy');
+        else if (e.key === '4') window.switchView('ablation');
+        else if (e.code === 'Space') {
+          e.preventDefault();
+          window.togglePlay();
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', initApp);
+    })();
+  </script>
+</body>
+</html>

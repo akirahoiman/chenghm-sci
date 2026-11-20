@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="artifact-type" content="dashboard">
+<meta name="design-style" content="carbon">
+<title>SmartOSC 離場建造智慧調度與決策支援系統</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+
+  /* Carbon surfaces */
+  --background: #ffffff;
+  --surface-container-low: #f4f4f4;
+  --surface-container: #f4f4f4;
+  --surface-container-high: #e0e0e0;
+  --surface-canvas: #fafafa;
+  --road-surface: #dcdcdc;
+  --road-marking: #ffffff;
+  --tunnel-rock-stable: #d0e2ff;
+  --tunnel-rock-unstable: #ffd7d9;
+
+  /* Ink */
+  --on-surface: #161616;
+  --on-surface-variant: #525252;
+  --on-surface-muted: #6f6f6f;
+
+  /* Rules */
+  --outline: #8d8d8d;
+  --outline-variant: #e0e0e0;
+
+  /* Accents & Semantic */
+  --primary: #0f62fe;
+  --primary-hover: #0353e9;
+  --on-primary: #ffffff;
+  --primary-container: #d0e2ff;
+  --on-primary-container: #161616;
+  --secondary: #6f6f6f;
+  --tertiary: #198038;
+  --tertiary-container: #defbe6;
+  --error: #da1e28;
+  --error-container: #fff1f1;
+  --on-error: #ffffff;
+  --positive: #198038;
+  --warning: #8e6a00;
+  --warning-container: #fcf4d6;
+  --focus: #0f62fe;
+
+  /* Data series */
+  --data-1: #0f62fe;
+  --data-2: #6929c4;
+  --data-3: #005d5d;
+  --data-4: #9f1853;
+  --data-context: #8d8d8d;
+
+  /* Fonts (Noto Sans TC first for zh-Hant) */
+  --font-headline: 'Noto Sans TC', 'IBM Plex Sans', sans-serif;
+  --font-body: 'Noto Sans TC', 'IBM Plex Sans', sans-serif;
+  --font-label: 'IBM Plex Mono', 'Noto Sans TC', monospace;
+
+  /* Shape */
+  --rounded: 0.125rem;
+  --rounded-lg: 0.25rem;
+  --rounded-full: 0.75rem;
+
+  /* Effects */
+  --shadow-1: 0 2px 6px rgb(0 0 0 / 0.1);
+  --shadow-2: 0 4px 12px rgb(0 0 0 / 0.12);
+  --rule: 1px solid var(--outline-variant);
+  --field-rule: 1px solid var(--outline);
+  --indicator: 2px solid var(--primary);
+
+  /* Type scale */
+  --display-size: clamp(1.125rem, 0.95rem + 0.5vw, 1.375rem);
+  --headline-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.125rem);
+  --subhead-size: clamp(0.875rem, 0.85rem + 0.15vw, 0.95rem);
+  --body-size: 0.875rem;
+  --label-size: 0.75rem;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  overflow-x: clip;
+  margin: 0;
+  padding: 0;
+  background: var(--background);
+  color: var(--on-surface);
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font-family: inherit; }
+
+/* 100vh App Shell */
+.app-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: var(--background);
+}
+
+/* Header */
+header.topbar {
+  position: static !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--background);
+  border-bottom: var(--rule);
+  min-height: 54px;
+}
+
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  background: var(--primary);
+  color: var(--on-primary);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.brand-titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-title {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-size: var(--display-size);
+  font-weight: 300;
+  line-height: 1.15;
+  color: var(--on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brand-title strong { font-weight: 600; }
+
+.brand-sub {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-label);
+  font-size: var(--label-size);
+  color: var(--on-surface-variant);
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  border-radius: var(--rounded-full);
+  font-size: var(--label-size);
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+.status-dot.is-paused { background: var(--warning); }
+
+.controls-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.sim-clock {
+  font-family: var(--font-label);
+  font-size: var(--label-size);
+  color: var(--on-surface);
+  background: var(--surface-container);
+  padding: 6px 10px;
+  border-bottom: var(--indicator);
+  white-space: nowrap;
+}
+
+.btn-group {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--outline-variant);
+  background: var(--background);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--background);
+  color: var(--on-surface);
+  font-size: var(--label-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+  white-space: nowrap;
+}
+
+.btn:hover { background: var(--surface-container-high); }
+.btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  z-index: 2;
+}
+.btn.is-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.btn.is-primary:hover { background: var(--primary-hover); }
+.btn.is-active {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-weight: 600;
+}
+.btn.is-danger {
+  background: var(--error);
+  color: var(--on-error);
+}
+.btn + .btn { border-left: var(--rule); }
+
+.select-ctrl {
+  height: 36px;
+  padding: 0 28px 0 10px;
+  background: var(--surface-container);
+  color: var(--on-surface);
+  border: 0;
+  border-bottom: var(--field-rule);
+  font-size: var(--label-size);
+  font-weight: 500;
+  cursor: pointer;
+}
+.select-ctrl:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Main 2-column Workspace */
+.workspace {
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Left Rail: Side Tags + Sensitivity Sliders */
+aside.side-rail {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--surface-container);
+  border-right: var(--rule);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.rail-section {
+  padding: var(--space-md);
+  border-bottom: var(--rule);
+}
+.rail-section:last-child { border-bottom: 0; }
+
+.rail-label {
+  font-family: var(--font-label);
+  font-size: var(--label-size);
+  color: var(--on-surface-variant);
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-tag {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: var(--on-surface);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+}
+.nav-tag:hover { background: var(--surface-container-high); }
+.nav-tag:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.nav-tag.is-active {
+  background: var(--background);
+  border-left: var(--indicator);
+  font-weight: 600;
+}
+
+.nav-num {
+  font-family: var(--font-label);
+  font-size: var(--label-size);
+  color: var(--on-surface-variant);
+}
+.nav-tag.is-active .nav-num { color: var(--primary); font-weight: 600; }
+
+.nav-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.nav-title {
+  font-size: 0.8125rem;
+  line-height: 1.25;
+}
+.nav-sub {
+  font-size: 0.6875rem;
+  color: var(--on-surface-variant);
+  font-weight: 400;
+}
+
+/* Sensitivity Controls */
+.slider-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: var(--space-md);
+}
+.slider-block:last-of-type { margin-bottom: var(--space-sm); }
+
+.slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+.slider-head label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--on-surface);
+}
+.slider-val {
+  font-family: var(--font-label);
+  font-size: var(--label-size);
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--background);
+  padding: 2px 6px;
+  border: var(--rule);
+}
+
+input[type="range"].carbon-range {
+  width: 100%;
+  accent-color: var(--primary);
+  cursor: pointer;
+  height: 22px;
+  margin: 0;
+}
+
+.range-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  color: var(--on-surface-muted);
+}
+
+.impact-box {
+  background: var(--background);
+  padding: var(--space-sm);
+  border: var(--rule);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.impact-cell {
+  display: flex;
+  flex-direction: column;
+}
+.impact-lbl {
+  font-size: 0.6875rem;
+  color: var(--on-surface-variant);
+}
+.impact-num {
+  font-family: var(--font-label);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--on-surface);
+}
+.impact-delta {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+}
+.delta-good { color: var(--positive); }
+.delta-bad { color: var(--error); }
+.delta-neutral { color: var(--on-surface-variant); }
+
+/* Right Main Content Area */
+main.stage-col {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--background);
+}
+
+/* Top KPI Strip */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--outline-variant);
+  border-bottom: var(--rule);
+}
+
+.kpi-tile {
+  background: var(--surface-container);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2px;
+  border-bottom: 2px solid transparent;
+}
+.kpi-tile.is-focal {
+  background: var(--background);
+  border-bottom: var(--indicator);
+}
+
+.kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+.kpi-name {
+  font-size: var(--label-size);
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+.kpi-badge {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  padding: 1px 6px;
+  border-radius: var(--rounded-full);
+  background: var(--tertiary-container);
+  color: var(--tertiary);
+  font-weight: 600;
+}
+.kpi-badge.is-warn {
+  background: var(--warning-container);
+  color: var(--warning);
+}
+.kpi-badge.is-err {
+  background: var(--error-container);
+  color: var(--error);
+}
+.kpi-badge.is-blue {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.kpi-val-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.kpi-val {
+  font-family: var(--font-label);
+  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+  font-weight: 400;
+  color: var(--on-surface);
+  letter-spacing: -0.02em;
+}
+.kpi-unit {
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  color: var(--on-surface-variant);
+}
+.kpi-sub {
+  font-size: 0.72rem;
+  color: var(--on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Camera Viewport Stage */
+.camera-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--surface-canvas);
+}
+
+/* Background Animated Spatial Canvas (Zooms smoothly per tag) */
+.spatial-camera-rig {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  transition: transform 520ms var(--ease-out), opacity 320ms var(--ease-out), filter 420ms var(--ease-out);
+  will-change: transform, opacity;
+}
+
+.spatial-camera-rig.cam-tag-1 {
+  transform: translate(0%, 0%) scale(1);
+  opacity: 1;
+}
+.spatial-camera-rig.cam-tag-2 {
+  transform: translate(12%, 4%) scale(1.16);
+  opacity: 0.22;
+}
+.spatial-camera-rig.cam-tag-3 {
+  transform: translate(18%, -2%) scale(1.22);
+  opacity: 0.25;
+}
+.spatial-camera-rig.cam-tag-4 {
+  transform: translate(-10%, 0%) scale(0.94);
+  opacity: 0.16;
+}
+
+canvas#logisticsCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Tag View Overlays */
+.view-layer {
+  position: absolute;
+  inset: 0;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px) scale(0.985);
+  transition: opacity var(--dur-long) var(--ease-out), transform var(--dur-long) var(--ease-out);
+  overflow-y: auto;
+}
+.view-layer.is-visible {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Tag 1 HUD Overlay (minimal floating corner badges + bottom inspector bar so canvas shines) */
+.map-hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  pointer-events: none;
+}
+
+.hud-legend {
+  pointer-events: auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  background: var(--background);
+  border: var(--rule);
+  box-shadow: var(--shadow-1);
+  font-size: 0.72rem;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.swatch {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+.swatch-blue { background: var(--primary); }
+.swatch-green { background: var(--tertiary); }
+.swatch-red { background: var(--error); }
+.swatch-purple { background: var(--data-2); }
+.swatch-gray { background: var(--outline); }
+
+.hud-inspector {
+  margin-top: auto;
+  pointer-events: auto;
+  background: var(--background);
+  border: var(--rule);
+  border-left: 3px solid var(--primary);
+  box-shadow: var(--shadow-1);
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.inspector-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.pill-btn {
+  height: 30px;
+  padding: 0 10px;
+  border: var(--rule);
+  background: var(--surface-container);
+  color: var(--on-surface);
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.pill-btn.is-active {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+.pill-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+/* Tag 2: DRQL Neural Network & Masking Panel */
+.panel-grid-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: var(--space-md);
+  height: 100%;
+  min-height: 0;
+}
+
+.carbon-card {
+  background: var(--background);
+  border: var(--rule);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-height: 0;
+}
+.carbon-card.is-tinted { background: var(--surface-container); }
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--rule);
+  padding-bottom: 8px;
+  gap: var(--space-sm);
+}
+.card-title {
+  margin: 0;
+  font-size: var(--headline-size);
+  font-weight: 600;
+  color: var(--on-surface);
+}
+.card-code {
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  color: var(--on-surface-variant);
+}
+
+/* Neural SVG diagram */
+.nn-svg-wrap {
+  flex: 1;
+  min-height: 240px;
+  background: var(--surface-container);
+  border: var(--rule);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mask-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.mask-card {
+  background: var(--surface-container);
+  border: var(--rule);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-left: 3px solid var(--tertiary);
+}
+.mask-card.is-masked {
+  border-left-color: var(--error);
+  background: var(--error-container);
+}
+.mask-card.is-chosen {
+  border-left-color: var(--primary);
+  background: var(--primary-container);
+}
+
+.bar-track {
+  width: 100%;
+  height: 8px;
+  background: var(--surface-container-high);
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width var(--dur-short) var(--ease-out);
+}
+.bar-fill.is-warn { background: var(--warning); }
+.bar-fill.is-danger { background: var(--error); }
+.bar-fill.is-ok { background: var(--tertiary); }
+
+/* Tag 3: Dual Dispatch & Warehouse Hard-Cap */
+.warehouse-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.wh-card {
+  background: var(--background);
+  border: var(--rule);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 3px solid var(--primary);
+  transition: background-color var(--dur-short) var(--ease-out);
+}
+.wh-card.is-forced {
+  border-top-color: var(--error);
+  background: var(--error-container);
+}
+
+.dispatch-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.dispatch-log-table th {
+  text-align: left;
+  padding: 6px 8px;
+  background: var(--surface-container-high);
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  color: var(--on-surface-variant);
+  font-weight: 600;
+}
+.dispatch-log-table td {
+  padding: 6px 8px;
+  border-top: var(--rule);
+  font-family: var(--font-label);
+}
+.dispatch-log-table tr:nth-child(even) td { background: var(--surface-container); }
+
+/* Tag 4: Benchmark & Sensitivity */
+.bench-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-md);
+  height: 100%;
+  min-height: 0;
+}
+
+.chart-box {
+  width: 100%;
+  min-height: 220px;
+  flex: 1;
+  background: var(--surface-container);
+  border: var(--rule);
+  padding: 8px;
+  position: relative;
+}
+
+.factor-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+.data-table th {
+  background: var(--surface-container-high);
+  padding: 6px 8px;
+  text-align: left;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  color: var(--on-surface-variant);
+}
+.data-table th.num, .data-table td.num { text-align: right; font-family: var(--font-label); }
+.data-table td {
+  padding: 6px 8px;
+  border-top: var(--rule);
+}
+.data-table tr.is-highlight td {
+  background: var(--primary-container);
+  font-weight: 600;
+}
+
+/* Bottom Ticker Bar */
+footer.ticker-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 6px var(--space-md);
+  background: var(--surface-container);
+  border-top: var(--rule);
+  min-height: 40px;
+  font-size: 0.75rem;
+}
+
+.ticker-feed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ticker-badge {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  padding: 2px 6px;
+  background: var(--on-surface);
+  color: var(--background);
+  flex-shrink: 0;
+}
+.ticker-text {
+  font-family: var(--font-label);
+  color: var(--on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.source-cite {
+  color: var(--on-surface-variant);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Responsive fallback for smaller screens */
+@media (max-width: 960px) {
+  .app-shell { height: auto; min-height: 100vh; overflow: visible; }
+  .workspace { grid-template-columns: 1fr; overflow: visible; }
+  aside.side-rail { border-right: 0; border-bottom: var(--rule); }
+  .camera-viewport { min-height: 520px; }
+  .panel-grid-2, .bench-grid { grid-template-columns: 1fr; }
+  .warehouse-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .warehouse-grid { grid-template-columns: 1fr; }
+  .hud-inspector { grid-template-columns: 1fr; }
+  .source-cite { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- Top Header & Simulation Control Bar -->
+  <header class="topbar">
+    <div class="brand-group">
+      <div class="brand-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 20V11a8 8 0 0 1 16 0v9"/>
+          <path d="M8 20v-7a4 4 0 0 1 8 0v7"/>
+          <line x1="2" y1="20" x2="22" y2="20"/>
+        </svg>
+      </div>
+      <div class="brand-titles">
+        <h1 class="brand-title"><strong>SmartOSC</strong> 離場建造智慧調度與決策支援系統</h1>
+        <div class="brand-sub">
+          <span>不確定環境雙重決策最佳化平台</span>
+          <span class="status-tag">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusLabel">DRQL 線上推論中</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-bar">
+      <div class="sim-clock" id="simClock">DAY 01 · 08:00 | STEP 001</div>
+
+      <label for="scenarioSelect" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;">情境模式選擇</label>
+      <select id="scenarioSelect" class="select-ctrl" onchange="changeScenario(this.value)" title="情境切換">
+        <option value="drql">策略：DRQL 深度循環Q學習 (論文最佳)</option>
+        <option value="heur6">策略：Heur6 基準啟發式 (EDD+Load+Fill)</option>
+        <option value="rocksurge">突發情境：L3/L4 不穩定岩層掘進加速</option>
+      </select>
+
+      <div class="btn-group" role="group" aria-label="模擬播放控制">
+        <button type="button" class="btn is-primary" id="playPauseBtn" onclick="togglePlay()">暫停</button>
+        <button type="button" class="btn is-active" id="spd1Btn" onclick="setSpeed(1)">1x</button>
+        <button type="button" class="btn" id="spd2Btn" onclick="setSpeed(2)">2x</button>
+        <button type="button" class="btn" id="spd5Btn" onclick="setSpeed(5)">5x</button>
+        <button type="button" class="btn" id="resetBtn" onclick="resetSimulation()">重置</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <div class="workspace">
+    <!-- Left Navigation Rail & Sensitivity Controls -->
+    <aside class="side-rail">
+      <div class="rail-section">
+        <div class="rail-label">
+          <span>視角導覽與鏡頭切換</span>
+          <span>VIEW 01–04</span>
+        </div>
+        <nav class="side-nav" aria-label="模組分頁">
+          <button type="button" class="nav-tag is-active" id="tagBtn1" onclick="switchTag(1)">
+            <span class="nav-num">01</span>
+            <span class="nav-text">
+              <span class="nav-title">全景物流與施工圖譜</span>
+              <span class="nav-sub">4 預鑄廠 · K1–K4 車隊 · 4 隧道工區</span>
+            </span>
+          </button>
+          <button type="button" class="nav-tag" id="tagBtn2" onclick="switchTag(2)">
+            <span class="nav-num">02</span>
+            <span class="nav-text">
+              <span class="nav-title">DRQL 神經網絡與動作遮罩</span>
+              <span class="nav-sub">LSTM-64 · Dueling V(z)/A(z) · Mask</span>
+            </span>
+          </button>
+          <button type="button" class="nav-tag" id="tagBtn3" onclick="switchTag(3)">
+            <span class="nav-num">03</span>
+            <span class="nav-text">
+              <span class="nav-title">雙重派遣與庫存警示機制</span>
+              <span class="nav-sub">Φ=0.75 · Tmax=12h · 爆倉強制發車</span>
+            </span>
+          </button>
+          <button type="button" class="nav-tag" id="tagBtn4" onclick="switchTag(4)">
+            <span class="nav-num">04</span>
+            <span class="nav-text">
+              <span class="nav-title">績效指標與消融對比</span>
+              <span class="nav-sub">MU 成本 · 延遲時數 · 敏感度曲面</span>
+            </span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Real-Time Sensitivity Sliders -->
+      <div class="rail-section">
+        <div class="rail-label">
+          <span>隨機參數敏感度實時實驗</span>
+          <button type="button" class="pill-btn" onclick="resetSliders()" style="height:22px;padding:0 6px;">還原 0%</button>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head">
+            <label for="sliderMuP">平均生產時間 μ_P 變動</label>
+            <span class="slider-val" id="valMuP">0%</span>
+          </div>
+          <input type="range" id="sliderMuP" class="carbon-range" min="-30" max="30" step="5" value="0" oninput="onSliderMuP(this.value)">
+          <div class="range-ticks"><span>-30%</span><span>0% (基準)</span><span>+30%</span></div>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head">
+            <label for="sliderMuT">平均運輸時間 μ_T 變動</label>
+            <span class="slider-val" id="valMuT">0%</span>
+          </div>
+          <input type="range" id="sliderMuT" class="carbon-range" min="-30" max="30" step="5" value="0" oninput="onSliderMuT(this.value)">
+          <div class="range-ticks"><span>-30%</span><span>0% (基準)</span><span>+30%</span></div>
+        </div>
+
+        <div class="impact-box">
+          <div class="impact-cell">
+            <span class="impact-lbl">敏感度推估總成本</span>
+            <span class="impact-num" id="railCostEst">746,909 MU</span>
+            <span class="impact-delta delta-neutral" id="railCostDelta">0.00% vs 基準</span>
+          </div>
+          <div class="impact-cell">
+            <span class="impact-lbl">敏感度推估延遲</span>
+            <span class="impact-num" id="railDelayEst">842.0 h</span>
+            <span class="impact-delta delta-neutral" id="railDelayDelta">0.00% vs 基準</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact System Reference -->
+      <div class="rail-section" style="font-size:0.72rem; color:var(--on-surface-variant);">
+        <div class="rail-label"><span>關鍵模型規格</span><span>TABLE 1</span></div>
+        <div style="display:grid; grid-template-columns:1fr auto; gap:4px 8px;">
+          <span>LSTM 時序編碼器</span><strong style="font-family:var(--font-label);">64 units (T=8)</strong>
+          <span>狀態向量維度 d</span><strong style="font-family:var(--font-label);">12 features</strong>
+          <span>目標網軟更新 τ</span><strong style="font-family:var(--font-label);">0.02 (Polyak)</strong>
+          <span>滿載 / 等候閾值</span><strong style="font-family:var(--font-label);">0.75 Qk / 12h</strong>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Main Stage -->
+    <main class="stage-col">
+      <!-- Top KPI Summary Strip -->
+      <section class="kpi-strip" aria-label="核心績效指標">
+        <div class="kpi-tile is-focal">
+          <div class="kpi-top">
+            <span class="kpi-name" id="kpiPolicyTitle">DRQL 總營運成本</span>
+            <span class="kpi-badge" id="kpiCostBadge">-14.45% vs Heur6</span>
+          </div>
+          <div class="kpi-val-row">
+            <span class="kpi-val" id="kpiCostVal">746,909.43</span>
+            <span class="kpi-unit">MU</span>
+          </div>
+          <div class="kpi-sub" id="kpiCostSub">較最強基準 Cheapest/Fastest 降 9.01%</div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-top">
+            <span class="kpi-name">累計交期延遲</span>
+            <span class="kpi-badge" id="kpiDelayBadge">-14.17% vs Heur6</span>
+          </div>
+          <div class="kpi-val-row">
+            <span class="kpi-val" id="kpiDelayVal">842</span>
+            <span class="kpi-unit">hours</span>
+          </div>
+          <div class="kpi-sub" id="kpiDelaySub">較基準節省 100–139 小時工期延誤</div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-top">
+            <span class="kpi-name">異質車隊即時派遣</span>
+            <span class="kpi-badge is-blue" id="kpiFleetBadge">K1–K4 運行中</span>
+          </div>
+          <div class="kpi-val-row">
+            <span class="kpi-val" id="kpiTrucksActive">4 / 4</span>
+            <span class="kpi-unit">車隊在途 · 載荷 20–30 片</span>
+          </div>
+          <div class="kpi-sub" id="kpiForcedCount">強制發車觸發：0 次 (硬庫存防護啟動)</div>
+        </div>
+
+        <div class="kpi-tile">
+          <div class="kpi-top">
+            <span class="kpi-name">隧道總掘進與鋼拱安裝</span>
+            <span class="kpi-badge is-warn" id="kpiRockBadge">混合岩層</span>
+          </div>
+          <div class="kpi-val-row">
+            <span class="kpi-val" id="kpiFramesInstalled">0</span>
+            <span class="kpi-unit">架鋼拱 (F1–F10)</span>
+          </div>
+          <div class="kpi-sub" id="kpiTunnelSummary">L1 200m · L2 500m · L3 650m · L4 700m</div>
+        </div>
+      </section>
+
+      <!-- Camera Viewport -->
+      <div class="camera-viewport">
+        <!-- Animated Spatial Logistics & Tunnel Canvas -->
+        <div class="spatial-camera-rig cam-tag-1" id="cameraRig">
+          <canvas id="logisticsCanvas"></canvas>
+        </div>
+
+        <!-- VIEW 1: Overview HUD -->
+        <div class="view-layer is-visible" id="viewTag1">
+          <div class="map-hud-top">
+            <div class="hud-legend">
+              <span class="legend-item"><span class="swatch swatch-blue"></span>標準發車 (φ≥0.75 或 ≥12h)</span>
+              <span class="legend-item"><span class="swatch swatch-red"></span>爆倉強制發車 (I_s &gt; W_max)</span>
+              <span class="legend-item"><span class="swatch swatch-green"></span>穩定岩層 (P=1–2m/d · 間距 2m)</span>
+              <span class="legend-item"><span class="swatch swatch-purple"></span>不穩定岩層 (P=4–5m/d · 間距 1m)</span>
+            </div>
+            <button type="button" class="btn is-danger" onclick="triggerForcedSurge()" style="pointer-events:auto; height:32px; box-shadow:var(--shadow-1);">
+              模擬 S2 爆倉強制發車
+            </button>
+          </div>
+
+          <div class="hud-inspector">
+            <div>
+              <div style="font-size:0.72rem; color:var(--on-surface-variant); font-family:var(--font-label);">SITE &amp; FRAME INSPECTOR</div>
+              <div style="font-weight:600; font-size:0.875rem;" id="inspectorTitle">隧道 L3 (650m) · 不穩定岩層段</div>
+            </div>
+            <div style="font-size:0.78rem; color:var(--on-surface-variant);" id="inspectorDetail">
+              掘進速度 P3 = 4.2 m/day · 鋼拱間距 S3 = 1.0 m · 採用高強度鋼拱 F6–F8 (由 S3 廠供應，距 100 km，週產能 50 片，單價 90 MU) · 噴漿鋼絲網輔助支護區減量 15%
+            </div>
+            <div class="inspector-pills" role="group" aria-label="選擇檢視工區">
+              <button type="button" class="pill-btn" id="inspBtn0" onclick="selectTunnel(0)">L1 (200m)</button>
+              <button type="button" class="pill-btn" id="inspBtn1" onclick="selectTunnel(1)">L2 (500m)</button>
+              <button type="button" class="pill-btn is-active" id="inspBtn2" onclick="selectTunnel(2)">L3 (650m)</button>
+              <button type="button" class="pill-btn" id="inspBtn3" onclick="selectTunnel(3)">L4 (700m)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 2: DRQL Neural Network & Action Masking -->
+        <div class="view-layer" id="viewTag2">
+          <div class="panel-grid-2">
+            <div class="carbon-card">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">DRQL 雙流循環價值網路與動作遮罩架構</h2>
+                  <span class="card-code">T=8 Sequence Window → LSTM(64) → Dueling V(z)+A(z) → Masked Double-DQN</span>
+                </div>
+                <button type="button" class="btn is-primary" onclick="stepDRQLDecision()" style="height:34px;">手動單步推論</button>
+              </div>
+              <div class="nn-svg-wrap" id="drqlDiagramWrap">
+                <svg id="drqlSvg" viewBox="0 0 640 310" width="100%" height="100%" aria-label="DRQL 神經網路結構圖">
+                  <!-- Input Sequence Box -->
+                  <rect x="14" y="34" width="112" height="240" fill="var(--background)" stroke="var(--outline-variant)" stroke-width="1.5"/>
+                  <text x="70" y="54" text-anchor="middle" font-family="var(--font-label)" font-size="11" font-weight="600" fill="var(--on-surface)">STATE S_t</text>
+                  <text x="70" y="70" text-anchor="middle" font-family="var(--font-label)" font-size="9.5" fill="var(--on-surface-variant)">Window T=8, d=12</text>
+                  <g id="svgStateCells"></g>
+
+                  <!-- Connector 1 -->
+                  <line x1="126" y1="154" x2="168" y2="154" stroke="var(--primary)" stroke-width="2" stroke-dasharray="4 3"/>
+                  <polygon points="168,149 178,154 168,159" fill="var(--primary)"/>
+
+                  <!-- LSTM 64 Encoder -->
+                  <rect x="178" y="64" width="118" height="180" fill="var(--primary-container)" stroke="var(--primary)" stroke-width="2"/>
+                  <text x="237" y="92" text-anchor="middle" font-family="var(--font-label)" font-size="11.5" font-weight="600" fill="var(--on-primary-container)">LSTM Encoder</text>
+                  <text x="237" y="109" text-anchor="middle" font-family="var(--font-label)" font-size="10" fill="var(--on-surface-variant)">64 Hidden Units</text>
+                  <!-- Recurrent loop -->
+                  <path d="M210 64 C210 34, 264 34, 264 64" fill="none" stroke="var(--primary)" stroke-width="1.8"/>
+                  <polygon points="260,58 264,66 268,58" fill="var(--primary)"/>
+                  <text x="237" y="30" text-anchor="middle" font-family="var(--font-label)" font-size="9" fill="var(--primary)">隱狀態遞迴 z_t</text>
+                  <rect x="194" y="128" width="86" height="96" fill="var(--background)" stroke="var(--outline-variant)"/>
+                  <text x="237" y="150" text-anchor="middle" font-family="var(--font-label)" font-size="9.5" fill="var(--on-surface-variant)">Latent Vector z_t</text>
+                  <text x="237" y="175" text-anchor="middle" font-family="var(--font-label)" font-size="13" font-weight="600" fill="var(--primary)" id="svgLatentNorm">‖z‖ = 4.18</text>
+                  <text x="237" y="198" text-anchor="middle" font-family="var(--font-label)" font-size="9" fill="var(--on-surface-variant)">γ=0.95 · τ=0.02</text>
+
+                  <!-- Split to Dueling Heads -->
+                  <path d="M296 124 L344 82" stroke="var(--data-2)" stroke-width="2"/>
+                  <path d="M296 184 L344 226" stroke="var(--primary)" stroke-width="2"/>
+
+                  <!-- Value Head V(z) -->
+                  <rect x="344" y="42" width="124" height="82" fill="var(--background)" stroke="var(--data-2)" stroke-width="1.5"/>
+                  <text x="406" y="64" text-anchor="middle" font-family="var(--font-label)" font-size="10.5" font-weight="600" fill="var(--data-2)">State Value V(z_t)</text>
+                  <text x="406" y="84" text-anchor="middle" font-family="var(--font-label)" font-size="14" font-weight="600" fill="var(--on-surface)" id="svgValueV">-18.42</text>
+                  <text x="406" y="106" text-anchor="middle" font-family="var(--font-label)" font-size="9" fill="var(--on-surface-variant)">FC 64 → 32 → 1 (ReLU)</text>
+
+                  <!-- Advantage Head A(z, a) -->
+                  <rect x="344" y="176" width="124" height="104" fill="var(--background)" stroke="var(--primary)" stroke-width="1.5"/>
+                  <text x="406" y="196" text-anchor="middle" font-family="var(--font-label)" font-size="10.5" font-weight="600" fill="var(--primary)">Advantage A(z_t, a)</text>
+                  <text x="406" y="214" text-anchor="middle" font-family="var(--font-label)" font-size="9" fill="var(--on-surface-variant)">FC 64 → 32 → 4 (S1–S4)</text>
+                  <g id="svgAdvBars"></g>
+
+                  <!-- Combine + Action Masking Gate -->
+                  <path d="M468 82 L512 135" stroke="var(--data-2)" stroke-width="1.8"/>
+                  <path d="M468 228 L512 175" stroke="var(--primary)" stroke-width="1.8"/>
+
+                  <rect x="506" y="64" width="120" height="184" fill="var(--background)" stroke="var(--on-surface)" stroke-width="1.5"/>
+                  <text x="566" y="86" text-anchor="middle" font-family="var(--font-label)" font-size="10.5" font-weight="600" fill="var(--on-surface)">Action Mask m_t</text>
+                  <text x="566" y="102" text-anchor="middle" font-family="var(--font-label)" font-size="9" fill="var(--on-surface-variant)">無效動作強制 -∞</text>
+                  <g id="svgMaskOut"></g>
+                  <text x="566" y="236" text-anchor="middle" font-family="var(--font-label)" font-size="9.5" font-weight="600" fill="var(--primary)" id="svgChosenAction">a* = 選擇 S3</text>
+                </svg>
+              </div>
+              <div style="font-size:0.75rem; color:var(--on-surface-variant); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <span>Double-DQN 目標式：y_t = r_t + γ Q̃_θ⁻(S_{t+1}, argmax_a Q̃_θ(S_{t+1}, a))</span>
+                <span>獎勵尺度：r_t = -10⁻³ · Cost_t</span>
+              </div>
+            </div>
+
+            <!-- Right column: Live Action Masking Interactive Matrix -->
+            <div class="carbon-card">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">即時動作遮罩與供應商 Q 值評分</h2>
+                  <span class="card-code">點擊切換手動遮罩測試，觀察 DRQL 重新路由行為</span>
+                </div>
+              </div>
+              <div class="mask-grid" id="maskCardsContainer"></div>
+              <div class="carbon-card is-tinted" style="margin-top:auto; padding:10px;">
+                <div style="font-size:0.78rem; font-weight:600; margin-bottom:4px;">為什麼動作遮罩 (Action Masking) 至關重要？</div>
+                <div style="font-size:0.75rem; color:var(--on-surface-variant);">
+                  當供應商週產能 C_s^week 耗盡或卡車型號不相容 (k ∉ K_f(i))，遮罩向量 m_t(a)=0 同時作用於動作選擇與目標網路備份，徹底杜絕無效臂洩漏，使 Dueling Q-learning 在高約束條件下穩定收斂。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 3: Dual Dispatch & Warehouse Hard-Cap -->
+        <div class="view-layer" id="viewTag3">
+          <div class="carbon-card" style="height:100%;">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">雙重派遣觸發機制與硬庫存上限 (W_max) 防護監視台</h2>
+                <span class="card-code">標準規則：裝載率 φ ≥ 0.75 Q_k 或 滯留時間 ≥ 12h ｜ 覆寫規則：入庫超限立即強制發車</span>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn is-danger" onclick="triggerForcedSurge()" style="height:34px;">模擬爆倉壓力測試</button>
+              </div>
+            </div>
+
+            <div class="warehouse-grid" id="warehouseCardsContainer"></div>
+
+            <div style="display:grid; grid-template-columns: minmax(0, 1fr); flex:1; min-height:0; overflow:auto; border:var(--rule);">
+              <table class="dispatch-log-table">
+                <thead>
+                  <tr>
+                    <th>模擬時刻</th>
+                    <th>出貨廠 → 工區</th>
+                    <th>派車型號 / 載量</th>
+                    <th>裝載率 (φ=0.75)</th>
+                    <th>觸發機制類型</th>
+                    <th>運輸成本 (MU)</th>
+                  </tr>
+                </thead>
+                <tbody id="dispatchLogBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 4: Benchmark & Sensitivity -->
+        <div class="view-layer" id="viewTag4">
+          <div class="bench-grid">
+            <div class="carbon-card">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">多演算法基準測試對比 (表 2 &amp; 表 3)</h2>
+                  <span class="card-code">雙軸指標：總營運成本 (MU) 與 累計交期延遲 (h) · 數值越低越優</span>
+                </div>
+              </div>
+              <div class="chart-box">
+                <canvas id="benchmarkCanvas" style="width:100%; height:100%; display:block;"></canvas>
+              </div>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>調度演算法</th>
+                    <th class="num">總成本 (MU)</th>
+                    <th class="num">延遲 (h)</th>
+                    <th class="num">nCost</th>
+                    <th class="num">nDelay</th>
+                    <th class="num">相對於基準降幅</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="is-highlight">
+                    <td>DRQL (本論文提出)</td>
+                    <td class="num" id="tblDrqlCost">746,909.43</td>
+                    <td class="num" id="tblDrqlDelay">842</td>
+                    <td class="num">0.000</td>
+                    <td class="num">0.000</td>
+                    <td class="num">-14.45% 成本 / -14.17% 延遲</td>
+                  </tr>
+                  <tr>
+                    <td>Cheapest-Feasible</td>
+                    <td class="num">820,836.68</td>
+                    <td class="num">942</td>
+                    <td class="num">0.586</td>
+                    <td class="num">0.719</td>
+                    <td class="num">DRQL 較其省 73,927.25 MU (-9.01%)</td>
+                  </tr>
+                  <tr>
+                    <td>FastestETA</td>
+                    <td class="num">820,836.68</td>
+                    <td class="num">942</td>
+                    <td class="num">0.586</td>
+                    <td class="num">0.719</td>
+                    <td class="num">DRQL 較其省 100 h (-10.62%)</td>
+                  </tr>
+                  <tr>
+                    <td>Heur6 (EDD+load+fill)</td>
+                    <td class="num">873,047.60</td>
+                    <td class="num">981</td>
+                    <td class="num">1.000</td>
+                    <td class="num">1.000</td>
+                    <td class="num">DRQL 較其省 126,138.17 MU / 139 h</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="carbon-card">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">單因子敏感度分析與槓桿排序 (表 4 &amp; 表 5)</h2>
+                  <span class="card-code">參數擾動範圍 [-30%, -15%, +15%, +30%] · 縮短 μ_P 為首要同步降本減延槓桿</span>
+                </div>
+              </div>
+              <div class="factor-pills" id="factorPills">
+                <button type="button" class="pill-btn is-active" onclick="selectSensFactor('muP', this)">μ_P 平均生產時間 (主槓桿)</button>
+                <button type="button" class="pill-btn" onclick="selectSensFactor('muT', this)">μ_T 平均運輸時間</button>
+                <button type="button" class="pill-btn" onclick="selectSensFactor('sigmaP', this)">σ_P 生產標準差</button>
+                <button type="button" class="pill-btn" onclick="selectSensFactor('Wslots', this)">W_slots 倉庫容量</button>
+                <button type="button" class="pill-btn" onclick="selectSensFactor('SitePenalty', this)">SitePenalty 延遲罰金</button>
+              </div>
+              <div class="chart-box">
+                <canvas id="sensitivityCanvas" style="width:100%; height:100%; display:block;"></canvas>
+              </div>
+              <div class="carbon-card is-tinted" style="padding:10px; font-size:0.76rem;" id="sensInsightBox">
+                <strong>管理洞察：</strong>當平均生產時間 μ_P 壓縮 -30%，正規化成本降至 <strong>0.7263</strong> (-27.4%) 且延遲降至 <strong>0.7089</strong> (-29.1%)；反之增加 +30% 將引發排隊雪球效應，成本升至 1.2882、延遲惡化至 1.3099。變異數 σ_P、σ_T 影響僅約 ±1%，顯示批次與週產能更新機制具備良好抗噪緩衝。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom Ticker & Citation -->
+  <footer class="ticker-bar">
+    <div class="ticker-feed">
+      <span class="ticker-badge" id="tickerType">DISPATCH</span>
+      <span class="ticker-text" id="tickerText">系統啟動完成：DRQL 調度引擎已連接 S1–S4 預鑄廠與 L1–L4 隧道掘進進度排程。</span>
+    </div>
+    <div class="source-cite">
+      研究出處：Cheng, Huang &amp; Lin (2026), International Journal of Construction Management, 26(15), 3687–3704
+    </div>
+  </footer>
+</div>
+
+<api-shim></api-shim>
+<script>
+// ==================== 1. PAPER-GROUNDED STATIC DATA ====================
+const SUPPLIERS = [
+  { id: 0, code: `S1`, name: `S1 預鑄廠`, weekCap: 40, unitCost: 100, wMax: 100, dist: 150, targetTunnel: 0, frameRange: `F1–F3` },
+  { id: 1, code: `S2`, name: `S2 預鑄廠`, weekCap: 35, unitCost: 120, wMax: 80,  dist: 200, targetTunnel: 1, frameRange: `F3–F5` },
+  { id: 2, code: `S3`, name: `S3 預鑄廠`, weekCap: 50, unitCost: 90,  wMax: 120, dist: 100, targetTunnel: 2, frameRange: `F6–F8` },
+  { id: 3, code: `S4`, name: `S4 預鑄廠`, weekCap: 25, unitCost: 110, wMax: 60,  dist: 180, targetTunnel: 3, frameRange: `F8–F10` }
+];
+
+const TUNNELS = [
+  { id: 0, code: `L1`, name: `隧道 L1`, length: 200, penalty: 100, rock: `stable`,   rate: 1.8, spacing: 2.0, framesReq: 100, framesSpec: `F1–F3` },
+  { id: 1, code: `L2`, name: `隧道 L2`, length: 500, penalty: 140, rock: `mixed`,    rate: 2.8, spacing: 1.5, framesReq: 330, framesSpec: `F3–F5` },
+  { id: 2, code: `L3`, name: `隧道 L3`, length: 650, penalty: 160, rock: `unstable`, rate: 4.2, spacing: 1.0, framesReq: 650, framesSpec: `F6–F8` },
+  { id: 3, code: `L4`, name: `隧道 L4`, length: 700, penalty: 200, rock: `unstable`, rate: 4.6, spacing: 1.0, framesReq: 700, framesSpec: `F8–F10` }
+];
+
+const TRUCKS = [
+  { code: `K1`, cap: 20, baseCost: 420 },
+  { code: `K2`, cap: 24, baseCost: 480 },
+  { code: `K3`, cap: 26, baseCost: 520 },
+  { code: `K4`, cap: 30, baseCost: 580 }
+];
+
+const SENS_DATA = {
+  muP: {
+    label: `平均生產時間 μ_P`,
+    levels: [-30, -15, 0, 15, 30],
+    nCost:  [0.7263, 0.8609, 1.0000, 1.1426, 1.2882],
+    nDelay: [0.7089, 0.8513, 1.0000, 1.1544, 1.3099],
+    insight: `當平均生產時間 μ_P 壓縮 -30%，正規化成本降至 0.7263 (-27.4%) 且延遲降至 0.7089 (-29.1%)；增加 +30% 則使成本升至 1.2882、延遲升至 1.3099。為全系統最顯著之改善槓桿。`
+  },
+  muT: {
+    label: `平均運輸時間 μ_T`,
+    levels: [-30, -15, 0, 15, 30],
+    nCost:  [0.8952, 0.9526, 1.0000, 1.0519, 1.1181],
+    nDelay: [0.8869, 0.9482, 1.0000, 1.0545, 1.1283],
+    insight: `平均運輸時間 μ_T 為第二關鍵槓桿：縮短 -30% 可降本約 10.5%、減延約 11.3%；延宕 +30% 則分別惡化約 11.8% 與 12.8%。`
+  },
+  sigmaP: {
+    label: `生產時間標準差 σ_P`,
+    levels: [-30, -15, 0, 15, 30],
+    nCost:  [1.0133, 1.0028, 1.0000, 1.0063, 1.0085],
+    nDelay: [1.0150, 1.0034, 1.0000, 1.0062, 1.0095],
+    insight: `生產變異數 σ_P 在 ±30% 變動內對平均績效影響僅約 0–1.5%，說明批次集運與每週產能重置機制能有效吸收中等隨機波動。`
+  },
+  Wslots: {
+    label: `倉庫儲存上限 W_slots`,
+    levels: [-30, -15, 0, 15, 30],
+    nCost:  [1.0089, 0.9955, 1.0000, 1.0111, 1.0148],
+    nDelay: [1.0111, 0.9970, 1.0000, 1.0161, 1.0193],
+    insight: `倉庫容量縮減 -30% 會頻繁觸發強制發車與提前低載率出車，導致成本與延遲上升約 1–2%。應針對容易爆倉之瓶頸節點精準擴容。`
+  },
+  SitePenalty: {
+    label: `工地延遲罰金率 SitePenalty`,
+    levels: [-30, -15, 0, 15, 30],
+    nCost:  [0.7260, 0.8630, 1.0000, 1.1370, 1.2740],
+    nDelay: [1.0000, 1.0000, 1.0000, 1.0000, 1.0000],
+    insight: `延遲罰金率屬於純財務定價係數，幾乎線性縮放總成本 (±27.4%)，但對物理交期延遲 (nDelay=1.0000) 並無影響。`
+  }
+};
+
+// ==================== 2. APPLICATION STATE ====================
+const appState = {
+  activeTag: 1,
+  playing: true,
+  speed: 1,
+  scenario: `drql`,
+  muP: 0,
+  muT: 0,
+  selectedTunnel: 2,
+  selectedSensFactor: `muP`,
+  simHour: 8.0,
+  stepCount: 1,
+  forcedCount: 0,
+  totalInstalled: 42,
+  manualMasks: [false, false, false, false],
+  suppliers: [],
+  tunnels: [],
+  vehicles: [],
+  dispatchLogs: [],
+  drql: {
+    valueV: -18.42,
+    adv: [-0.85, -1.40, 2.15, -0.55],
+    chosenIdx: 2,
+    latentNorm: 4.18,
+    stateVec: [0.82, 0.68, 0.91, 0.55, 0.34, 0.62, 0.28, 0.71, 0.45, 0.19, 0.63, 0.37]
+  }
+};
+
+let animFrameId = null;
+let lastTimestamp = 0;
+let accumSimDelta = 0;
+
+function initEntities() {
+  appState.suppliers = SUPPLIERS.map((s, idx) => ({
+    ...s,
+    weekRem: Math.round(s.weekCap * (0.65 + idx * 0.06)),
+    whUsed: Math.round(s.wMax * (0.28 + idx * 0.12)),
+    waitAge: 2.5 + idx * 1.8,
+    prodProgress: idx * 0.25,
+    cranePhase: idx * 1.1,
+    forcedFlash: 0
+  }));
+
+  appState.tunnels = TUNNELS.map((t, idx) => ({
+    ...t,
+    excavatedM: Math.round(t.length * (0.18 + idx * 0.08)),
+    installedFrames: Math.round(t.framesReq * (0.16 + idx * 0.07)),
+    digPulse: 0
+  }));
+
+  appState.vehicles = TRUCKS.map((tr, idx) => ({
+    id: idx,
+    code: tr.code,
+    cap: tr.cap,
+    baseCost: tr.baseCost,
+    supplierIdx: idx,
+    tunnelIdx: idx,
+    progress: (idx * 0.27) % 1,
+    direction: idx % 2 === 0 ? 1 : -1,
+    load: Math.round(tr.cap * 0.8),
+    dispatchMode: `policy`
+  }));
+
+  appState.dispatchLogs = [
+    { time: `D01 · 07:45`, route: `S3 → L3 (100 km)`, truck: `K4 (30片)`, fill: `83% (25片)`, mode: `標準滿載 φ≥0.75`, cost: `1,480` },
+    { time: `D01 · 07:10`, route: `S1 → L1 (150 km)`, truck: `K1 (20片)`, fill: `80% (16片)`, mode: `標準滿載 φ≥0.75`, cost: `1,260` },
+    { time: `D01 · 06:20`, route: `S4 → L4 (180 km)`, truck: `K3 (26片)`, fill: `65% (17片)`, mode: `超時觸發 ≥12h`, cost: `1,540` }
+  ];
+}
+
+// ==================== 3. SENSITIVITY INTERPOLATION ====================
+function interpSensitivity(levels, values, pct) {
+  if (pct <= levels[0]) return values[0];
+  if (pct >= levels[levels.length - 1]) return values[values.length - 1];
+  for (let i = 0; i < levels.length - 1; i++) {
+    if (pct >= levels[i] && pct <= levels[i + 1]) {
+      const t = (pct - levels[i]) / (levels[i + 1] - levels[i]);
+      return values[i] + t * (values[i + 1] - values[i]);
+    }
+  }
+  return 1.0;
+}
+
+function computeAdjustedMetrics() {
+  const baseCost = appState.scenario === `heur6` ? 873047.60 : 746909.43;
+  const baseDelay = appState.scenario === `heur6` ? 981 : 842;
+
+  const rockCostMult = appState.scenario === `rocksurge` ? 1.064 : 1.0;
+  const rockDelayMult = appState.scenario === `rocksurge` ? 1.082 : 1.0;
+
+  const multCostP = interpSensitivity(SENS_DATA.muP.levels, SENS_DATA.muP.nCost, appState.muP);
+  const multDelayP = interpSensitivity(SENS_DATA.muP.levels, SENS_DATA.muP.nDelay, appState.muP);
+
+  const multCostT = interpSensitivity(SENS_DATA.muT.levels, SENS_DATA.muT.nCost, appState.muT);
+  const multDelayT = interpSensitivity(SENS_DATA.muT.levels, SENS_DATA.muT.nDelay, appState.muT);
+
+  const costFactor = multCostP * multCostT * rockCostMult;
+  const delayFactor = multDelayP * multDelayT * rockDelayMult;
+
+  return {
+    cost: baseCost * costFactor,
+    delay: baseDelay * delayFactor,
+    costPctVsDrqlBase: (costFactor - 1) * 100,
+    delayPctVsDrqlBase: (delayFactor - 1) * 100
+  };
+}
+
+// ==================== 4. CSS TOKEN HELPER FOR CANVAS ====================
+function getCssToken(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || `#161616`;
+}
+
+// ==================== 5. MAIN LOGISTICS & TUNNEL CANVAS ====================
+function drawLogisticsCanvas(ctx, w, h, timeSec) {
+  const cBg = getCssToken(`--surface-canvas`);
+  const cCard = getCssToken(`--background`);
+  const cSurface = getCssToken(`--surface-container`);
+  const cBorder = getCssToken(`--outline-variant`);
+  const cInk = getCssToken(`--on-surface`);
+  const cInkVar = getCssToken(`--on-surface-variant`);
+  const cBlue = getCssToken(`--primary`);
+  const cBlueSoft = getCssToken(`--primary-container`);
+  const cGreen = getCssToken(`--tertiary`);
+  const cGreenSoft = getCssToken(`--tertiary-container`);
+  const cRed = getCssToken(`--error`);
+  const cRedSoft = getCssToken(`--error-container`);
+  const cPurple = getCssToken(`--data-2`);
+  const cRoad = getCssToken(`--road-surface`);
+  const cRoadMark = getCssToken(`--road-marking`);
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = cBg;
+  ctx.fillRect(0, 0, w, h);
+
+  // Architectural subtle grid
+  ctx.strokeStyle = cBorder;
+  ctx.lineWidth = 0.6;
+  const gridStep = 48;
+  for (let gx = 0; gx < w; gx += gridStep) {
+    ctx.beginPath();
+    ctx.moveTo(gx, 0);
+    ctx.lineTo(gx, h);
+    ctx.stroke();
+  }
+  for (let gy = 0; gy < h; gy += gridStep) {
+    ctx.beginPath();
+    ctx.moveTo(0, gy);
+    ctx.lineTo(w, gy);
+    ctx.stroke();
+  }
+
+  // Layout geometry (Left: Suppliers, Center: Highway Corridors, Right: Tunnels)
+  const padX = Math.max(18, w * 0.025);
+  const topPad = 56;
+  const botPad = 76;
+  const usableH = Math.max(240, h - topPad - botPad);
+  const supW = Math.min(240, w * 0.23);
+  const tunW = Math.min(270, w * 0.25);
+  const supX = padX;
+  const tunX = w - padX - tunW;
+  const roadStartX = supX + supW;
+  const roadEndX = tunX;
+  const rowGap = usableH / 4;
+
+  // Section Headers on Canvas
+  ctx.fillStyle = cInkVar;
+  ctx.font = `600 11px "IBM Plex Mono", "Noto Sans TC", monospace`;
+  ctx.fillText(`預鑄鋼拱供應商 (S1–S4)`, supX, topPad - 12);
+  ctx.fillText(`異質車隊雙向公路網 (K1–K4 · 100–200 km)`, (roadStartX + roadEndX) * 0.5 - 125, topPad - 12);
+  ctx.fillText(`隧道掘進與鋼拱支護工區 (L1–L4)`, tunX, topPad - 12);
+
+  // Draw 4 Highway Corridors first
+  for (let i = 0; i < 4; i++) {
+    const cy = topPad + rowGap * (i + 0.5);
+    const roadH = 26;
+
+    // Road asphalt band
+    ctx.fillStyle = cRoad;
+    ctx.fillRect(roadStartX, cy - roadH / 2, roadEndX - roadStartX, roadH);
+
+    // Road border rails
+    ctx.strokeStyle = cBorder;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(roadStartX, cy - roadH / 2);
+    ctx.lineTo(roadEndX, cy - roadH / 2);
+    ctx.moveTo(roadStartX, cy + roadH / 2);
+    ctx.lineTo(roadEndX, cy + roadH / 2);
+    ctx.stroke();
+
+    // Animated dashed centerline
+    ctx.save();
+    ctx.strokeStyle = cRoadMark;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([12, 10]);
+    ctx.lineDashOffset = -(timeSec * 28 * appState.speed);
+    ctx.beginPath();
+    ctx.moveTo(roadStartX + 4, cy);
+    ctx.lineTo(roadEndX - 4, cy);
+    ctx.stroke();
+    ctx.restore();
+
+    // Distance pill at midpoint
+    const midX = (roadStartX + roadEndX) * 0.5;
+    const sup = appState.suppliers[i];
+    ctx.fillStyle = cCard;
+    ctx.fillRect(midX - 38, cy - 26, 76, 16);
+    ctx.strokeStyle = cBorder;
+    ctx.strokeRect(midX - 38, cy - 26, 76, 16);
+    ctx.fillStyle = cInkVar;
+    ctx.font = `500 10px "IBM Plex Mono", monospace`;
+    ctx.textAlign = `center`;
+    ctx.fillText(`D${i + 1},${i + 1}=${sup.dist}km`, midX, cy - 14);
+    ctx.textAlign = `left`;
+  }
+
+  // Draw Moving Heavy Trucks (K1–K4)
+  appState.vehicles.forEach((v) => {
+    const laneIdx = v.supplierIdx;
+    const cy = topPad + rowGap * (laneIdx + 0.5);
+    const laneOffset = v.direction === 1 ? -6 : 6;
+    const vx = roadStartX + 18 + v.progress * Math.max(40, roadEndX - roadStartX - 36);
+    const vy = cy + laneOffset;
+    const isForced = v.dispatchMode === `forced`;
+    const isLoaded = v.direction === 1;
+
+    ctx.save();
+    ctx.translate(vx, vy);
+    if (v.direction === -1) ctx.scale(-1, 1);
+
+    // Truck shadow bar
+    ctx.fillStyle = cInk;
+    ctx.globalAlpha = 0.12;
+    ctx.fillRect(-19, 5, 38, 4);
+    ctx.globalAlpha = 1;
+
+    // Flatbed trailer
+    ctx.fillStyle = isLoaded ? (isForced ? cRed : cBlue) : cSurface;
+    ctx.strokeStyle = cInk;
+    ctx.lineWidth = 1;
+    ctx.fillRect(-18, -7, 26, 11);
+    ctx.strokeRect(-18, -7, 26, 11);
+
+    // Steel arch frame cargo on flatbed when loaded
+    if (isLoaded) {
+      ctx.strokeStyle = cCard;
+      ctx.lineWidth = 1.6;
+      for (let a = -14; a <= 2; a += 5) {
+        ctx.beginPath();
+        ctx.arc(a, -7, 4, Math.PI, 0);
+        ctx.stroke();
+      }
+    }
+
+    // Cab
+    ctx.fillStyle = cCard;
+    ctx.fillRect(8, -9, 10, 13);
+    ctx.strokeRect(8, -9, 10, 13);
+    ctx.fillStyle = isForced ? cRed : cBlue;
+    ctx.fillRect(12, -7, 5, 5);
+
+    // Wheels
+    ctx.fillStyle = cInk;
+    ctx.beginPath();
+    ctx.arc(-12, 5, 3, 0, Math.PI * 2);
+    ctx.arc(2, 5, 3, 0, Math.PI * 2);
+    ctx.arc(13, 5, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Truck Label Tag above vehicle
+    const tagText = isLoaded ? `${v.code} · ${v.load}/${v.cap}片` : `${v.code} 空車返程`;
+    ctx.fillStyle = isLoaded ? (isForced ? cRed : cBlue) : cInkVar;
+    ctx.font = `600 10px "IBM Plex Mono", "Noto Sans TC", monospace`;
+    ctx.textAlign = `center`;
+    ctx.fillText(tagText, vx, vy - 13);
+    ctx.textAlign = `left`;
+  });
+
+  // Draw 4 Prefabrication Suppliers (Left Column)
+  appState.suppliers.forEach((s, i) => {
+    const boxH = Math.max(76, rowGap - 14);
+    const bx = supX;
+    const by = topPad + rowGap * i + 7;
+    const whPct = Math.min(1, s.whUsed / s.wMax);
+    const isForced = s.forcedFlash > 0 || whPct >= 0.92;
+    const isMasked = appState.manualMasks[i] || s.weekRem <= 0;
+
+    // Supplier Card
+    ctx.fillStyle = isForced ? cRedSoft : (isMasked ? cSurface : cCard);
+    ctx.fillRect(bx, by, supW, boxH);
+    ctx.strokeStyle = isForced ? cRed : cBorder;
+    ctx.lineWidth = isForced ? 2 : 1;
+    ctx.strokeRect(bx, by, supW, boxH);
+
+    // Left 3px accent strip
+    ctx.fillStyle = isForced ? cRed : (isMasked ? cInkVar : cBlue);
+    ctx.fillRect(bx, by, 3, boxH);
+
+    // Animated Factory Gantry Crane icon (top-right of card)
+    const craneX = bx + supW - 44;
+    const craneY = by + 10;
+    ctx.strokeStyle = cInkVar;
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(craneX, craneY, 34, 18);
+    const hookOffset = 4 + (Math.sin(timeSec * 2.5 * appState.speed + s.cranePhase) * 0.5 + 0.5) * 24;
+    ctx.strokeStyle = cBlue;
+    ctx.beginPath();
+    ctx.moveTo(craneX + hookOffset, craneY);
+    ctx.lineTo(craneX + hookOffset, craneY + 12);
+    ctx.stroke();
+    ctx.fillStyle = cBlue;
+    ctx.fillRect(craneX + hookOffset - 3, craneY + 11, 6, 4);
+
+    // Title & specs
+    ctx.fillStyle = cInk;
+    ctx.font = `600 12px "Noto Sans TC", "IBM Plex Sans", sans-serif`;
+    ctx.fillText(`${s.code} · ${s.frameRange}`, bx + 10, by + 19);
+
+    ctx.fillStyle = cInkVar;
+    ctx.font = `400 10px "IBM Plex Mono", monospace`;
+    ctx.fillText(`產能 ${s.weekRem}/${s.weekCap}/wk · ${s.unitCost} MU`, bx + 10, by + 35);
+
+    // Warehouse gauge bar
+    const barX = bx + 10;
+    const barY = by + boxH - 22;
+    const barW = supW - 20;
+    ctx.fillStyle = cSurface;
+    ctx.fillRect(barX, barY, barW, 8);
+    ctx.fillStyle = isForced ? cRed : (whPct > 0.72 ? cBlue : cGreen);
+    ctx.fillRect(barX, barY, barW * whPct, 8);
+
+    ctx.fillStyle = isForced ? cRed : cInkVar;
+    ctx.font = `600 10px "IBM Plex Mono", "Noto Sans TC", monospace`;
+    const statusTxt = isForced ? `強制發車! W=${s.whUsed}/${s.wMax}` : `庫存 W=${s.whUsed}/${s.wMax}`;
+    ctx.fillText(statusTxt, barX, barY + 18);
+  });
+
+  // Draw 4 Tunnel Excavation Cross-Sections (Right Column)
+  appState.tunnels.forEach((t, i) => {
+    const boxH = Math.max(76, rowGap - 14);
+    const bx = tunX;
+    const by = topPad + rowGap * i + 7;
+    const isSel = appState.selectedTunnel === i;
+    const isUnstable = t.rock === `unstable` || (appState.scenario === `rocksurge` && i >= 2);
+
+    ctx.fillStyle = cCard;
+    ctx.fillRect(bx, by, tunW, boxH);
+    ctx.strokeStyle = isSel ? cBlue : cBorder;
+    ctx.lineWidth = isSel ? 2 : 1;
+    ctx.strokeRect(bx, by, tunW, boxH);
+
+    // Tunnel Header
+    ctx.fillStyle = cInk;
+    ctx.font = `600 12px "Noto Sans TC", "IBM Plex Sans", sans-serif`;
+    ctx.fillText(`${t.code} 隧道 (${t.length}m)`, bx + 10, by + 18);
+
+    // Rock stability badge
+    const badgeW = 86;
+    ctx.fillStyle = isUnstable ? cRedSoft : cGreenSoft;
+    ctx.fillRect(bx + tunW - badgeW - 8, by + 6, badgeW, 17);
+    ctx.fillStyle = isUnstable ? cRed : cGreen;
+    ctx.font = `600 9.5px "Noto Sans TC", "IBM Plex Mono", monospace`;
+    ctx.textAlign = `center`;
+    ctx.fillText(isUnstable ? `不穩定 S=1m` : `穩定岩層 S=2m`, bx + tunW - badgeW / 2 - 8, by + 18);
+    ctx.textAlign = `left`;
+
+    // Cross-section Tunnel Excavation Graphic
+    const tunInnerX = bx + 10;
+    const tunInnerY = by + 27;
+    const tunInnerW = tunW - 20;
+    const tunInnerH = boxH - 46;
+    const digRatio = Math.min(0.95, t.excavatedM / t.length);
+    const digW = tunInnerW * digRatio;
+
+    // Unexcavated rock mass
+    ctx.fillStyle = isUnstable ? getCssToken(`--tunnel-rock-unstable`) : getCssToken(`--tunnel-rock-stable`);
+    ctx.fillRect(tunInnerX, tunInnerY, tunInnerW, tunInnerH);
+
+    // Excavated cavity
+    ctx.fillStyle = cSurface;
+    ctx.fillRect(tunInnerX, tunInnerY + 3, digW, tunInnerH - 6);
+
+    // Steel Arch Frame ribs placed inside excavated cavity
+    const ribStep = isUnstable ? 8 : 14;
+    ctx.strokeStyle = cBlue;
+    ctx.lineWidth = 2;
+    for (let rx = tunInnerX + 6; rx < tunInnerX + digW - 6; rx += ribStep) {
+      ctx.beginPath();
+      ctx.moveTo(rx, tunInnerY + 4);
+      ctx.lineTo(rx, tunInnerY + tunInnerH - 4);
+      ctx.stroke();
+    }
+
+    // Animated cutterhead at excavation face
+    const faceX = tunInnerX + digW;
+    const jitter = Math.sin(timeSec * 14 * appState.speed) * 1.5;
+    ctx.fillStyle = isUnstable ? cRed : cInk;
+    ctx.fillRect(faceX - 3 + jitter, tunInnerY + 4, 5, tunInnerH - 8);
+
+    // Bottom readout
+    ctx.fillStyle = cInkVar;
+    ctx.font = `400 10px "IBM Plex Mono", "Noto Sans TC", monospace`;
+    const effRate = isUnstable ? (t.rate + 0.5).toFixed(1) : t.rate.toFixed(1);
+    ctx.fillText(`掘進 ${t.excavatedM}/${t.length}m · P=${effRate}m/d · 鋼拱 ${t.installedFrames}架`, bx + 10, by + boxH - 6);
+  });
+}
+
+// ==================== 6. SIMULATION STEP & ANIMATION LOOP ====================
+function stepDRQLDecision() {
+  const drql = appState.drql;
+  // Determine feasible mask: 1 if not manually masked and weekRem > 0
+  const masks = appState.suppliers.map((s, idx) => (!appState.manualMasks[idx] && s.weekRem > 0) ? 1 : 0);
+
+  // Compute heuristic-aware or DRQL advantage scores
+  const baseScores = appState.suppliers.map((s, idx) => {
+    const whRatio = s.whUsed / s.wMax;
+    const capRatio = s.weekRem / s.weekCap;
+    const costScore = (120 - s.unitCost) / 30;
+    // DRQL balances capacity renewal, congestion avoidance, and cost
+    return Number((costScore * 1.4 + capRatio * 1.6 - whRatio * 2.1 + (Math.random() - 0.5) * 0.4).toFixed(2));
+  });
+
+  const meanAdv = baseScores.reduce((a, b) => a + b, 0) / 4;
+  drql.adv = baseScores.map(v => Number((v - meanAdv).toFixed(2)));
+  drql.valueV = Number((-16.5 - (appState.muP * 0.14) - (appState.muT * 0.06) + (Math.random() - 0.5) * 0.8).toFixed(2));
+  drql.latentNorm = Number((3.8 + Math.random() * 0.9).toFixed(2));
+
+  // Shift state vector slightly to show live T=8 temporal encoding
+  drql.stateVec = drql.stateVec.map((_, idx) => {
+    if (idx < 4) return Number((appState.suppliers[idx].weekRem / appState.suppliers[idx].weekCap).toFixed(2));
+    if (idx < 8) return Number((appState.suppliers[idx - 4].whUsed / appState.suppliers[idx - 4].wMax).toFixed(2));
+    return Number(Math.min(0.98, Math.max(0.08, 0.35 + Math.random() * 0.5)).toFixed(2));
+  });
+
+  // Masked argmax
+  let bestIdx = -1;
+  let bestQ = -Infinity;
+  for (let i = 0; i < 4; i++) {
+    if (masks[i] === 1) {
+      const q = drql.valueV + drql.adv[i];
+      if (q > bestQ) {
+        bestQ = q;
+        bestIdx = i;
+      }
+    }
+  }
+  if (bestIdx === -1) bestIdx = 2; // fallback if all manually masked
+  drql.chosenIdx = bestIdx;
+
+  // Assign production frame to chosen supplier
+  const chosenSup = appState.suppliers[bestIdx];
+  if (chosenSup.weekRem > 0) chosenSup.weekRem = Math.max(0, chosenSup.weekRem - 1);
+  chosenSup.whUsed += 3;
+
+  // Check warehouse cap -> Forced Dispatch or Policy Dispatch
+  if (chosenSup.whUsed >= chosenSup.wMax) {
+    executeDispatch(bestIdx, `forced`);
+  } else if (chosenSup.whUsed >= Math.round(0.75 * TRUCKS[bestIdx].cap) * 2.5 || chosenSup.waitAge >= 12) {
+    executeDispatch(bestIdx, `policy`);
+  }
+
+  appState.stepCount += 1;
+  renderDRQLSvgAndCards();
+  renderWarehouseCards();
+  updateTopKPIs();
+}
+
+function executeDispatch(supIdx, mode) {
+  const s = appState.suppliers[supIdx];
+  const t = appState.tunnels[s.targetTunnel];
+  const tr = TRUCKS[supIdx];
+  const batchFrames = Math.min(s.whUsed, tr.cap);
+  if (batchFrames <= 0) return;
+
+  s.whUsed = Math.max(0, s.whUsed - batchFrames);
+  s.waitAge = 0;
+  if (mode === `forced`) {
+    s.forcedFlash = 2.5;
+    appState.forcedCount += 1;
+  }
+
+  // Update matching vehicle on canvas
+  const veh = appState.vehicles[supIdx];
+  veh.load = batchFrames;
+  veh.direction = 1;
+  veh.progress = 0.02;
+  veh.dispatchMode = mode;
+
+  const day = Math.floor(appState.simHour / 24) + 1;
+  const hr = Math.floor(appState.simHour % 24);
+  const min = Math.floor((appState.simHour * 60) % 60);
+  const timeStr = `D${String(day).padStart(2, `0`)} · ${String(hr).padStart(2, `0`)}:${String(min).padStart(2, `0`)}`;
+  const fillPct = Math.round((batchFrames / tr.cap) * 100);
+  const modeLabel = mode === `forced` ? `爆倉強制發車 (W_max)` : (fillPct >= 75 ? `標準滿載 φ≥0.75` : `超時發車 ≥12h`);
+  const tripCost = Math.round(tr.baseCost + s.dist * 3.2 + batchFrames * 12);
+
+  appState.dispatchLogs.unshift({
+    time: timeStr,
+    route: `${s.code} → ${t.code} (${s.dist} km)`,
+    truck: `${tr.code} (${tr.cap}片)`,
+    fill: `${fillPct}% (${batchFrames}片)`,
+    mode: modeLabel,
+    cost: tripCost.toLocaleString(`en-US`)
+  });
+  if (appState.dispatchLogs.length > 8) appState.dispatchLogs.pop();
+
+  // Update ticker
+  const tickerType = document.getElementById(`tickerType`);
+  const tickerText = document.getElementById(`tickerText`);
+  if (tickerType && tickerText) {
+    tickerType.textContent = mode === `forced` ? `FORCED RELEASE` : `DISPATCH`;
+    tickerType.style.background = mode === `forced` ? getCssToken(`--error`) : getCssToken(`--on-surface`);
+    tickerText.textContent = `[${timeStr}] ${s.code} → ${t.code} 派遣 ${tr.code} (${batchFrames}/${tr.cap}片, ${fillPct}%) · ${modeLabel}`;
+  }
+}
+
+function triggerForcedSurge() {
+  const s2 = appState.suppliers[1];
+  s2.whUsed = s2.wMax + 4;
+  executeDispatch(1, `forced`);
+  renderWarehouseCards();
+  updateTopKPIs();
+}
+
+function simulationTick(timestamp) {
+  if (!lastTimestamp) lastTimestamp = timestamp;
+  const dt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
+  lastTimestamp = timestamp;
+
+  const canvas = document.getElementById(`logisticsCanvas`);
+  if (canvas) {
+    const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : null;
+    if (rect && (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height))) {
+      canvas.width = Math.max(320, Math.floor(rect.width));
+      canvas.height = Math.max(240, Math.floor(rect.height));
+    }
+    const ctx = canvas.getContext(`2d`);
+    if (ctx) drawLogisticsCanvas(ctx, canvas.width, canvas.height, timestamp / 1000);
+  }
+
+  if (appState.playing) {
+    const prodSpeedScale = 1 / (1 + appState.muP / 100);
+    const transSpeedScale = 1 / (1 + appState.muT / 100);
+    const stepDt = dt * appState.speed;
+
+    appState.simHour += stepDt * 0.8;
+    accumSimDelta += stepDt * prodSpeedScale;
+
+    // Move vehicles smoothly along highway
+    appState.vehicles.forEach((v) => {
+      v.progress += v.direction * stepDt * 0.22 * transSpeedScale;
+      if (v.direction === 1 && v.progress >= 1) {
+        v.progress = 1;
+        v.direction = -1;
+        // Deliver frames to tunnel
+        const tun = appState.tunnels[v.tunnelIdx];
+        tun.installedFrames = Math.min(tun.framesReq, tun.installedFrames + Math.max(2, Math.round(v.load * 0.35)));
+        tun.excavatedM = Math.min(tun.length, tun.excavatedM + (tun.rock === `unstable` ? 2 : 1));
+        appState.totalInstalled += 2;
+      } else if (v.direction === -1 && v.progress <= 0) {
+        v.progress = 0;
+        v.direction = 1;
+        const sup = appState.suppliers[v.supplierIdx];
+        v.load = Math.min(v.cap, Math.max(Math.round(v.cap * 0.75), sup.whUsed));
+        v.dispatchMode = `policy`;
+      }
+    });
+
+    // Decay forced flashes and advance ages
+    appState.suppliers.forEach((s) => {
+      if (s.forcedFlash > 0) s.forcedFlash = Math.max(0, s.forcedFlash - dt);
+      s.waitAge += stepDt * 0.4;
+      if (s.weekRem === 0 && Math.floor(appState.simHour) % 168 === 0) {
+        s.weekRem = s.weekCap; // weekly renewal
+      }
+    });
+
+    if (accumSimDelta >= 1.6) {
+      accumSimDelta = 0;
+      stepDRQLDecision();
+    }
+
+    updateClockOnly();
+  }
+
+  animFrameId = requestAnimationFrame(simulationTick);
+}
+
+// ==================== 7. UI & VIEW RENDERERS ====================
+function updateClockOnly() {
+  const el = document.getElementById(`simClock`);
+  if (!el) return;
+  const day = Math.floor(appState.simHour / 24) + 1;
+  const hr = Math.floor(appState.simHour % 24);
+  const min = Math.floor((appState.simHour * 60) % 60);
+  el.textContent = `DAY ${String(day).padStart(2, `0`)} · ${String(hr).padStart(2, `0`)}:${String(min).padStart(2, `0`)} | STEP ${String(appState.stepCount).padStart(3, `0`)}`;
+}
+
+function updateTopKPIs() {
+  const m = computeAdjustedMetrics();
+  const kpiCostVal = document.getElementById(`kpiCostVal`);
+  const kpiDelayVal = document.getElementById(`kpiDelayVal`);
+  const kpiForced = document.getElementById(`kpiForcedCount`);
+  const kpiFrames = document.getElementById(`kpiFramesInstalled`);
+  const kpiPolicyTitle = document.getElementById(`kpiPolicyTitle`);
+  const kpiCostBadge = document.getElementById(`kpiCostBadge`);
+  const kpiDelayBadge = document.getElementById(`kpiDelayBadge`);
+
+  const railCost = document.getElementById(`railCostEst`);
+  const railDelay = document.getElementById(`railDelayEst`);
+  const railCostDelta = document.getElementById(`railCostDelta`);
+  const railDelayDelta = document.getElementById(`railDelayDelta`);
+
+  if (kpiCostVal) kpiCostVal.textContent = m.cost.toLocaleString(`en-US`, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (kpiDelayVal) kpiDelayVal.textContent = Math.round(m.delay).toLocaleString(`en-US`);
+  if (kpiForced) kpiForced.textContent = `強制發車觸發：${appState.forcedCount} 次 (硬庫存防護啟動)`;
+  if (kpiFrames) kpiFrames.textContent = appState.totalInstalled.toLocaleString(`en-US`);
+
+  if (kpiPolicyTitle) {
+    kpiPolicyTitle.textContent = appState.scenario === `heur6` ? `Heur6 基準總營運成本` : `DRQL 總營運成本`;
+  }
+  if (kpiCostBadge) {
+    if (appState.scenario === `heur6`) {
+      kpiCostBadge.textContent = `基準上限 nCost=1.000`;
+      kpiCostBadge.className = `kpi-badge is-err`;
+    } else {
+      kpiCostBadge.textContent = `-14.45% vs Heur6`;
+      kpiCostBadge.className = `kpi-badge`;
+    }
+  }
+  if (kpiDelayBadge) {
+    if (appState.scenario === `heur6`) {
+      kpiDelayBadge.textContent = `基準上限 nDelay=1.000`;
+      kpiDelayBadge.className = `kpi-badge is-err`;
+    } else {
+      kpiDelayBadge.textContent = `-14.17% vs Heur6`;
+      kpiDelayBadge.className = `kpi-badge`;
+    }
+  }
+
+  if (railCost) railCost.textContent = `${Math.round(m.cost).toLocaleString(`en-US`)} MU`;
+  if (railDelay) railDelay.textContent = `${m.delay.toFixed(1)} h`;
+
+  if (railCostDelta) {
+    const sign = m.costPctVsDrqlBase > 0 ? `+` : ``;
+    railCostDelta.textContent = `${sign}${m.costPctVsDrqlBase.toFixed(2)}% vs 基準`;
+    railCostDelta.className = `impact-delta ${m.costPctVsDrqlBase < -0.1 ? `delta-good` : (m.costPctVsDrqlBase > 0.1 ? `delta-bad` : `delta-neutral`)}`;
+  }
+  if (railDelayDelta) {
+    const sign = m.delayPctVsDrqlBase > 0 ? `+` : ``;
+    railDelayDelta.textContent = `${sign}${m.delayPctVsDrqlBase.toFixed(2)}% vs 基準`;
+    railDelayDelta.className = `impact-delta ${m.delayPctVsDrqlBase < -0.1 ? `delta-good` : (m.delayPctVsDrqlBase > 0.1 ? `delta-bad` : `delta-neutral`)}`;
+  }
+
+  const tblCost = document.getElementById(`tblDrqlCost`);
+  const tblDelay = document.getElementById(`tblDrqlDelay`);
+  if (tblCost) tblCost.textContent = m.cost.toLocaleString(`en-US`, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (tblDelay) tblDelay.textContent = Math.round(m.delay).toLocaleString(`en-US`);
+}
+
+function renderDRQLSvgAndCards() {
+  const drql = appState.drql;
+  const svgCells = document.getElementById(`svgStateCells`);
+  if (svgCells) {
+    let html = ``;
+    for (let i = 0; i < 12; i++) {
+      const y = 84 + i * 15;
+      const val = drql.stateVec[i] || 0.5;
+      const fillW = Math.round(val * 76);
+      html += `<rect x="26" y="${y}" width="76" height="9" fill="var(--surface-container-high)"/>`;
+      html += `<rect x="26" y="${y}" width="${fillW}" height="9" fill="${i < 4 ? `var(--primary)` : (i < 8 ? `var(--data-3)` : `var(--data-2)`) }"/>`;
+    }
+    svgCells.innerHTML = html;
+  }
+
+  const svgV = document.getElementById(`svgValueV`);
+  const svgLat = document.getElementById(`svgLatentNorm`);
+  const svgChosen = document.getElementById(`svgChosenAction`);
+  if (svgV) svgV.textContent = drql.valueV.toFixed(2);
+  if (svgLat) svgLat.textContent = `‖z‖ = ${drql.latentNorm.toFixed(2)}`;
+  if (svgChosen) svgChosen.textContent = `a* = 選擇 S${drql.chosenIdx + 1}`;
+
+  const svgAdv = document.getElementById(`svgAdvBars`);
+  if (svgAdv) {
+    let html = ``;
+    drql.adv.forEach((val, idx) => {
+      const y = 224 + idx * 12;
+      const w = Math.min(54, Math.max(8, Math.round((val + 2.5) * 11)));
+      html += `<text x="352" y="${y + 8}" font-family="var(--font-label)" font-size="8.5" fill="var(--on-surface-variant)">S${idx + 1}</text>`;
+      html += `<rect x="372" y="${y}" width="${w}" height="8" fill="${idx === drql.chosenIdx ? `var(--primary)` : `var(--outline)`}"/>`;
+      html += `<text x="434" y="${y + 8}" font-family="var(--font-label)" font-size="8.5" fill="var(--on-surface)">${val >= 0 ? `+` : ``}${val.toFixed(2)}</text>`;
+    });
+    svgAdv.innerHTML = html;
+  }
+
+  const svgMask = document.getElementById(`svgMaskOut`);
+  if (svgMask) {
+    let html = ``;
+    appState.suppliers.forEach((s, idx) => {
+      const y = 114 + idx * 27;
+      const isMasked = appState.manualMasks[idx] || s.weekRem <= 0;
+      const isChosen = idx === drql.chosenIdx && !isMasked;
+      const qVal = isMasked ? `-∞` : (drql.valueV + drql.adv[idx]).toFixed(2);
+      const fill = isMasked ? `var(--error-container)` : (isChosen ? `var(--primary-container)` : `var(--surface-container)`);
+      const stroke = isMasked ? `var(--error)` : (isChosen ? `var(--primary)` : `var(--outline-variant)`);
+      html += `<rect x="516" y="${y}" width="100" height="21" fill="${fill}" stroke="${stroke}"/>`;
+      html += `<text x="522" y="${y + 14}" font-family="var(--font-label)" font-size="9.5" font-weight="600" fill="var(--on-surface)">S${idx + 1}: ${qVal}</text>`;
+      html += `<text x="610" y="${y + 14}" text-anchor="end" font-family="var(--font-label)" font-size="8.5" fill="${isMasked ? `var(--error)` : `var(--tertiary)`}">${isMasked ? `MASK` : `m=1`}</text>`;
+    });
+    svgMask.innerHTML = html;
+  }
+
+  const maskContainer = document.getElementById(`maskCardsContainer`);
+  if (maskContainer) {
+    maskContainer.innerHTML = appState.suppliers.map((s, idx) => {
+      const isMasked = appState.manualMasks[idx] || s.weekRem <= 0;
+      const isChosen = idx === drql.chosenIdx && !isMasked;
+      const qVal = isMasked ? `-∞ (遮罩阻斷)` : (drql.valueV + drql.adv[idx]).toFixed(2);
+      const capPct = Math.round((s.weekRem / s.weekCap) * 100);
+      return `
+        <div class="mask-card ${isMasked ? `is-masked` : (isChosen ? `is-chosen` : ``)}">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:0.85rem;">${s.name} (${s.frameRange})</strong>
+            <button type="button" class="pill-btn ${isMasked ? `is-active` : ``}" onclick="toggleManualMask(${idx})" style="height:24px; padding:0 8px;">
+              ${isMasked ? `解除遮罩` : `測試遮罩`}
+            </button>
+          </div>
+          <div style="font-family:var(--font-label); font-size:0.75rem;">
+            Q̃(s, a) = <strong>${qVal}</strong> ｜ 剩餘週產能 ${s.weekRem}/${s.weekCap}
+          </div>
+          <div class="bar-track"><div class="bar-fill ${isMasked ? `is-danger` : `is-ok`}" style="width:${capPct}%"></div></div>
+        </div>
+      `;
+    }).join(``);
+  }
+}
+
+function renderWarehouseCards() {
+  const whGrid = document.getElementById(`warehouseCardsContainer`);
+  if (whGrid) {
+    whGrid.innerHTML = appState.suppliers.map((s, idx) => {
+      const tr = TRUCKS[idx];
+      const whPct = Math.min(100, Math.round((s.whUsed / s.wMax) * 100));
+      const fillThreshold = Math.round(tr.cap * 0.75);
+      const fillRatio = Math.min(100, Math.round((s.whUsed / tr.cap) * 100));
+      const ageRatio = Math.min(100, Math.round((s.waitAge / 12) * 100));
+      const isForced = s.forcedFlash > 0 || whPct >= 92;
+      return `
+        <div class="wh-card ${isForced ? `is-forced` : ``}">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>${s.code} 廠庫存槽</strong>
+            <span class="kpi-badge ${isForced ? `is-err` : `is-blue`}">${isForced ? `強制發車覆寫` : `正常監控`}</span>
+          </div>
+          <div style="font-family:var(--font-label); font-size:0.78rem;">
+            即時存量：<strong>${s.whUsed}</strong> / W_max=${s.wMax} (${whPct}%)
+          </div>
+          <div class="bar-track"><div class="bar-fill ${isForced ? `is-danger` : (whPct > 75 ? `is-warn` : `is-ok`)}" style="width:${whPct}%"></div></div>
+          <div style="font-family:var(--font-label); font-size:0.72rem; color:var(--on-surface-variant);">
+            滿載觸發 (φ=0.75·${tr.cap}=${fillThreshold}片)：${Math.min(100, fillRatio)}%
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${fillRatio}%"></div></div>
+          <div style="font-family:var(--font-label); font-size:0.72rem; color:var(--on-surface-variant);">
+            滯留計時 (T_max=12h)：${s.waitAge.toFixed(1)}h
+          </div>
+          <div class="bar-track"><div class="bar-fill is-warn" style="width:${ageRatio}%"></div></div>
+        </div>
+      `;
+    }).join(``);
+  }
+
+  const tbody = document.getElementById(`dispatchLogBody`);
+  if (tbody) {
+    tbody.innerHTML = appState.dispatchLogs.map(log => {
+      const isForced = log.mode.indexOf(`強制`) !== -1;
+      return `
+        <tr>
+          <td>${log.time}</td>
+          <td>${log.route}</td>
+          <td>${log.truck}</td>
+          <td>${log.fill}</td>
+          <td style="color:${isForced ? `var(--error)` : `var(--primary)`}; font-weight:600;">${log.mode}</td>
+          <td>${log.cost} MU</td>
+        </tr>
+      `;
+    }).join(``);
+  }
+}
+
+function drawBenchmarkChart() {
+  const canvas = document.getElementById(`benchmarkCanvas`);
+  if (!canvas) return;
+  const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : null;
+  if (rect && rect.width > 40 && rect.height > 40) {
+    canvas.width = Math.floor(rect.width - 16);
+    canvas.height = Math.floor(rect.height - 16);
+  }
+  const ctx = canvas.getContext(`2d`);
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const m = computeAdjustedMetrics();
+  const methods = [
+    { name: `DRQL (動態調整)`, cost: m.cost, delay: m.delay, focal: true },
+    { name: `Cheapest`, cost: 820836.68, delay: 942, focal: false },
+    { name: `FastestETA`, cost: 820836.68, delay: 942, focal: false },
+    { name: `Heur6 基準`, cost: 873047.60, delay: 981, focal: false }
+  ];
+
+  const cInk = getCssToken(`--on-surface`);
+  const cVar = getCssToken(`--on-surface-variant`);
+  const cBorder = getCssToken(`--outline-variant`);
+  const cBlue = getCssToken(`--primary`);
+  const cGray = getCssToken(`--data-context`);
+  const cPurple = getCssToken(`--data-2`);
+
+  const padL = 56, padR = 46, padT = 28, padB = 34;
+  const pw = w - padL - padR;
+  const ph = h - padT - padB;
+  const maxCost = 1050000;
+  const minCost = 500000;
+  const maxDelay = 1200;
+  const minDelay = 550;
+
+  // Gridlines
+  ctx.strokeStyle = cBorder;
+  ctx.lineWidth = 1;
+  ctx.font = `400 10px "IBM Plex Mono", monospace`;
+  ctx.fillStyle = cVar;
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + (ph / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(w - padR, y);
+    ctx.stroke();
+    const cLabel = Math.round((maxCost - ((maxCost - minCost) / 4) * i) / 1000) + `k`;
+    const dLabel = Math.round(maxDelay - ((maxDelay - minDelay) / 4) * i) + `h`;
+    ctx.textAlign = `right`;
+    ctx.fillText(cLabel, padL - 6, y + 3);
+    ctx.textAlign = `left`;
+    ctx.fillText(dLabel, w - padR + 6, y + 3);
+  }
+
+  // Legend
+  ctx.fillStyle = cBlue;
+  ctx.fillRect(padL, 8, 10, 10);
+  ctx.fillStyle = cInk;
+  ctx.font = `500 11px "Noto Sans TC", sans-serif`;
+  ctx.fillText(`總成本 (MU)`, padL + 14, 17);
+  ctx.fillStyle = cPurple;
+  ctx.fillRect(padL + 100, 8, 10, 10);
+  ctx.fillStyle = cInk;
+  ctx.fillText(`累計延遲 (h)`, padL + 114, 17);
+
+  // Bars + Delay line
+  const slotW = pw / methods.length;
+  const barW = Math.min(44, slotW * 0.45);
+  const pts = [];
+
+  methods.forEach((item, idx) => {
+    const cx = padL + slotW * (idx + 0.5);
+    const barH = Math.max(8, ((item.cost - minCost) / (maxCost - minCost)) * ph);
+    const by = padT + ph - barH;
+    ctx.fillStyle = item.focal ? cBlue : cGray;
+    ctx.fillRect(cx - barW / 2, by, barW, barH);
+
+    // X label
+    ctx.fillStyle = item.focal ? cBlue : cInk;
+    ctx.font = item.focal ? `600 10.5px "Noto Sans TC", sans-serif` : `400 10.5px "Noto Sans TC", sans-serif`;
+    ctx.textAlign = `center`;
+    ctx.fillText(item.name, cx, h - 10);
+
+    const dy = padT + ph - Math.max(0, Math.min(ph, ((item.delay - minDelay) / (maxDelay - minDelay)) * ph));
+    pts.push({ x: cx, y: dy, val: Math.round(item.delay) });
+  });
+
+  // Delay polyline
+  ctx.strokeStyle = cPurple;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+
+  pts.forEach((p) => {
+    ctx.fillStyle = getCssToken(`--background`);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = cPurple;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = cPurple;
+    ctx.font = `600 10px "IBM Plex Mono", monospace`;
+    ctx.textAlign = `center`;
+    ctx.fillText(`${p.val}h`, p.x, p.y - 9);
+  });
+}
+
+function drawSensitivityChart() {
+  const canvas = document.getElementById(`sensitivityCanvas`);
+  if (!canvas) return;
+  const rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : null;
+  if (rect && rect.width > 40 && rect.height > 40) {
+    canvas.width = Math.floor(rect.width - 16);
+    canvas.height = Math.floor(rect.height - 16);
+  }
+  const ctx = canvas.getContext(`2d`);
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const data = SENS_DATA[appState.selectedSensFactor] || SENS_DATA.muP;
+  const cBorder = getCssToken(`--outline-variant`);
+  const cVar = getCssToken(`--on-surface-variant`);
+  const cBlue = getCssToken(`--primary`);
+  const cRed = getCssToken(`--error`);
+  const cInk = getCssToken(`--on-surface`);
+
+  const padL = 48, padR = 24, padT = 28, padB = 34;
+  const pw = w - padL - padR;
+  const ph = h - padT - padB;
+  const minY = 0.65, maxY = 1.35;
+
+  // Grid & baseline 1.0
+  ctx.font = `400 10px "IBM Plex Mono", monospace`;
+  [0.7, 0.85, 1.0, 1.15, 1.3].forEach((val) => {
+    const y = padT + ph - ((val - minY) / (maxY - minY)) * ph;
+    ctx.strokeStyle = val === 1.0 ? getCssToken(`--outline`) : cBorder;
+    ctx.lineWidth = val === 1.0 ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(w - padR, y);
+    ctx.stroke();
+    ctx.fillStyle = cVar;
+    ctx.textAlign = `right`;
+    ctx.fillText(val.toFixed(2), padL - 6, y + 3);
+  });
+
+  // Legend
+  ctx.fillStyle = cBlue;
+  ctx.fillRect(padL, 8, 10, 10);
+  ctx.fillStyle = cInk;
+  ctx.textAlign = `left`;
+  ctx.font = `500 11px "Noto Sans TC", sans-serif`;
+  ctx.fillText(`nCost (正規化成本)`, padL + 14, 17);
+  ctx.fillStyle = cRed;
+  ctx.fillRect(padL + 140, 8, 10, 10);
+  ctx.fillStyle = cInk;
+  ctx.fillText(`nDelay (正規化延遲)`, padL + 154, 17);
+
+  function plotSeries(arr, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    arr.forEach((v, i) => {
+      const x = padL + (i / (arr.length - 1)) * pw;
+      const y = padT + ph - ((v - minY) / (maxY - minY)) * ph;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    arr.forEach((v, i) => {
+      const x = padL + (i / (arr.length - 1)) * pw;
+      const y = padT + ph - ((v - minY) / (maxY - minY)) * ph;
+      ctx.fillStyle = color;
+      ctx.fillRect(x - 3.5, y - 3.5, 7, 7);
+      if (i === 0 || i === arr.length - 1) {
+        ctx.font = `600 9.5px "IBM Plex Mono", monospace`;
+        ctx.textAlign = `center`;
+        ctx.fillText(v.toFixed(2), x, y - 8);
+      }
+    });
+  }
+
+  plotSeries(data.nCost, cBlue);
+  plotSeries(data.nDelay, cRed);
+
+  // X ticks
+  data.levels.forEach((lv, i) => {
+    const x = padL + (i / (data.levels.length - 1)) * pw;
+    ctx.fillStyle = cVar;
+    ctx.font = `500 10px "IBM Plex Mono", monospace`;
+    ctx.textAlign = `center`;
+    ctx.fillText(`${lv > 0 ? `+` : ``}${lv}%`, x, h - 10);
+  });
+
+  // Live marker if viewing muP or muT
+  if (appState.selectedSensFactor === `muP` || appState.selectedSensFactor === `muT`) {
+    const curVal = appState.selectedSensFactor === `muP` ? appState.muP : appState.muT;
+    const mx = padL + ((curVal + 30) / 60) * pw;
+    ctx.save();
+    ctx.strokeStyle = cBlue;
+    ctx.setLineDash([4, 3]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(mx, padT);
+    ctx.lineTo(mx, padT + ph);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// ==================== 8. HOISTED EVENT HANDLERS ====================
+function switchTag(tagNum) {
+  appState.activeTag = tagNum;
+  for (let i = 1; i <= 4; i++) {
+    const btn = document.getElementById(`tagBtn${i}`);
+    const layer = document.getElementById(`viewTag${i}`);
+    if (btn) btn.classList.toggle(`is-active`, i === tagNum);
+    if (layer) layer.classList.toggle(`is-visible`, i === tagNum);
+  }
+  const rig = document.getElementById(`cameraRig`);
+  if (rig) rig.className = `spatial-camera-rig cam-tag-${tagNum}`;
+
+  if (tagNum === 2) renderDRQLSvgAndCards();
+  if (tagNum === 3) renderWarehouseCards();
+  if (tagNum === 4) {
+    setTimeout(() => {
+      drawBenchmarkChart();
+      drawSensitivityChart();
+    }, 60);
+  }
+  saveAppStateSafe();
+}
+
+function togglePlay() {
+  appState.playing = !appState.playing;
+  const btn = document.getElementById(`playPauseBtn`);
+  const dot = document.getElementById(`statusDot`);
+  const lbl = document.getElementById(`statusLabel`);
+  if (btn) btn.textContent = appState.playing ? `暫停` : `播放`;
+  if (dot) dot.classList.toggle(`is-paused`, !appState.playing);
+  if (lbl) lbl.textContent = appState.playing ? `DRQL 線上推論中` : `模擬已暫停`;
+}
+
+function setSpeed(spd) {
+  appState.speed = spd;
+  [1, 2, 5].forEach(s => {
+    const b = document.getElementById(`spd${s}Btn`);
+    if (b) b.classList.toggle(`is-active`, s === spd);
+  });
+  saveAppStateSafe();
+}
+
+function changeScenario(val) {
+  appState.scenario = val;
+  const lbl = document.getElementById(`statusLabel`);
+  const rockBadge = document.getElementById(`kpiRockBadge`);
+  if (lbl) {
+    lbl.textContent = val === `heur6` ? `Heur6 基準運行中` : (val === `rocksurge` ? `不穩定岩層警示` : `DRQL 線上推論中`);
+  }
+  if (rockBadge) {
+    rockBadge.textContent = val === `rocksurge` ? `不穩定岩層擴張` : `混合岩層`;
+    rockBadge.className = `kpi-badge ${val === `rocksurge` ? `is-err` : `is-warn`}`;
+  }
+  updateTopKPIs();
+  if (appState.activeTag === 4) drawBenchmarkChart();
+  saveAppStateSafe();
+}
+
+function resetSimulation() {
+  appState.simHour = 8.0;
+  appState.stepCount = 1;
+  appState.forcedCount = 0;
+  appState.totalInstalled = 42;
+  appState.manualMasks = [false, false, false, false];
+  initEntities();
+  updateTopKPIs();
+  renderDRQLSvgAndCards();
+  renderWarehouseCards();
+  updateClockOnly();
+  saveAppStateSafe();
+}
+
+function onSliderMuP(val) {
+  appState.muP = Number(val);
+  const el = document.getElementById(`valMuP`);
+  if (el) el.textContent = `${appState.muP > 0 ? `+` : ``}${appState.muP}%`;
+  updateTopKPIs();
+  if (appState.activeTag === 4) {
+    drawBenchmarkChart();
+    drawSensitivityChart();
+  }
+  saveAppStateSafe();
+}
+
+function onSliderMuT(val) {
+  appState.muT = Number(val);
+  const el = document.getElementById(`valMuT`);
+  if (el) el.textContent = `${appState.muT > 0 ? `+` : ``}${appState.muT}%`;
+  updateTopKPIs();
+  if (appState.activeTag === 4) {
+    drawBenchmarkChart();
+    drawSensitivityChart();
+  }
+  saveAppStateSafe();
+}
+
+function resetSliders() {
+  appState.muP = 0;
+  appState.muT = 0;
+  const sP = document.getElementById(`sliderMuP`);
+  const sT = document.getElementById(`sliderMuT`);
+  const vP = document.getElementById(`valMuP`);
+  const vT = document.getElementById(`valMuT`);
+  if (sP) sP.value = `0`;
+  if (sT) sT.value = `0`;
+  if (vP) vP.textContent = `0%`;
+  if (vT) vT.textContent = `0%`;
+  updateTopKPIs();
+  if (appState.activeTag === 4) {
+    drawBenchmarkChart();
+    drawSensitivityChart();
+  }
+  saveAppStateSafe();
+}
+
+function selectTunnel(idx) {
+  appState.selectedTunnel = idx;
+  for (let i = 0; i < 4; i++) {
+    const b = document.getElementById(`inspBtn${i}`);
+    if (b) b.classList.toggle(`is-active`, i === idx);
+  }
+  const t = TUNNELS[idx];
+  const s = SUPPLIERS[idx];
+  const title = document.getElementById(`inspectorTitle`);
+  const detail = document.getElementById(`inspectorDetail`);
+  const rockLabel = t.rock === `stable` ? `穩定岩層段` : (t.rock === `mixed` ? `過渡混合岩層段` : `不穩定岩層段`);
+  if (title) title.textContent = `${t.name} (${t.length}m) · ${rockLabel}`;
+  if (detail) {
+    detail.textContent = `掘進速度 P${idx + 1} = ${t.rate} m/day · 鋼拱間距 S${idx + 1} = ${t.spacing.toFixed(1)} m · 採用鋼拱 ${t.framesSpec} (由 ${s.code} 廠供應，距 ${s.dist} km，週產能 ${s.weekCap} 片，單價 ${s.unitCost} MU，延遲罰金 ${t.penalty} MU/day)`;
+  }
+  saveAppStateSafe();
+}
+
+function toggleManualMask(idx) {
+  appState.manualMasks[idx] = !appState.manualMasks[idx];
+  stepDRQLDecision();
+  saveAppStateSafe();
+}
+
+function selectSensFactor(key, btnEl) {
+  appState.selectedSensFactor = key;
+  const wrap = document.getElementById(`factorPills`);
+  if (wrap) {
+    Array.from(wrap.querySelectorAll(`.pill-btn`)).forEach(b => b.classList.remove(`is-active`));
+  }
+  if (btnEl) btnEl.classList.add(`is-active`);
+  const box = document.getElementById(`sensInsightBox`);
+  const data = SENS_DATA[key];
+  if (box && data) {
+    box.innerHTML = `<strong>${data.label} 敏感度洞察：</strong>${data.insight}`;
+  }
+  drawSensitivityChart();
+}
+
+// ==================== 9. SHIM STATE PERSISTENCE & INIT ====================
+async function saveAppStateSafe() {
+  if (!window.notebookAppApi) return;
+  try {
+    await window.notebookAppApi.setAppState({
+      activeTag: appState.activeTag,
+      speed: appState.speed,
+      scenario: appState.scenario,
+      muP: appState.muP,
+      muT: appState.muT,
+      selectedTunnel: appState.selectedTunnel
+    });
+  } catch (e) {
+    // Ignore transient persistence errors
+  }
+}
+
+async function initApp() {
+  initEntities();
+
+  if (window.notebookAppApi) {
+    try {
+      const saved = await window.notebookAppApi.getAppState();
+      if (saved) {
+        if (typeof saved.muP === `number`) {
+          appState.muP = saved.muP;
+          const sP = document.getElementById(`sliderMuP`);
+          const vP = document.getElementById(`valMuP`);
+          if (sP) sP.value = String(saved.muP);
+          if (vP) vP.textContent = `${saved.muP > 0 ? `+` : ``}${saved.muP}%`;
+        }
+        if (typeof saved.muT === `number`) {
+          appState.muT = saved.muT;
+          const sT = document.getElementById(`sliderMuT`);
+          const vT = document.getElementById(`valMuT`);
+          if (sT) sT.value = String(saved.muT);
+          if (vT) vT.textContent = `${saved.muT > 0 ? `+` : ``}${saved.muT}%`;
+        }
+        if (saved.scenario) {
+          const sel = document.getElementById(`scenarioSelect`);
+          if (sel) sel.value = saved.scenario;
+          changeScenario(saved.scenario);
+        }
+        if (saved.speed) setSpeed(saved.speed);
+        if (typeof saved.selectedTunnel === `number`) selectTunnel(saved.selectedTunnel);
+        if (saved.activeTag) switchTag(saved.activeTag);
+      }
+    } catch (e) {
+      // Proceed with defaults
+    }
+  }
+
+  updateTopKPIs();
+  renderDRQLSvgAndCards();
+  renderWarehouseCards();
+  updateClockOnly();
+
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  animFrameId = requestAnimationFrame(simulationTick);
+
+  window.addEventListener(`resize`, () => {
+    if (appState.activeTag === 4) {
+      drawBenchmarkChart();
+      drawSensitivityChart();
+    }
+  });
+
+  if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === `function`) {
+    window.notebookAppApi.notifyAppReady();
+  }
+}
+
+document.addEventListener(`DOMContentLoaded`, initApp);
+</script>
+</body>
+</html>

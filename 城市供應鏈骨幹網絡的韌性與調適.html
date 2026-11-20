@@ -1,0 +1,2428 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="haven">
+  <title>PAUSB 城市供給骨幹韌性儀表板｜OECD ICIO 2018–2022</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* 1. Haven style tokens */
+      --background: #f5f6f5;
+      --surface-container-low: #ffffff;
+      --surface-container: #e3ebe2;
+      --surface-container-high: #dbe2dd;
+      --surface-panel-glass: rgba(255, 255, 255, 0.95);
+      --surface-dock-glass: rgba(255, 255, 255, 0.93);
+
+      --on-surface: #23272a;
+      --on-surface-variant: #5c6468;
+
+      --outline: #c9d0cc;
+      --outline-variant: #dde2df;
+
+      --primary: #3c5a6e;
+      --on-primary: #ffffff;
+      --primary-container: #e2e9ee;
+      --on-primary-container: #2a4152;
+      --secondary: #4f6b53;
+      --tertiary: #5f7c63;
+      --error: #a63d32;
+      --on-error: #ffffff;
+
+      /* Data series */
+      --data-1: #3c5a6e;
+      --data-2: #5f7c63;
+      --data-3: #a8694a;
+      --data-4: #8a7a68;
+      --data-context: #c3cac6;
+
+      /* Map & corridor semantic tokens */
+      --map-ocean: #eef1ef;
+      --map-graticule: #dfe5e1;
+      --map-land: #e4e8e5;
+      --map-land-hub: #d3dce2;
+      --map-land-active: #c2d1db;
+      --map-border: #c5cdc8;
+      --map-corridor-core: #3c5a6e;
+      --map-corridor-energy: #a8694a;
+      --map-corridor-trans: #5f7c63;
+
+      /* Fonts (Noto Sans TC prioritized for zh-Hant-TW) */
+      --font-headline: 'Noto Sans TC', 'Outfit', sans-serif;
+      --font-body: 'Noto Sans TC', 'Hanken Grotesk', sans-serif;
+      --font-label: 'IBM Plex Mono', 'Noto Sans TC', monospace;
+
+      /* Shape */
+      --rounded: 0.375rem;
+      --rounded-lg: 0.5rem;
+      --rounded-full: 9999px;
+
+      /* Style effects (Haven: hairline, zero shadows) */
+      --hairline: 1px solid var(--outline-variant);
+      --hairline-control: 1px solid var(--outline);
+      --elevation: none;
+
+      /* 2. Shared foundation tokens */
+      --positive: #4f6b53;
+      --warning: #a8694a;
+      --focus: #3c5a6e;
+
+      /* Type scale (Dashboard tight ratio) */
+      --display-size: clamp(1.375rem, 1.15rem + 0.6vw, 1.75rem);
+      --headline-size: clamp(1.0625rem, 0.98rem + 0.3vw, 1.25rem);
+      --subhead-size: clamp(0.9375rem, 0.9rem + 0.15vw, 1.0625rem);
+      --body-size: clamp(0.84rem, 0.81rem + 0.12vw, 0.9375rem);
+      --label-size: 0.75rem;
+
+      /* Spacing scale */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.25rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+      --space-3xl: 4rem;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 140ms;
+      --dur-short: 260ms;
+      --dur-long: 680ms;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: clip;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* 16:9 / 100vh Fixed Single-Screen Desktop Canvas */
+    .dashboard-shell {
+      display: grid;
+      grid-template-columns: 256px minmax(0, 1fr);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--background);
+    }
+
+    .dashboard-shell * {
+      min-width: 0;
+    }
+
+    /* Left Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      background: var(--surface-container-low);
+      border-right: var(--hairline);
+      padding: var(--space-lg) var(--space-md);
+      z-index: 20;
+      overflow-y: auto;
+    }
+
+    .brand-block {
+      padding-bottom: var(--space-md);
+      border-bottom: var(--hairline);
+    }
+
+    .brand-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      color: var(--secondary);
+      background: var(--surface-container);
+      padding: 0.18rem var(--space-sm);
+      border-radius: var(--rounded-full);
+      margin-bottom: var(--space-sm);
+    }
+
+    .brand-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 400;
+      line-height: 1.22;
+      color: var(--on-surface);
+    }
+
+    .brand-title strong {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .brand-subtitle {
+      margin: var(--space-xs) 0 0;
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      line-height: 1.45;
+    }
+
+    /* Navigation Tabs */
+    .nav-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      margin-top: var(--space-md);
+    }
+
+    .nav-group-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      margin-bottom: var(--space-xs);
+      padding-left: var(--space-xs);
+    }
+
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      width: 100%;
+      min-height: 44px;
+      padding: var(--space-sm) var(--space-sm);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--rounded);
+      color: var(--on-surface-variant);
+      text-align: left;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out);
+      position: relative;
+    }
+
+    .nav-tab:hover {
+      background: var(--background);
+      color: var(--on-surface);
+    }
+
+    .nav-tab.is-active {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      border-color: var(--outline);
+      font-weight: 600;
+    }
+
+    .nav-tab.is-active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 7px;
+      bottom: 7px;
+      width: 3px;
+      border-radius: var(--rounded-full);
+      background: var(--primary);
+    }
+
+    .nav-index {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      flex-shrink: 0;
+      margin-left: var(--space-xs);
+    }
+
+    .nav-tab.is-active .nav-index {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .nav-text {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .nav-label {
+      font-size: var(--body-size);
+      line-height: 1.25;
+    }
+
+    .nav-meta {
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      color: var(--on-surface-variant);
+      margin-top: 2px;
+    }
+
+    .nav-zoom-tag {
+      font-family: var(--font-label);
+      font-size: 0.68rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: var(--rounded);
+      background: var(--background);
+      color: var(--on-surface-variant);
+      border: var(--hairline);
+      flex-shrink: 0;
+    }
+
+    .nav-tab.is-active .nav-zoom-tag {
+      background: var(--surface-container-low);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* Sidebar Controls (Year & Camera Reset) */
+    .sidebar-footer {
+      border-top: var(--hairline);
+      padding-top: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .control-label {
+      display: block;
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      margin-bottom: var(--space-xs);
+    }
+
+    .year-pills {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 3px;
+    }
+
+    .year-pill {
+      min-height: 32px;
+      padding: var(--space-xs) 0;
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out);
+    }
+
+    .year-pill:hover {
+      background: var(--surface-container-high);
+      color: var(--on-surface);
+    }
+
+    .year-pill.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .sidebar-actions {
+      display: flex;
+      gap: var(--space-xs);
+    }
+
+    .btn-outline {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+      min-height: 38px;
+      padding: var(--space-xs) var(--space-sm);
+      background: var(--surface-container-low);
+      border: var(--hairline-control);
+      border-radius: var(--rounded);
+      color: var(--on-surface);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .btn-outline:hover {
+      background: var(--surface-container-high);
+    }
+
+    .source-caption {
+      font-size: 0.72rem;
+      color: var(--on-surface-variant);
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* Main Stage (Fixed 100vh Viewport) */
+    .stage {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--map-ocean);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top KPI Header Strip */
+    .kpi-strip {
+      position: relative;
+      z-index: 15;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-sm);
+      padding: var(--space-md) var(--space-lg) 0;
+      pointer-events: none;
+    }
+
+    .kpi-card {
+      pointer-events: auto;
+      background: var(--surface-panel-glass);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-sm) var(--space-md);
+      cursor: pointer;
+      transition: border-color var(--dur-micro) var(--ease-out),
+                  background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .kpi-card:hover {
+      border-color: var(--primary);
+      background: var(--surface-container-low);
+    }
+
+    .kpi-card.is-highlighted {
+      border-color: var(--primary);
+      background: var(--surface-container-low);
+    }
+
+    .kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+    }
+
+    .kpi-label {
+      font-size: var(--label-size);
+      font-weight: 500;
+      color: var(--on-surface-variant);
+    }
+
+    .kpi-badge {
+      font-family: var(--font-label);
+      font-size: 0.68rem;
+      color: var(--secondary);
+      background: var(--surface-container);
+      padding: 0.08rem 0.38rem;
+      border-radius: var(--rounded-full);
+    }
+
+    .kpi-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-sm);
+      margin-top: 2px;
+    }
+
+    .kpi-value {
+      font-family: var(--font-label);
+      font-size: var(--display-size);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      color: var(--on-surface);
+      line-height: 1.15;
+    }
+
+    .kpi-delta {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--secondary);
+      font-weight: 500;
+    }
+
+    .kpi-caption {
+      font-size: 0.72rem;
+      color: var(--on-surface-variant);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Map Canvas Viewport */
+    #map-canvas-wrap {
+      position: absolute;
+      inset: 0;
+      min-height: 400px;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    #world-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* 60FPS GPU Camera Layer */
+    #map-camera {
+      transform-origin: 50% 50%;
+      transition: transform var(--dur-long) var(--ease-out);
+      will-change: transform;
+    }
+
+    .country-land {
+      fill: var(--map-land);
+      stroke: var(--map-border);
+      stroke-width: 0.6px;
+      transition: fill var(--dur-short) var(--ease-out);
+    }
+
+    .country-land.is-hub {
+      fill: var(--map-land-hub);
+    }
+
+    .country-land.is-selected {
+      fill: var(--map-land-active);
+      stroke: var(--primary);
+      stroke-width: 1px;
+    }
+
+    .graticule-path {
+      fill: none;
+      stroke: var(--map-graticule);
+      stroke-width: 0.6px;
+      stroke-dasharray: 2 3;
+    }
+
+    .corridor-arc {
+      fill: none;
+      stroke-linecap: round;
+      opacity: 0.78;
+      transition: opacity var(--dur-short) var(--ease-out),
+                  stroke-width var(--dur-short) var(--ease-out);
+      cursor: pointer;
+    }
+
+    .corridor-arc.type-core {
+      stroke: var(--map-corridor-core);
+    }
+
+    .corridor-arc.type-energy {
+      stroke: var(--map-corridor-energy);
+    }
+
+    .corridor-arc.type-trans {
+      stroke: var(--map-corridor-trans);
+    }
+
+    .corridor-arc.is-dimmed {
+      opacity: 0.16;
+    }
+
+    .corridor-flow {
+      fill: none;
+      stroke-linecap: round;
+      stroke-dasharray: 6 10;
+      animation: flowMove 1.8s linear infinite;
+      pointer-events: none;
+    }
+
+    .corridor-flow.type-core {
+      stroke: var(--map-corridor-core);
+    }
+
+    .corridor-flow.type-energy {
+      stroke: var(--map-corridor-energy);
+    }
+
+    .corridor-flow.type-trans {
+      stroke: var(--map-corridor-trans);
+    }
+
+    .corridor-flow.is-dimmed {
+      opacity: 0.12;
+    }
+
+    @keyframes flowMove {
+      from { stroke-dashoffset: 32; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    .hub-node {
+      cursor: pointer;
+      transition: transform var(--dur-micro) var(--ease-out),
+                  opacity var(--dur-short) var(--ease-out);
+    }
+
+    .hub-pulse {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 1px;
+      opacity: 0.38;
+    }
+
+    .hub-circle {
+      fill: var(--primary);
+      stroke: var(--surface-container-low);
+      stroke-width: 1.6px;
+    }
+
+    .hub-circle.is-energy-accent {
+      fill: var(--data-3);
+    }
+
+    .hub-circle.is-selected {
+      fill: var(--secondary);
+      stroke-width: 2.4px;
+    }
+
+    .hub-label-bg {
+      fill: var(--surface-panel-glass);
+      stroke: var(--outline-variant);
+      stroke-width: 0.7px;
+      rx: 3px;
+    }
+
+    .hub-label-text {
+      font-family: var(--font-label);
+      font-size: 9.5px;
+      font-weight: 600;
+      fill: var(--on-surface);
+      pointer-events: none;
+    }
+
+    .corridor-pill-group {
+      pointer-events: none;
+      transition: opacity var(--dur-short) var(--ease-out);
+    }
+
+    .corridor-pill-rect {
+      fill: var(--surface-panel-glass);
+      stroke: var(--outline-variant);
+      stroke-width: 0.7px;
+      rx: 3px;
+    }
+
+    .corridor-pill-text {
+      font-family: var(--font-body);
+      font-size: 9px;
+      font-weight: 500;
+      fill: var(--on-surface-variant);
+    }
+
+    /* Map Legend & Camera Status Pill (Bottom-Left) */
+    .map-hud-left {
+      position: absolute;
+      left: var(--space-lg);
+      bottom: var(--space-md);
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      pointer-events: none;
+    }
+
+    .camera-indicator {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--surface-panel-glass);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-xs) var(--space-sm);
+      font-size: 0.75rem;
+      color: var(--on-surface-variant);
+      max-width: 390px;
+    }
+
+    .camera-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--rounded-full);
+      background: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .legend-card {
+      pointer-events: auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--surface-panel-glass);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-xs) var(--space-sm);
+      font-size: 0.72rem;
+      color: var(--on-surface-variant);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-line {
+      width: 16px;
+      height: 2.5px;
+      border-radius: 2px;
+    }
+
+    .legend-line.is-core { background: var(--map-corridor-core); }
+    .legend-line.is-energy { background: var(--map-corridor-energy); }
+    .legend-line.is-trans { background: var(--map-corridor-trans); }
+
+    /* Map Hover/Click Tooltip */
+    .map-tooltip {
+      position: absolute;
+      z-index: 25;
+      pointer-events: none;
+      background: var(--surface-container-low);
+      border: var(--hairline-control);
+      border-radius: var(--rounded);
+      padding: var(--space-xs) var(--space-sm);
+      font-size: var(--label-size);
+      color: var(--on-surface);
+      opacity: 0;
+      transition: opacity var(--dur-micro) var(--ease-out);
+      max-width: 260px;
+    }
+
+    .map-tooltip.is-visible {
+      opacity: 1;
+    }
+
+    /* Overlay Views inside Stage */
+    .view-overlay-container {
+      position: relative;
+      z-index: 14;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: var(--space-md) var(--space-lg);
+      pointer-events: none;
+      min-height: 0;
+    }
+
+    /* Zoom Out Overview Bottom Dock */
+    .overview-dock {
+      pointer-events: auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: var(--space-md);
+      background: var(--surface-dock-glass);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-sm) var(--space-md);
+      align-items: stretch;
+      transition: opacity var(--dur-short) var(--ease-out),
+                  transform var(--dur-short) var(--ease-out);
+    }
+
+    .overview-dock.is-hidden {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0);
+      pointer-events: none;
+      display: none;
+    }
+
+    /* Zoom In Analytical Lens Drawer (Right Side of Stage) */
+    .zoom-lens-panel {
+      pointer-events: auto;
+      align-self: flex-end;
+      width: min(56%, 640px);
+      height: calc(100vh - 122px);
+      background: var(--surface-panel-glass);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md) var(--space-lg);
+      display: none;
+      flex-direction: column;
+      gap: var(--space-sm);
+      overflow-y: auto;
+      animation: lensFadeIn var(--dur-short) var(--ease-out);
+    }
+
+    .zoom-lens-panel.is-active {
+      display: flex;
+    }
+
+    @keyframes lensFadeIn {
+      from {
+        opacity: 0;
+        transform: translate3d(14px, 0, 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .lens-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      padding-bottom: var(--space-sm);
+      border-bottom: var(--hairline);
+    }
+
+    .lens-kicker {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--secondary);
+      font-weight: 500;
+    }
+
+    .lens-title {
+      margin: 2px 0 0;
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 400;
+      color: var(--on-surface);
+      line-height: 1.2;
+    }
+
+    .lens-title strong {
+      font-weight: 600;
+    }
+
+    .lens-close-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 36px;
+      padding: var(--space-xs) var(--space-sm);
+      background: var(--background);
+      border: var(--hairline-control);
+      border-radius: var(--rounded);
+      color: var(--on-surface);
+      font-size: var(--label-size);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .lens-close-btn:hover {
+      background: var(--surface-container-high);
+    }
+
+    .lens-summary {
+      margin: 0;
+      font-size: var(--body-size);
+      color: var(--on-surface-variant);
+      line-height: 1.55;
+      max-width: 66ch;
+    }
+
+    /* Section Cards inside Lens */
+    .sub-panel {
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    .sub-panel.is-sage {
+      background: var(--surface-container);
+      border-color: var(--outline-variant);
+    }
+
+    .sub-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-xs);
+    }
+
+    .sub-panel-title {
+      margin: 0;
+      font-size: var(--subhead-size);
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+
+    .sub-panel-unit {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      color: var(--on-surface-variant);
+    }
+
+    /* Segmented Tabs inside Lens */
+    .seg-controls {
+      display: inline-flex;
+      gap: 4px;
+      background: var(--background);
+      padding: 3px;
+      border: var(--hairline);
+      border-radius: var(--rounded);
+    }
+
+    .seg-btn {
+      min-height: 30px;
+      padding: 0.2rem var(--space-sm);
+      border: none;
+      border-radius: calc(var(--rounded) - 2px);
+      background: transparent;
+      color: var(--on-surface-variant);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out);
+    }
+
+    .seg-btn:hover {
+      color: var(--on-surface);
+    }
+
+    .seg-btn.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    /* Data Tables (Haven style: hairline rows, tabular mono) */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .data-table th {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      text-align: left;
+      padding: 0.35rem var(--space-xs);
+      border-bottom: var(--hairline-control);
+    }
+
+    .data-table th.num,
+    .data-table td.num {
+      text-align: right;
+      font-family: var(--font-label);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .data-table td {
+      padding: 0.36rem var(--space-xs);
+      border-bottom: var(--hairline);
+      color: var(--on-surface);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tbody tr {
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--surface-container-high);
+    }
+
+    .data-table tbody tr.is-active-row {
+      background: var(--primary-container);
+      font-weight: 600;
+    }
+
+    /* Bar rows for Persistence & Rebound */
+    .bar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 145px minmax(0, 1fr) 86px;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: 0.78rem;
+    }
+
+    .bar-row-label {
+      color: var(--on-surface);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 500;
+    }
+
+    .bar-row-label span.code {
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      color: var(--on-surface-variant);
+      margin-right: 4px;
+    }
+
+    .bar-track {
+      height: 10px;
+      background: var(--background);
+      border-radius: 2px;
+      overflow: hidden;
+      border: var(--hairline);
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--data-1);
+      border-radius: 0 2px 2px 0;
+      transition: width var(--dur-short) var(--ease-out);
+    }
+
+    .bar-fill.is-sage {
+      background: var(--data-2);
+    }
+
+    .bar-fill.is-clay {
+      background: var(--data-3);
+    }
+
+    .bar-fill.is-context {
+      background: var(--data-context);
+    }
+
+    .bar-val {
+      font-family: var(--font-label);
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      color: var(--on-surface);
+    }
+
+    /* Mini grid cards */
+    .mini-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .mini-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .metric-box {
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm);
+    }
+
+    .metric-box-label {
+      font-size: 0.72rem;
+      color: var(--on-surface-variant);
+    }
+
+    .metric-box-val {
+      font-family: var(--font-label);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      font-variant-numeric: tabular-nums;
+      margin-top: 2px;
+    }
+
+    .metric-box-note {
+      font-size: 0.72rem;
+      color: var(--secondary);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .overview-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .overview-action-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color var(--dur-micro) var(--ease-out),
+                  background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .overview-action-card:hover {
+      border-color: var(--primary);
+      background: var(--surface-container-low);
+    }
+
+    .overview-action-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .overview-action-desc {
+      font-size: 0.73rem;
+      color: var(--on-surface-variant);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* SVG Charts inside Panels */
+    .chart-svg {
+      width: 100%;
+      display: block;
+      overflow: visible;
+    }
+
+    .chart-grid-line {
+      stroke: var(--outline-variant);
+      stroke-width: 1px;
+    }
+
+    .chart-axis-text {
+      font-family: var(--font-label);
+      font-size: 10px;
+      fill: var(--on-surface-variant);
+    }
+
+    /* Responsive fallback for mobile/narrow viewports */
+    @media (max-width: 900px) {
+      .dashboard-shell {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+      .sidebar {
+        height: auto;
+        border-right: none;
+        border-bottom: var(--hairline);
+      }
+      .nav-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+      .stage {
+        height: auto;
+        min-height: 85vh;
+        overflow: visible;
+      }
+      #map-canvas-wrap {
+        position: relative;
+        height: 420px;
+        min-height: 400px;
+      }
+      .kpi-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .overview-dock {
+        grid-template-columns: 1fr;
+      }
+      .zoom-lens-panel {
+        width: 100%;
+        height: auto;
+        max-height: none;
+      }
+      .map-hud-left {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        padding: var(--space-sm) var(--space-md);
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 0;
+      }
+      .kpi-strip {
+        grid-template-columns: 1fr;
+        padding: var(--space-sm);
+      }
+      .overview-cards,
+      .mini-grid-2,
+      .mini-grid-3 {
+        grid-template-columns: 1fr;
+      }
+      .bar-row {
+        grid-template-columns: 110px minmax(0, 1fr) 72px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-shell">
+    <!-- Left Navigation Sidebar -->
+    <aside class="sidebar" aria-label="研究視角導覽">
+      <div>
+        <div class="brand-block">
+          <div class="brand-kicker">
+            <i data-lucide="network" style="width:13px;height:13px;" aria-hidden="true"></i>
+            <span>PAUSB 研究儀表板</span>
+          </div>
+          <h1 class="brand-title">城市供給骨幹之<strong>持續與調適性韌性</strong></h1>
+          <p class="brand-subtitle">OECD ICIO 2018–2022 · 81 經濟體 · 49 產業 · 3,926 節點 · Top 10% 加權骨幹</p>
+        </div>
+
+        <nav class="nav-section" aria-label="視角切換標籤">
+          <div class="nav-group-label">視角與鏡頭縮放</div>
+
+          <button type="button" class="nav-tab is-active" data-view="overview" onclick="switchView('overview')">
+            <span class="nav-index">01</span>
+            <span class="nav-text">
+              <span class="nav-label">全球總覽</span>
+              <span class="nav-meta">全景貿易走廊與衝擊週期</span>
+            </span>
+            <span class="nav-zoom-tag">全景</span>
+          </button>
+
+          <button type="button" class="nav-tab" data-view="persistence" onclick="switchView('persistence')">
+            <span class="nav-index">02</span>
+            <span class="nav-text">
+              <span class="nav-label">核心存續</span>
+              <span class="nav-meta">55.5% 存續邊與拓撲穩定</span>
+            </span>
+            <span class="nav-zoom-tag">Zoom</span>
+          </button>
+
+          <button type="button" class="nav-tab" data-view="rewiring" onclick="switchView('rewiring')">
+            <span class="nav-index">03</span>
+            <span class="nav-text">
+              <span class="nav-label">重組與邊緣</span>
+              <span class="nav-meta">Jaccard 0.1973 與層級轉換</span>
+            </span>
+            <span class="nav-zoom-tag">Zoom</span>
+          </button>
+
+          <button type="button" class="nav-tab" data-view="rebound" onclick="switchView('rebound')">
+            <span class="nav-index">04</span>
+            <span class="nav-text">
+              <span class="nav-label">反彈層級</span>
+              <span class="nav-meta">Top 6 城市供給產業與樞紐</span>
+            </span>
+            <span class="nav-zoom-tag">Zoom</span>
+          </button>
+
+          <button type="button" class="nav-tab" data-view="methodology" onclick="switchView('methodology')">
+            <span class="nav-index">05</span>
+            <span class="nav-text">
+              <span class="nav-label">研究方法</span>
+              <span class="nav-meta">PAUSB 框架與門檻敏感度</span>
+            </span>
+            <span class="nav-zoom-tag">框架</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div>
+          <span class="control-label">年際切片檢視 (地圖權重與拓撲)</span>
+          <div class="year-pills" role="group" aria-label="選擇檢視年份">
+            <button type="button" class="year-pill" data-year="2018" onclick="setYear(2018)">2018</button>
+            <button type="button" class="year-pill" data-year="2019" onclick="setYear(2019)">2019</button>
+            <button type="button" class="year-pill" data-year="2020" onclick="setYear(2020)">2020</button>
+            <button type="button" class="year-pill" data-year="2021" onclick="setYear(2021)">2021</button>
+            <button type="button" class="year-pill is-active" data-year="2022" onclick="setYear(2022)">2022</button>
+          </div>
+        </div>
+
+        <div class="sidebar-actions">
+          <button type="button" class="btn-outline" onclick="switchView('overview')">
+            <i data-lucide="maximize-2" style="width:14px;height:14px;" aria-hidden="true"></i>
+            <span>重置全景視角</span>
+          </button>
+        </div>
+
+        <p class="source-caption">
+          資料來源：Lin &amp; Cheng (2026), Journal of Cleaner Production 568, 148690。地理邊界：Natural Earth (公有領域)。
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main 100vh Spatial Dashboard Stage -->
+    <main class="stage">
+      <!-- Top KPI Summary Strip -->
+      <section class="kpi-strip" aria-label="核心研究指標">
+        <div class="kpi-card" id="kpi-network" onclick="switchView('overview')" tabindex="0" onkeydown="handleCardKey(event, 'overview')">
+          <div class="kpi-top">
+            <span class="kpi-label">網路與骨幹規模</span>
+            <span class="kpi-badge" id="kpi-year-badge">2022 切片</span>
+          </div>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpi-edges-val">1,017,060</span>
+            <span class="kpi-delta" id="kpi-weight-val">1.02×10⁸</span>
+          </div>
+          <div class="kpi-caption">3,926 國家—產業節點 · Top 10% 骨幹承載 99.53% 流量</div>
+        </div>
+
+        <div class="kpi-card" id="kpi-persistence" onclick="switchView('persistence')" tabindex="0" onkeydown="handleCardKey(event, 'persistence')">
+          <div class="kpi-top">
+            <span class="kpi-label">五年全程存續核心</span>
+            <span class="kpi-badge">Persistence</span>
+          </div>
+          <div class="kpi-value-row">
+            <span class="kpi-value">55.5%</span>
+            <span class="kpi-delta">佔 2022 骨幹 73.82%</span>
+          </div>
+          <div class="kpi-caption">750,767 條邊 2018–2022 連續存在，未因衝擊崩解</div>
+        </div>
+
+        <div class="kpi-card" id="kpi-rewiring" onclick="switchView('rewiring')" tabindex="0" onkeydown="handleCardKey(event, 'rewiring')">
+          <div class="kpi-top">
+            <span class="kpi-label">重組峰值 (Jaccard)</span>
+            <span class="kpi-badge">2020–2021</span>
+          </div>
+          <div class="kpi-value-row">
+            <span class="kpi-value">0.1973</span>
+            <span class="kpi-delta">99.09% 來自邊緣層</span>
+          </div>
+          <div class="kpi-caption">衝擊後滯後調適：120,069 條由邊緣層晉升進入骨幹</div>
+        </div>
+
+        <div class="kpi-card" id="kpi-rebound" onclick="switchView('rebound')" tabindex="0" onkeydown="handleCardKey(event, 'rebound')">
+          <div class="kpi-top">
+            <span class="kpi-label">跨境整合再擴張</span>
+            <span class="kpi-badge">Rebound</span>
+          </div>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpi-cross-val">14.81%</span>
+            <span class="kpi-delta" id="kpi-cross-delta">較 2020 +1.98 pp</span>
+          </div>
+          <div class="kpi-caption">反彈聚焦營造、批發零售、能源、食品與化學六大部門</div>
+        </div>
+      </section>
+
+      <!-- Background Vector World Map + Flow Corridors -->
+      <div id="map-canvas-wrap">
+        <svg id="world-svg" viewBox="0 0 1120 620" preserveAspectRatio="xMidYMid slice" aria-label="全球跨國供給骨幹走廊向量地圖">
+          <defs>
+            <marker id="arrow-core" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--map-corridor-core)"></path>
+            </marker>
+            <marker id="arrow-energy" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--map-corridor-energy)"></path>
+            </marker>
+            <marker id="arrow-trans" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--map-corridor-trans)"></path>
+            </marker>
+          </defs>
+          <g id="map-camera">
+            <g id="layer-graticule"></g>
+            <g id="layer-countries"></g>
+            <g id="layer-corridors"></g>
+            <g id="layer-hubs"></g>
+            <g id="layer-corridor-labels"></g>
+          </g>
+        </svg>
+        <div id="map-tooltip" class="map-tooltip" role="status" aria-live="polite"></div>
+      </div>
+
+      <!-- Bottom-Left Camera & Legend HUD -->
+      <div class="map-hud-left">
+        <div class="camera-indicator">
+          <span class="camera-dot" aria-hidden="true"></span>
+          <span id="camera-status-text">全景視角 (1.00×)｜顯示全球跨國骨幹走廊與前十大進口樞紐</span>
+        </div>
+        <div class="legend-card">
+          <span class="legend-item"><span class="legend-line is-core"></span>核心工業與批發材料流 (US–CHN / EU)</span>
+          <span class="legend-item"><span class="legend-line is-energy"></span>東亞能源、糧食與精煉石油走廊</span>
+          <span class="legend-item"><span class="legend-line is-trans"></span>跨大西洋與歐亞技術補給流</span>
+        </div>
+      </div>
+
+      <!-- Foreground Analytical Panels & Bottom Dock -->
+      <div class="view-overlay-container">
+        <!-- 01: Global Overview Bottom Dock (Zoom Out) -->
+        <section id="panel-overview" class="overview-dock" aria-label="全球總覽摘要">
+          <div>
+            <div class="sub-panel-header">
+              <h2 class="sub-panel-title">2018–2022 骨幹總流量與跨境整合比例演進</h2>
+              <span class="sub-panel-unit">總權重 (×10⁷) / 跨境佔比 (%)</span>
+            </div>
+            <svg id="overview-trend-svg" class="chart-svg" viewBox="0 0 540 108" height="108" aria-label="2018至2022年骨幹權重與跨境比例趨勢圖"></svg>
+          </div>
+          <div class="overview-cards">
+            <button type="button" class="overview-action-card" onclick="switchView('persistence')">
+              <div class="overview-action-title">
+                <span>02 持久核心</span>
+                <i data-lucide="arrow-up-right" style="width:14px;height:14px;" aria-hidden="true"></i>
+              </div>
+              <div class="overview-action-desc">55.5% 邊全程存續，Top 10% 骨幹穩定承載 99.5% 總中間投入流。</div>
+            </button>
+            <button type="button" class="overview-action-card" onclick="switchView('rewiring')">
+              <div class="overview-action-title">
+                <span>03 滯後重組</span>
+                <i data-lucide="arrow-up-right" style="width:14px;height:14px;" aria-hidden="true"></i>
+              </div>
+              <div class="overview-action-desc">2020–21 重組峰值 0.1973；99% 調整透過骨幹與邊緣層升降級完成。</div>
+            </button>
+            <button type="button" class="overview-action-card" onclick="switchView('rebound')">
+              <div class="overview-action-title">
+                <span>04 反彈層級</span>
+                <i data-lucide="arrow-up-right" style="width:14px;height:14px;" aria-hidden="true"></i>
+              </div>
+              <div class="overview-action-desc">營造、批發零售、煉油、電氣、食品與化學六大城市供給部門領銜反彈。</div>
+            </button>
+          </div>
+        </section>
+
+        <!-- 02: Persistence Core Lens (Zoom In) -->
+        <section id="panel-persistence" class="zoom-lens-panel" aria-label="核心存續分析視窗">
+          <div class="lens-header">
+            <div>
+              <div class="lens-kicker">02 · PERSISTENCE CORE · 鏡頭聚焦：歐亞與東亞高權重骨幹群集</div>
+              <h2 class="lens-title">高嵌入生產關係形成<strong>穩定結構核心</strong></h2>
+            </div>
+            <button type="button" class="lens-close-btn" onclick="switchView('overview')">
+              <i data-lucide="zoom-out" style="width:14px;height:14px;" aria-hidden="true"></i>
+              <span>全景</span>
+            </button>
+          </div>
+          <p class="lens-summary">
+            面對 2020 年系統衝擊，資本密集設施與長期契約形成高轉換成本，使跨國生產網路僅發生「流量壓縮」而非「結構崩解」。在 2018–2022 年所有曾進入骨幹的邊中，<strong>55.5%（750,767 條）連續五年存在</strong>，佔 2022 年骨幹邊數達 <strong>73.82%</strong>。
+          </p>
+
+          <div class="mini-grid-3">
+            <div class="metric-box">
+              <div class="metric-box-label">五年全程存續邊數</div>
+              <div class="metric-box-val">750,767</div>
+              <div class="metric-box-note">佔 5 年累計不重複骨幹 55.5%</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-box-label">佔 2022 骨幹比重</div>
+              <div class="metric-box-val">73.82%</div>
+              <div class="metric-box-note">Top 10% 門檻基準</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-box-label">骨幹總流量權重佔比</div>
+              <div class="metric-box-val">99.55%</div>
+              <div class="metric-box-note">2018–2022 介於 99.53%–99.57%</div>
+            </div>
+          </div>
+
+          <div class="sub-panel">
+            <div class="sub-panel-header">
+              <h3 class="sub-panel-title">骨幹邊存續結構與層級分工 (Fig. 3 &amp; 4.6)</h3>
+              <span class="sub-panel-unit">Top 10% 邊 vs. 非骨幹邊緣層</span>
+            </div>
+            <div class="bar-list">
+              <div class="bar-row">
+                <div class="bar-row-label">五年全程存續 (Core)</div>
+                <div class="bar-track"><div class="bar-fill" style="width: 55.5%;"></div></div>
+                <div class="bar-val">55.5%</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-row-label">階段性／≤4年變動邊</div>
+                <div class="bar-track"><div class="bar-fill is-sage" style="width: 44.5%;"></div></div>
+                <div class="bar-val">44.5%</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-row-label">Top 10% 承載總權重</div>
+                <div class="bar-track"><div class="bar-fill" style="width: 99.53%;"></div></div>
+                <div class="bar-val">99.53% (2022)</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-row-label">90% 邊緣層權重佔比</div>
+                <div class="bar-track"><div class="bar-fill is-context" style="width: 2.5%;"></div></div>
+                <div class="bar-val">0.47% (儲備池)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sub-panel">
+            <div class="sub-panel-header">
+              <h3 class="sub-panel-title">骨幹網路年度拓撲指標 (Table 3)</h3>
+              <span class="sub-panel-unit">2018–2022 縱貫比較</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>年份</th>
+                  <th class="num">骨幹邊數</th>
+                  <th class="num">密度</th>
+                  <th class="num">互惠性</th>
+                  <th class="num">SCC 規模</th>
+                  <th class="num">跨境佔比</th>
+                  <th class="num">進口 HHI</th>
+                </tr>
+              </thead>
+              <tbody id="table-topology-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 03: Rewiring & Periphery Lens (Zoom In) -->
+        <section id="panel-rewiring" class="zoom-lens-panel" aria-label="重組與邊緣轉換視窗">
+          <div class="lens-header">
+            <div>
+              <div class="lens-kicker">03 · REWIRING &amp; PERIPHERY · 鏡頭聚焦：跨太平洋與跨大西洋貿易走廊</div>
+              <h2 class="lens-title">滯後性重組與<strong>骨幹—邊緣層級置換</strong></h2>
+            </div>
+            <button type="button" class="lens-close-btn" onclick="switchView('overview')">
+              <i data-lucide="zoom-out" style="width:14px;height:14px;" aria-hidden="true"></i>
+              <span>全景</span>
+            </button>
+          </div>
+          <p class="lens-summary">
+            網路結構調整並非在 2020 年衝擊當下立即發生，而是呈現<strong>滯後性調適</strong>，於 <strong>2020–2021 年達到重組峰值（Jaccard 距離 0.1973）</strong>。更重要的是，超過 98.9% 的新進骨幹邊原本即存在於邊緣層，證明調適靠「既有關係升級」而非供應鏈憑空重造。
+          </p>
+
+          <div class="sub-panel">
+            <div class="sub-panel-header">
+              <h3 class="sub-panel-title">相鄰年度 Jaccard 重組距離與留存率 (Fig. 4 &amp; Table A3)</h3>
+              <span class="sub-panel-unit">Jaccard 距離越高代表組成置換越多</span>
+            </div>
+            <svg id="rewiring-chart-svg" class="chart-svg" viewBox="0 0 540 138" height="138" aria-label="骨幹網路相鄰年度重組距離長條與折線圖"></svg>
+          </div>
+
+          <div class="sub-panel is-sage">
+            <div class="sub-panel-header">
+              <h3 class="sub-panel-title">骨幹—邊緣層轉換機制檢視 (Table A3)</h3>
+              <div class="seg-controls" role="group" aria-label="選擇轉換區間">
+                <button type="button" class="seg-btn" data-interval="2018-2019" onclick="setIntervalView('2018-2019')">18–19</button>
+                <button type="button" class="seg-btn" data-interval="2019-2020" onclick="setIntervalView('2019-2020')">19–20</button>
+                <button type="button" class="seg-btn is-active" data-interval="2020-2021" onclick="setIntervalView('2020-2021')">20–21 (峰值)</button>
+                <button type="button" class="seg-btn" data-interval="2021-2022" onclick="setIntervalView('2021-2022')">21–22</button>
+              </div>
+            </div>
+            <div class="mini-grid-3" id="transition-cards"></div>
+          </div>
+
+          <div class="sub-panel">
+            <div class="sub-panel-header">
+              <h3 class="sub-panel-title">完整四階段轉換明細</h3>
+              <span class="sub-panel-unit">Top 10% 規格</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>轉換區間</th>
+                  <th class="num">留存率</th>
+                  <th class="num">Jaccard</th>
+                  <th class="num">新進骨幹邊</th>
+                  <th class="num">源自前年邊緣</th>
+                  <th class="num">退出骨幹邊</th>
+                  <th class="num">轉入次年邊緣</th>
+                </tr>
+              </thead>
+              <tbody id="table-transition-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 04: Rebound Hierarchy Lens (Zoom In) -->
+        <section id="panel-rebound" class="zoom-lens-panel" aria-label="反彈層級分析視窗">
+          <div class="lens-header">
+            <div>
+              <div class="lens-kicker">04 · REBOUND HIERARCHY · 鏡頭聚焦：前十大進口經濟體與城市供給核心</div>
+              <h2 class="lens-title">功能層級主導的<strong>不均衡反彈</strong></h2>
+            </div>
+            <button type="button" class="lens-close-btn" onclick="switchView('overview')">
+              <i data-lucide="zoom-out" style="width:14px;height:14px;" aria-hidden="true"></i>
+              <span>全景</span>
+            </button>
+          </div>
+          <p class="lens-summary">
+            2020 年至 2022 年的反彈高度集中於維持都市日常運作的<strong>關鍵物質供給部門</strong>（營造、批發零售、能源、食品、化學），而非單純依產業規模大小均勻復甦；國家層級亦呈現強者恆強的樞紐集中格局。
+          </p>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-sm);flex-wrap:wrap;">
+            <div class="seg-controls" role="group" aria-label="反彈分析維度">
+              <button type="button" class="seg-btn is-active" data-rebound-tab="sectors" onclick="setReboundTab('sectors')">產業反彈排行 (Table 5)</button>
+              <button type="button" class="seg-btn" data-rebound-tab="countries" onclick="setReboundTab('countries')">Top 10 經濟體軌跡 (Table 4)</button>
+            </div>
+            <div class="seg-controls" id="sector-sort-controls" role="group" aria-label="產業排序依據">
+              <button type="button" class="seg-btn is-active" data-sort="abs" onclick="setSectorSort('abs')">依絕對增量</button>
+              <button type="button" class="seg-btn" data-sort="pct" onclick="setSectorSort('pct')">依成長幅度 %</button>
+            </div>
+          </div>
+
+          <div id="rebound-sectors-box" class="sub-panel">
+            <div class="sub-panel-header">
+              <h3 class="sub-panel-title">2020–2022 十大反彈產業（前六大為核心城市供給部門）</h3>
+              <span class="sub-panel-unit">絕對變動量 / 成長率</span>
+            </div>
+            <div class="bar-list" id="sector-bar-list"></div>
+          </div>
+
+          <div id="rebound-countries-box" class="sub-panel" style="display:none;">
+            <div class="sub-panel-header">
+              <h3 class="sub-panel-title">前十大進口骨幹經濟體演變 (點擊列可聯動高亮地圖節點)</h3>
+              <span class="sub-panel-unit">單位：百萬 (Millions)</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>2022 排名</th>
+                  <th>經濟體</th>
+                  <th class="num">2018</th>
+                  <th class="num">2019</th>
+                  <th class="num">2020</th>
+                  <th class="num">2021</th>
+                  <th class="num">2022</th>
+                  <th class="num">20–22 增幅</th>
+                </tr>
+              </thead>
+              <tbody id="table-countries-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 05: Methodology & Robustness Lens -->
+        <section id="panel-methodology" class="zoom-lens-panel" aria-label="研究方法與穩健性檢驗視窗">
+          <div class="lens-header">
+            <div>
+              <div class="lens-kicker">05 · METHODOLOGY &amp; ROBUSTNESS · PAUSB 分析架構與檢驗</div>
+              <h2 class="lens-title"><strong>PAUSB</strong> 三維框架與門檻敏感度驗證</h2>
+            </div>
+            <button type="button" class="lens-close-btn" onclick="switchView('overview')">
+              <i data-lucide="zoom-out" style="width:14px;height:14px;" aria-hidden="true"></i>
+              <span>全景</span>
+            </button>
+          </div>
+          <p class="lens-summary">
+            PAUSB 框架刻意不將「存續、重組、反彈」加權合併為單一綜合指數，而是透過三項獨立維度揭示複雜系統的非線性調適機制，並以 Top 5%、10%、15% 門檻檢驗結果穩健性。
+          </p>
+
+          <div class="sub-panel">
+            <div class="sub-panel-header">
+              <h3 class="sub-panel-title">門檻敏感度測試互動比較 (Table A2)</h3>
+              <div class="seg-controls" role="group" aria-label="選擇骨幹提取門檻">
+                <button type="button" class="seg-btn" data-thresh="5" onclick="setThreshold('5')">Top 5%</button>
+                <button type="button" class="seg-btn is-active" data-thresh="10" onclick="setThreshold('10')">Top 10% (基準)</button>
+                <button type="button" class="seg-btn" data-thresh="15" onclick="setThreshold('15')">Top 15%</button>
+              </div>
+            </div>
+            <div class="mini-grid-3" id="threshold-cards"></div>
+          </div>
+
+          <div class="sub-panel">
+            <div class="sub-panel-header">
+              <h3 class="sub-panel-title">國家層級反彈驅動因子探索性迴歸 (Table 6)</h3>
+              <span class="sub-panel-unit">N = 81 · R² = 0.2666 · Adj. R² = 0.2280</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>解釋變數</th>
+                  <th class="num">迴歸係數</th>
+                  <th class="num">穩健標準誤</th>
+                  <th class="num">t 統計量</th>
+                  <th class="num">p 值</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>常數項 (const)</td>
+                  <td class="num">0.5762</td>
+                  <td class="num">0.6350</td>
+                  <td class="num">0.9073</td>
+                  <td class="num">0.3642</td>
+                </tr>
+                <tr>
+                  <td>入向存續性 (Persistence incoming)</td>
+                  <td class="num">0.4158</td>
+                  <td class="num">0.6707</td>
+                  <td class="num">0.6200</td>
+                  <td class="num">0.5353</td>
+                </tr>
+                <tr>
+                  <td>2019 產業多樣性 (Diversity 2019)</td>
+                  <td class="num">0.0875</td>
+                  <td class="num">0.1460</td>
+                  <td class="num">0.5993</td>
+                  <td class="num">0.5490</td>
+                </tr>
+                <tr>
+                  <td>2019 網路中心性 (Centrality 2019)</td>
+                  <td class="num">0.2544</td>
+                  <td class="num">0.3448</td>
+                  <td class="num">0.7377</td>
+                  <td class="num">0.4607</td>
+                </tr>
+                <tr class="is-active-row">
+                  <td>2020 衝擊曝險 (Shock exposure 2020)</td>
+                  <td class="num">1.2183</td>
+                  <td class="num">0.4665</td>
+                  <td class="num">2.6116</td>
+                  <td class="num">0.0090 ***</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="source-caption" style="margin-top:var(--space-xs);">
+              宏觀–微觀張力啟示：僅 2020 衝擊曝險達顯著水準，顯示骨幹系統整體的韌性是結構互賴的湧現屬性，無法簡化為單一國家節點特徵的線性加總。
+            </p>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    /* ================================================================
+       DATA GROUNDED IN Lin & Cheng (2026), J. Cleaner Production 568
+       ================================================================ */
+    const YEAR_METRICS = {
+      2018: { edges: `972,333`, nodes: 3926, weight: 8.31, weightLabel: `8.31×10⁷`, weightShare: `99.55%`, density: `0.0631`, reciprocity: `0.2847`, scc: `3,883`, crossBorder: 13.82, hhi: `0.1130` },
+      2019: { edges: `976,055`, nodes: 3924, weight: 8.41, weightLabel: `8.41×10⁷`, weightShare: `99.55%`, density: `0.0634`, reciprocity: `0.2866`, scc: `3,878`, crossBorder: 13.46, hhi: `0.1170` },
+      2020: { edges: `966,994`, nodes: 3926, weight: 8.12, weightLabel: `8.12×10⁷`, weightShare: `99.57%`, density: `0.0628`, reciprocity: `0.2891`, scc: `3,842`, crossBorder: 12.83, hhi: `0.1242` },
+      2021: { edges: `992,230`, nodes: 3926, weight: 9.61, weightLabel: `9.61×10⁷`, weightShare: `99.56%`, density: `0.0644`, reciprocity: `0.2910`, scc: `3,846`, crossBorder: 13.82, hhi: `0.1271` },
+      2022: { edges: `1,017,060`, nodes: 3926, weight: 10.20, weightLabel: `1.02×10⁸`, weightShare: `99.53%`, density: `0.0659`, reciprocity: `0.2881`, scc: `3,842`, crossBorder: 14.81, hhi: `0.1226` }
+    };
+
+    const TRANSITION_DATA = [
+      { interval: `2018-2019`, label: `2018–2019`, retention: `92.23%`, jaccard: 0.1472, entrants: `79,424`, fromPeriphery: `99.40%`, departures: `75,681`, toPeriphery: `99.07%` },
+      { interval: `2019-2020`, label: `2019–2020`, retention: `89.45%`, jaccard: 0.1840, entrants: `94,084`, fromPeriphery: `99.27%`, departures: `103,158`, toPeriphery: `99.60%` },
+      { interval: `2020-2021`, label: `2020–2021`, retention: `90.21%`, jaccard: 0.1973, entrants: `120,069`, fromPeriphery: `99.09%`, departures: `94,808`, toPeriphery: `99.62%` },
+      { interval: `2021-2022`, label: `2021–2022`, retention: `91.67%`, jaccard: 0.1715, entrants: `105,836`, fromPeriphery: `98.97%`, departures: `82,800`, toPeriphery: `99.76%` }
+    ];
+
+    const SECTORS_REBOUND = [
+      { code: `F`, name: `營造業 (Construction)`, v2020: 7558048, v2022: 9330558, abs: 1772510, pct: 23.45, top6: true },
+      { code: `G`, name: `批發及零售業 (Trade)`, v2020: 5993471, v2022: 7509054, abs: 1515583, pct: 25.29, top6: true },
+      { code: `C19`, name: `焦炭與精煉石油製品`, v2020: 2036581, v2022: 3342419, abs: 1305838, pct: 64.12, top6: true },
+      { code: `D`, name: `電力、燃氣及空調供應`, v2020: 2317814, v2022: 3548589, abs: 1230775, pct: 53.10, top6: true },
+      { code: `C10T12`, name: `食品、飲料及菸草製品`, v2020: 5085202, v2022: 6211798, abs: 1126596, pct: 22.15, top6: true },
+      { code: `C20`, name: `化學及化學製品`, v2020: 2477971, v2022: 3339513, abs: 861542, pct: 34.77, top6: true },
+      { code: `C24A`, name: `基本金屬 (Basic metals)`, v2020: 1743091, v2022: 2419423, abs: 676332, pct: 38.80, top6: false },
+      { code: `A01`, name: `農業、狩獵及相關服務`, v2020: 2614525, v2022: 3276016, abs: 661491, pct: 25.30, top6: false },
+      { code: `I`, name: `住宿及餐飲服務`, v2020: 1805071, v2022: 2449013, abs: 643942, pct: 35.67, top6: false },
+      { code: `M`, name: `專業、科學及技術服務`, v2020: 3409396, v2022: 4049323, abs: 639927, pct: 18.77, top6: false }
+    ];
+
+    const TOP_COUNTRIES = [
+      { rank: 1, iso: `CHN`, mapName: `China`, nameZh: `中國`, coords: [114.2, 34.5], vals: { 2018: 21.23, 2019: 22.08, 2020: 22.60, 2021: 27.52, 2022: 27.78 }, role: `核心製造與原物料進口樞紐` },
+      { rank: 2, iso: `USA`, mapName: `United States of America`, nameZh: `美國`, coords: [-98.5, 39.5], vals: { 2018: 15.76, 2019: 16.14, 2020: 15.38, 2021: 17.95, 2022: 20.08 }, role: `北美消費終端與跨洋樞紐` },
+      { rank: 3, iso: `DEU`, mapName: `Germany`, nameZh: `德國`, coords: [10.4, 51.1], vals: { 2018: 3.59, 2019: 3.47, 2020: 3.45, 2021: 3.97, 2022: 4.05 }, role: `歐洲製造與化工骨幹核心` },
+      { rank: 4, iso: `JPN`, mapName: `Japan`, nameZh: `日本`, coords: [138.2, 36.2], vals: { 2018: 4.28, 2019: 4.29, 2020: 4.02, 2021: 4.26, 2022: 4.02 }, role: `東亞精密工業與能源進口端` },
+      { rank: 5, iso: `IND`, mapName: `India`, nameZh: `印度`, coords: [78.9, 21.1], vals: { 2018: 2.37, 2019: 2.45, 2020: 2.25, 2021: 2.79, 2022: 3.11 }, role: `高成長精煉能源與化學節點` },
+      { rank: 6, iso: `ROW`, mapName: null, nameZh: `其餘經濟體 (ROW)`, coords: [45.0, 24.0], vals: { 2018: 2.69, 2019: 2.71, 2020: 2.48, 2021: 2.72, 2022: 3.05 }, role: `資源與初級能源輸出集聚區` },
+      { rank: 7, iso: `GBR`, mapName: `United Kingdom`, nameZh: `英國`, coords: [-2.1, 53.8], vals: { 2018: 2.28, 2019: 2.23, 2020: 2.09, 2021: 2.49, 2022: 2.70 }, role: `大西洋批發貿易與服務樞紐` },
+      { rank: 8, iso: `FRA`, mapName: `France`, nameZh: `法國`, coords: [2.2, 46.6], vals: { 2018: 2.37, 2019: 2.32, 2020: 2.16, 2021: 2.55, 2022: 2.67 }, role: `西歐食品農產與工業節點` },
+      { rank: 9, iso: `KOR`, mapName: `South Korea`, nameZh: `南韓`, coords: [127.8, 36.4], vals: { 2018: 2.16, 2019: 2.04, 2020: 1.90, 2021: 2.46, 2022: 2.56 }, role: `東亞石化與金屬中間財樞紐` },
+      { rank: 10, iso: `ITA`, mapName: `Italy`, nameZh: `義大利`, coords: [12.5, 42.8], vals: { 2018: 2.00, 2019: 1.91, 2020: 1.78, 2021: 2.14, 2022: 2.24 }, role: `南歐製造與營造材料節點` }
+    ];
+
+    const CORRIDORS = [
+      { id: `chn-usa`, from: [114.2, 34.5], to: [-98.5, 39.5], type: `core`, width: 3.4, curve: -0.22, label: `美中工業與批發骨幹走廊`, detail: `化學品 C20、基本金屬 C24A、批發零售 G` },
+      { id: `usa-chn`, from: [-98.5, 39.5], to: [114.2, 34.5], type: `energy`, width: 2.1, curve: 0.16, label: `跨太平洋農食與能源逆向流`, detail: `食品 C10T12、農業 A01、化學中間財` },
+      { id: `eu-usa`, from: [10.4, 51.1], to: [-98.5, 39.5], type: `trans`, width: 2.8, curve: -0.25, label: `歐美跨大西洋供應走廊`, detail: `化學 C20、專業技術 M、精煉能源 C19` },
+      { id: `gbr-usa`, from: [-2.1, 53.8], to: [-98.5, 39.5], type: `trans`, width: 2.0, curve: 0.18, label: `英美金融商貿補給線`, detail: `批發貿易 G、專業服務 M` },
+      { id: `chn-jpn`, from: [114.2, 34.5], to: [138.2, 36.2], type: `core`, width: 2.8, curve: -0.28, label: `中日核心中間材走廊`, detail: `基本金屬 C24A、化學 C20、營造 F` },
+      { id: `chn-kor`, from: [114.2, 34.5], to: [127.8, 36.4], type: `core`, width: 2.5, curve: 0.30, label: `中韓工業材料網`, detail: `金屬與電子製造鏈骨幹` },
+      { id: `ind-chn`, from: [78.9, 21.1], to: [114.2, 34.5], type: `energy`, width: 2.3, curve: -0.24, label: `南亞—東亞原物料走廊`, detail: `精煉石油 C19、基礎材料` },
+      { id: `row-ea`, from: [45.0, 24.0], to: [114.2, 34.5], type: `energy`, width: 2.4, curve: -0.22, label: `中東—東亞能源供給線`, detail: `電力與燃氣 D、精煉石油 C19` },
+      { id: `aus-ea`, from: [133.8, -25.3], to: [127.8, 36.4], type: `energy`, width: 2.2, curve: -0.20, label: `澳亞礦產與糧食走廊`, detail: `基本金屬、煤礦與食品原料` },
+      { id: `bra-chn`, from: [-51.9, -14.2], to: [114.2, 34.5], type: `energy`, width: 1.9, curve: -0.18, label: `南美農糧與礦產走廊`, detail: `食品原料 C10T12、農業 A01` },
+      { id: `deu-chn`, from: [10.4, 51.1], to: [114.2, 34.5], type: `core`, width: 2.4, curve: -0.20, label: `歐亞大陸工業骨幹`, detail: `德國—中國高持久性製造連帶` },
+      { id: `deu-fra`, from: [10.4, 51.1], to: [2.2, 46.6], type: `core`, width: 2.2, curve: -0.25, label: `歐洲內部核心網`, detail: `歐盟核心區電力、食品與化學流通` }
+    ];
+
+    const THRESHOLD_SENSITIVITY = {
+      '5': { label: `Top 5% 骨幹`, edges2022: `508,529`, persistent: `368,062`, share2022: `72.38%`, peakInterval: `2020–2021`, peakVal: `0.2101`, crossBorder: `14.78%`, top6Consistent: `完全一致 (Yes)` },
+      '10': { label: `Top 10% 骨幹 (基準)`, edges2022: `1,017,060`, persistent: `750,767`, share2022: `73.82%`, peakInterval: `2020–2021`, peakVal: `0.1973`, crossBorder: `14.81%`, top6Consistent: `完全一致 (Yes)` },
+      '15': { label: `Top 15% 骨幹`, edges2022: `1,525,589`, persistent: `1,147,296`, share2022: `75.20%`, peakInterval: `2020–2021`, peakVal: `0.1850`, crossBorder: `15.59%`, top6Consistent: `完全一致 (Yes)` }
+    };
+
+    const CAMERA_PRESETS = {
+      overview: {
+        scale: 1,
+        tx: 0,
+        ty: 0,
+        text: `全景視角 (1.00×)｜顯示 81 國骨幹供給走廊與前十大進口樞紐`
+      },
+      persistence: {
+        scale: 1.65,
+        tx: -230,
+        ty: 60,
+        text: `鏡頭縮放 (1.65×)｜聚焦歐亞與東亞高權重持久核心群集 (55.5% 全程存續)`
+      },
+      rewiring: {
+        scale: 1.48,
+        tx: -20,
+        ty: 55,
+        text: `鏡頭縮放 (1.48×)｜聚焦跨太平洋與跨大西洋骨幹—邊緣層重組走廊`
+      },
+      rebound: {
+        scale: 1.45,
+        tx: -45,
+        ty: 70,
+        text: `鏡頭縮放 (1.45×)｜聚焦北半球前十大樞紐經濟體與城市供給產業反彈`
+      },
+      methodology: {
+        scale: 1.12,
+        tx: -70,
+        ty: 20,
+        text: `框架視角 (1.12×)｜PAUSB 三維度分析架構與 Top 5%/10%/15% 敏感度驗證`
+      }
+    };
+
+    /* ================================================================
+       APPLICATION STATE
+       ================================================================ */
+    let currentView = `overview`;
+    let currentYear = 2022;
+    let currentInterval = `2020-2021`;
+    let currentReboundTab = `sectors`;
+    let currentSectorSort = `abs`;
+    let currentThreshold = `10`;
+    let selectedCountryIso = null;
+    let projectedHubs = {};
+
+    /* ================================================================
+       INIT & RENDERING
+       ================================================================ */
+    document.addEventListener(`DOMContentLoaded`, function () {
+      if (window.lucide && typeof window.lucide.createIcons === `function`) {
+        window.lucide.createIcons();
+      }
+      renderOverviewTrendChart();
+      renderTopologyTable();
+      renderRewiringChart();
+      renderTransitionTable();
+      renderTransitionCards();
+      renderSectorBars();
+      renderCountriesTable();
+      renderThresholdCards();
+      initWorldMap();
+      updateYearUI();
+    });
+
+    function handleCardKey(evt, viewName) {
+      if (evt.key === `Enter` || evt.key === ` `) {
+        evt.preventDefault();
+        switchView(viewName);
+      }
+    }
+
+    /* ================================================================
+       VIEW & CAMERA ZOOM CONTROLLER
+       ================================================================ */
+    function switchView(viewName) {
+      currentView = viewName;
+
+      // Update sidebar active state
+      const tabs = document.querySelectorAll(`.nav-tab`);
+      tabs.forEach(function (tab) {
+        if (tab.dataset.view === viewName) {
+          tab.classList.add(`is-active`);
+        } else {
+          tab.classList.remove(`is-active`);
+        }
+      });
+
+      // Highlight matching KPI card
+      const kpiMap = {
+        overview: `kpi-network`,
+        persistence: `kpi-persistence`,
+        rewiring: `kpi-rewiring`,
+        rebound: `kpi-rebound`
+      };
+      document.querySelectorAll(`.kpi-card`).forEach(function (card) {
+        card.classList.toggle(`is-highlighted`, card.id === kpiMap[viewName]);
+      });
+
+      // Toggle Overview dock vs Zoom-in lens panel
+      const overviewDock = document.getElementById(`panel-overview`);
+      if (overviewDock) {
+        overviewDock.classList.toggle(`is-hidden`, viewName !== `overview`);
+      }
+
+      const lensIds = [`persistence`, `rewiring`, `rebound`, `methodology`];
+      lensIds.forEach(function (id) {
+        const panel = document.getElementById(`panel-` + id);
+        if (panel) {
+          panel.classList.toggle(`is-active`, viewName === id);
+        }
+      });
+
+      // Apply 60FPS GPU Camera Transform
+      const preset = CAMERA_PRESETS[viewName] || CAMERA_PRESETS.overview;
+      const cameraEl = document.getElementById(`map-camera`);
+      if (cameraEl) {
+        cameraEl.style.transform = `translate3d(` + preset.tx + `px, ` + preset.ty + `px, 0) scale(` + preset.scale + `)`;
+      }
+
+      const statusEl = document.getElementById(`camera-status-text`);
+      if (statusEl) {
+        statusEl.textContent = preset.text;
+      }
+
+      updateCorridorEmphasis();
+    }
+
+    function setYear(yr) {
+      currentYear = yr;
+      document.querySelectorAll(`.year-pill`).forEach(function (btn) {
+        btn.classList.toggle(`is-active`, Number(btn.dataset.year) === yr);
+      });
+      updateYearUI();
+      renderTopologyTable();
+      renderOverviewTrendChart();
+      updateMapNodeSizes();
+    }
+
+    function updateYearUI() {
+      const m = YEAR_METRICS[currentYear];
+      if (!m) return;
+      const badge = document.getElementById(`kpi-year-badge`);
+      const edges = document.getElementById(`kpi-edges-val`);
+      const weight = document.getElementById(`kpi-weight-val`);
+      const cross = document.getElementById(`kpi-cross-val`);
+      const crossDelta = document.getElementById(`kpi-cross-delta`);
+
+      if (badge) badge.textContent = currentYear + ` 切片`;
+      if (edges) edges.textContent = m.edges;
+      if (weight) weight.textContent = m.weightLabel;
+      if (cross) cross.textContent = m.crossBorder.toFixed(2) + `%`;
+      if (crossDelta) {
+        const diff = (m.crossBorder - 12.83).toFixed(2);
+        if (currentYear === 2020) {
+          crossDelta.textContent = `2020 衝擊低點`;
+        } else if (Number(diff) >= 0) {
+          crossDelta.textContent = `較 2020 +` + diff + ` pp`;
+        } else {
+          crossDelta.textContent = `較 2020 ` + diff + ` pp`;
+        }
+      }
+    }
+
+    /* ================================================================
+       VECTOR WORLD MAP (D3 + TopoJSON Natural Earth 110m)
+       ================================================================ */
+    function initWorldMap() {
+      const svg = d3.select(`#world-svg`);
+      const gGraticule = d3.select(`#layer-graticule`);
+      const gCountries = d3.select(`#layer-countries`);
+      const gCorridors = d3.select(`#layer-corridors`);
+      const gHubs = d3.select(`#layer-hubs`);
+      const gLabels = d3.select(`#layer-corridor-labels`);
+
+      const width = 1120;
+      const height = 620;
+
+      const projection = d3.geoNaturalEarth1()
+        .scale(208)
+        .translate([width * 0.49, height * 0.54]);
+
+      const pathGen = d3.geoPath(projection);
+
+      // Subtle graticule background
+      gGraticule.append(`path`)
+        .datum(d3.geoGraticule10())
+        .attr(`class`, `graticule-path`)
+        .attr(`d`, pathGen);
+
+      // Load World TopoJSON from allowlisted jsDelivr
+      fetch(`https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json`)
+        .then(function (resp) { return resp.json(); })
+        .then(function (topo) {
+          const countries = topojson.feature(topo, topo.objects.countries);
+          const hubMapNames = new Set(TOP_COUNTRIES.map(function (c) { return c.mapName; }).filter(Boolean));
+
+          gCountries.selectAll(`path`)
+            .data(countries.features)
+            .join(`path`)
+            .attr(`class`, function (d) {
+              const name = d.properties && d.properties.name ? d.properties.name : ``;
+              return `country-land` + (hubMapNames.has(name) ? ` is-hub` : ``);
+            })
+            .attr(`data-name`, function (d) { return d.properties && d.properties.name ? d.properties.name : ``; })
+            .attr(`d`, pathGen);
+        })
+        .catch(function () {
+          // Graticule & supply hubs remain clean if offline
+        });
+
+      // Project corridors as quadratic curves with directional markers
+      CORRIDORS.forEach(function (c) {
+        const p1 = projection(c.from);
+        const p2 = projection(c.to);
+        if (!p1 || !p2) return;
+
+        const mx = (p1[0] + p2[0]) / 2;
+        const my = (p1[1] + p2[1]) / 2;
+        const dx = p2[0] - p1[0];
+        const dy = p2[1] - p1[1];
+        const cx = mx - dy * c.curve;
+        const cy = my + dx * c.curve;
+        const pathD = `M ` + p1[0].toFixed(1) + ` ` + p1[1].toFixed(1) + ` Q ` + cx.toFixed(1) + ` ` + cy.toFixed(1) + ` ` + p2[0].toFixed(1) + ` ` + p2[1].toFixed(1);
+
+        // Base corridor path with arrow marker
+        gCorridors.append(`path`)
+          .attr(`class`, `corridor-arc type-` + c.type)
+          .attr(`data-corridor`, c.id)
+          .attr(`data-type`, c.type)
+          .attr(`d`, pathD)
+          .attr(`stroke-width`, c.width)
+          .attr(`marker-end`, `url(#arrow-` + c.type + `)`)
+          .on(`mouseenter`, function (evt) {
+            showTooltip(evt, `<strong>` + c.label + `</strong><br><span>` + c.detail + `</span>`);
+          })
+          .on(`mouseleave`, hideTooltip);
+
+        // Animated flow pulse overlay
+        gCorridors.append(`path`)
+          .attr(`class`, `corridor-flow type-` + c.type)
+          .attr(`data-corridor-flow`, c.id)
+          .attr(`data-type`, c.type)
+          .attr(`d`, pathD)
+          .attr(`stroke-width`, Math.max(1.2, c.width * 0.55));
+
+        // Subtle corridor label pill on major routes
+        if (c.id === `chn-usa` || c.id === `eu-usa` || c.id === `row-ea` || c.id === `deu-chn`) {
+          const lx = (0.25 * p1[0] + 0.5 * cx + 0.25 * p2[0]);
+          const ly = (0.25 * p1[1] + 0.5 * cy + 0.25 * p2[1]) - 8;
+          const labelW = c.label.length * 9.6 + 14;
+          const pg = gLabels.append(`g`)
+            .attr(`class`, `corridor-pill-group`)
+            .attr(`transform`, `translate(` + lx.toFixed(1) + `, ` + ly.toFixed(1) + `)`);
+          pg.append(`rect`)
+            .attr(`class`, `corridor-pill-rect`)
+            .attr(`x`, -labelW / 2)
+            .attr(`y`, -9)
+            .attr(`width`, labelW)
+            .attr(`height`, 16);
+          pg.append(`text`)
+            .attr(`class`, `corridor-pill-text`)
+            .attr(`text-anchor`, `middle`)
+            .attr(`y`, 2.5)
+            .text(c.label);
+        }
+      });
+
+      // Render Hub Economy Nodes
+      TOP_COUNTRIES.forEach(function (country) {
+        const pt = projection(country.coords);
+        if (!pt) return;
+        projectedHubs[country.iso] = pt;
+
+        const rScale = Math.max(4.5, Math.sqrt(country.vals[currentYear]) * 2.15);
+        const hg = gHubs.append(`g`)
+          .attr(`class`, `hub-node`)
+          .attr(`data-iso`, country.iso)
+          .attr(`transform`, `translate(` + pt[0].toFixed(1) + `, ` + pt[1].toFixed(1) + `)`)
+          .on(`mouseenter`, function (evt) {
+            const val = country.vals[currentYear].toFixed(2);
+            showTooltip(evt, `<strong>#` + country.rank + ` ` + country.nameZh + ` (` + country.iso + `)</strong><br><span>` + currentYear + ` 入向骨幹總量：` + val + `M</span><br><span>` + country.role + `</span>`);
+          })
+          .on(`mouseleave`, hideTooltip)
+          .on(`click`, function () {
+            selectCountry(country.iso);
+          });
+
+        hg.append(`circle`)
+          .attr(`class`, `hub-pulse`)
+          .attr(`r`, rScale + 4.5);
+
+        hg.append(`circle`)
+          .attr(`class`, `hub-circle` + (country.iso === `ROW` ? ` is-energy-accent` : ``))
+          .attr(`r`, rScale);
+
+        const labelText = country.iso + ` ` + country.vals[currentYear].toFixed(1) + `M`;
+        const lw = labelText.length * 5.8 + 10;
+        hg.append(`rect`)
+          .attr(`class`, `hub-label-bg`)
+          .attr(`x`, rScale + 5)
+          .attr(`y`, -8)
+          .attr(`width`, lw)
+          .attr(`height`, 15);
+
+        hg.append(`text`)
+          .attr(`class`, `hub-label-text`)
+          .attr(`x`, rScale + 10)
+          .attr(`y`, 2.5)
+          .text(labelText);
+      });
+    }
+
+    function updateMapNodeSizes() {
+      TOP_COUNTRIES.forEach(function (country) {
+        const g = d3.select(`.hub-node[data-iso="` + country.iso + `"]`);
+        if (g.empty()) return;
+        const rScale = Math.max(4.5, Math.sqrt(country.vals[currentYear]) * 2.15);
+        g.select(`.hub-circle`).attr(`r`, rScale);
+        g.select(`.hub-pulse`).attr(`r`, rScale + 4.5);
+        const labelText = country.iso + ` ` + country.vals[currentYear].toFixed(1) + `M`;
+        const lw = labelText.length * 5.8 + 10;
+        g.select(`.hub-label-bg`).attr(`x`, rScale + 5).attr(`width`, lw);
+        g.select(`.hub-label-text`).attr(`x`, rScale + 10).text(labelText);
+      });
+    }
+
+    function updateCorridorEmphasis() {
+      const arcs = document.querySelectorAll(`.corridor-arc, .corridor-flow`);
+      arcs.forEach(function (el) {
+        const type = el.dataset.type;
+        let dim = false;
+        if (currentView === `persistence` && type !== `core`) dim = true;
+        if (currentView === `rewiring` && type === `energy`) dim = true;
+        el.classList.toggle(`is-dimmed`, dim);
+      });
+    }
+
+    function selectCountry(iso) {
+      selectedCountryIso = selectedCountryIso === iso ? null : iso;
+      document.querySelectorAll(`.hub-circle`).forEach(function (el) {
+        const parentIso = el.parentElement ? el.parentElement.dataset.iso : ``;
+        el.classList.toggle(`is-selected`, parentIso === selectedCountryIso);
+      });
+      const target = TOP_COUNTRIES.find(function (c) { return c.iso === selectedCountryIso; });
+      document.querySelectorAll(`.country-land`).forEach(function (el) {
+        el.classList.toggle(`is-selected`, target && target.mapName && el.dataset.name === target.mapName);
+      });
+      renderCountriesTable();
+    }
+
+    function showTooltip(evt, html) {
+      const tip = document.getElementById(`map-tooltip`);
+      const wrap = document.getElementById(`map-canvas-wrap`);
+      if (!tip || !wrap) return;
+      const rect = wrap.getBoundingClientRect();
+      tip.innerHTML = html;
+      const x = Math.min(rect.width - 250, Math.max(12, evt.clientX - rect.left + 14));
+      const y = Math.min(rect.height - 90, Math.max(12, evt.clientY - rect.top - 18));
+      tip.style.left = x + `px`;
+      tip.style.top = y + `px`;
+      tip.classList.add(`is-visible`);
+    }
+
+    function hideTooltip() {
+      const tip = document.getElementById(`map-tooltip`);
+      if (tip) tip.classList.remove(`is-visible`);
+    }
+
+    /* ================================================================
+       OVERVIEW TREND SVG CHART (2018-2022 Weight & Cross-border Share)
+       ================================================================ */
+    function renderOverviewTrendChart() {
+      const svg = document.getElementById(`overview-trend-svg`);
+      if (!svg) return;
+      const years = [2018, 2019, 2020, 2021, 2022];
+      const padL = 36, padR = 40, padT = 14, padB = 22;
+      const w = 540 - padL - padR;
+      const h = 108 - padT - padB;
+
+      const xPos = function (i) { return padL + (i * w) / (years.length - 1); };
+      // Weight range: 7.5 to 10.6
+      const yWeight = function (v) { return padT + h - ((v - 7.5) / 3.2) * h; };
+      // Cross-border range: 12.0 to 15.2
+      const yCross = function (v) { return padT + h - ((v - 12.0) / 3.2) * h; };
+
+      let out = ``;
+      // Gridlines
+      [0, 0.5, 1].forEach(function (t) {
+        const yy = (padT + h * t).toFixed(1);
+        out += `<line class="chart-grid-line" x1="` + padL + `" y1="` + yy + `" x2="` + (padL + w) + `" y2="` + yy + `"/>`;
+      });
+
+      // Bars for total weight
+      years.forEach(function (yr, i) {
+        const m = YEAR_METRICS[yr];
+        const bx = xPos(i) - 14;
+        const by = yWeight(m.weight);
+        const bh = padT + h - by;
+        const fill = yr === currentYear ? `var(--data-1)` : `var(--data-context)`;
+        out += `<rect x="` + bx.toFixed(1) + `" y="` + by.toFixed(1) + `" width="28" height="` + bh.toFixed(1) + `" rx="2" fill="` + fill + `" opacity="0.85"/>`;
+        out += `<text class="chart-axis-text" x="` + xPos(i).toFixed(1) + `" y="` + (padT + h + 14) + `" text-anchor="middle">` + yr + `</text>`;
+      });
+
+      // Line for cross-border share
+      const pts = years.map(function (yr, i) {
+        return xPos(i).toFixed(1) + `,` + yCross(YEAR_METRICS[yr].crossBorder).toFixed(1);
+      }).join(` `);
+      out += `<polyline fill="none" stroke="var(--data-2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" points="` + pts + `"/>`;
+
+      years.forEach(function (yr, i) {
+        const cx = xPos(i).toFixed(1);
+        const cy = yCross(YEAR_METRICS[yr].crossBorder).toFixed(1);
+        const r = yr === 2020 || yr === 2022 ? 4.2 : 3.2;
+        out += `<circle cx="` + cx + `" cy="` + cy + `" r="` + r + `" fill="var(--surface-container-low)" stroke="var(--data-2)" stroke-width="2"/>`;
+        if (yr === 2020 || yr === 2022 || yr === currentYear) {
+          out += `<text class="chart-axis-text" x="` + cx + `" y="` + (Number(cy) - 7).toFixed(1) + `" text-anchor="middle" fill="var(--secondary)" font-weight="600">` + YEAR_METRICS[yr].crossBorder.toFixed(2) + `%</text>`;
+        }
+      });
+
+      out += `<text class="chart-axis-text" x="4" y="16">權重</text>`;
+      out += `<text class="chart-axis-text" x="504" y="16" fill="var(--secondary)">跨境%</text>`;
+      svg.innerHTML = out;
+    }
+
+    /* ================================================================
+       02 PERSISTENCE: TOPOLOGY TABLE
+       ================================================================ */
+    function renderTopologyTable() {
+      const tbody = document.getElementById(`table-topology-body`);
+      if (!tbody) return;
+      const years = [2018, 2019, 2020, 2021, 2022];
+      tbody.innerHTML = years.map(function (yr) {
+        const m = YEAR_METRICS[yr];
+        const cls = yr === currentYear ? ` class="is-active-row"` : ``;
+        return `<tr` + cls + `>
+          <td>` + yr + (yr === 2020 ? ` (衝擊)` : ``) + `</td>
+          <td class="num">` + m.edges + `</td>
+          <td class="num">` + m.density + `</td>
+          <td class="num">` + m.reciprocity + `</td>
+          <td class="num">` + m.scc + `</td>
+          <td class="num">` + m.crossBorder.toFixed(2) + `%</td>
+          <td class="num">` + m.hhi + `</td>
+        </tr>`;
+      }).join(``);
+    }
+
+    /* ================================================================
+       03 REWIRING: JACCARD CHART & TRANSITION INTERACTION
+       ================================================================ */
+    function renderRewiringChart() {
+      const svg = document.getElementById(`rewiring-chart-svg`);
+      if (!svg) return;
+      const padL = 40, padR = 24, padT = 18, padB = 26;
+      const w = 540 - padL - padR;
+      const h = 138 - padT - padB;
+      const xPos = function (i) { return padL + (i + 0.5) * (w / TRANSITION_DATA.length); };
+      const yScale = function (v) { return padT + h - ((v - 0.12) / 0.10) * h; };
+
+      let out = ``;
+      [0.14, 0.17, 0.20].forEach(function (tick) {
+        const y = yScale(tick).toFixed(1);
+        out += `<line class="chart-grid-line" x1="` + padL + `" y1="` + y + `" x2="` + (padL + w) + `" y2="` + y + `"/>`;
+        out += `<text class="chart-axis-text" x="4" y="` + (Number(y) + 3) + `">` + tick.toFixed(2) + `</text>`;
+      });
+
+      const pts = TRANSITION_DATA.map(function (d, i) {
+        return xPos(i).toFixed(1) + `,` + yScale(d.jaccard).toFixed(1);
+      }).join(` `);
+
+      TRANSITION_DATA.forEach(function (d, i) {
+        const cx = xPos(i);
+        const cy = yScale(d.jaccard);
+        const bh = padT + h - cy;
+        const isPeak = d.interval === currentInterval;
+        out += `<rect x="` + (cx - 22).toFixed(1) + `" y="` + cy.toFixed(1) + `" width="44" height="` + bh.toFixed(1) + `" rx="2" fill="` + (isPeak ? `var(--data-1)` : `var(--data-context)`) + `" opacity="` + (isPeak ? `0.22` : `0.18`) + `"/>`;
+        out += `<text class="chart-axis-text" x="` + cx.toFixed(1) + `" y="` + (padT + h + 16) + `" text-anchor="middle">` + d.label + `</text>`;
+      });
+
+      out += `<polyline fill="none" stroke="var(--data-1)" stroke-width="2.5" points="` + pts + `"/>`;
+
+      TRANSITION_DATA.forEach(function (d, i) {
+        const cx = xPos(i);
+        const cy = yScale(d.jaccard);
+        const active = d.interval === currentInterval;
+        out += `<circle cx="` + cx.toFixed(1) + `" cy="` + cy.toFixed(1) + `" r="` + (active ? 5.5 : 4) + `" fill="` + (active ? `var(--data-1)` : `var(--surface-container-low)`) + `" stroke="var(--data-1)" stroke-width="2"/>`;
+        out += `<text class="chart-axis-text" x="` + cx.toFixed(1) + `" y="` + (cy - 9).toFixed(1) + `" text-anchor="middle" font-weight="` + (active ? `700` : `500`) + `" fill="` + (active ? `var(--primary)` : `var(--on-surface)`) + `">` + d.jaccard.toFixed(4) + `</text>`;
+      });
+
+      svg.innerHTML = out;
+    }
+
+    function setIntervalView(intervalKey) {
+      currentInterval = intervalKey;
+      document.querySelectorAll(`[data-interval]`).forEach(function (btn) {
+        btn.classList.toggle(`is-active`, btn.dataset.interval === intervalKey);
+      });
+      renderRewiringChart();
+      renderTransitionCards();
+      renderTransitionTable();
+    }
+
+    function renderTransitionCards() {
+      const box = document.getElementById(`transition-cards`);
+      if (!box) return;
+      const item = TRANSITION_DATA.find(function (d) { return d.interval === currentInterval; }) || TRANSITION_DATA[2];
+      box.innerHTML = `
+        <div class="metric-box">
+          <div class="metric-box-label">骨幹留存率</div>
+          <div class="metric-box-val">` + item.retention + `</div>
+          <div class="metric-box-note">Jaccard = ` + item.jaccard.toFixed(4) + `</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-box-label">新晉升骨幹邊數</div>
+          <div class="metric-box-val">` + item.entrants + `</div>
+          <div class="metric-box-note">` + item.fromPeriphery + ` 源自前年邊緣層</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-box-label">退出骨幹邊數</div>
+          <div class="metric-box-val">` + item.departures + `</div>
+          <div class="metric-box-note">` + item.toPeriphery + ` 降級留存於邊緣層</div>
+        </div>
+      `;
+    }
+
+    function renderTransitionTable() {
+      const tbody = document.getElementById(`table-transition-body`);
+      if (!tbody) return;
+      tbody.innerHTML = TRANSITION_DATA.map(function (d) {
+        const cls = d.interval === currentInterval ? ` class="is-active-row"` : ``;
+        return `<tr` + cls + ` style="cursor:pointer;" onclick="setIntervalView('` + d.interval + `')">
+          <td>` + d.label + `</td>
+          <td class="num">` + d.retention + `</td>
+          <td class="num">` + d.jaccard.toFixed(4) + `</td>
+          <td class="num">` + d.entrants + `</td>
+          <td class="num">` + d.fromPeriphery + `</td>
+          <td class="num">` + d.departures + `</td>
+          <td class="num">` + d.toPeriphery + `</td>
+        </tr>`;
+      }).join(``);
+    }
+
+    /* ================================================================
+       04 REBOUND: SECTORS & COUNTRIES
+       ================================================================ */
+    function setReboundTab(tab) {
+      currentReboundTab = tab;
+      document.querySelectorAll(`[data-rebound-tab]`).forEach(function (btn) {
+        btn.classList.toggle(`is-active`, btn.dataset.reboundTab === tab);
+      });
+      const secBox = document.getElementById(`rebound-sectors-box`);
+      const ctyBox = document.getElementById(`rebound-countries-box`);
+      const sortCtrl = document.getElementById(`sector-sort-controls`);
+      if (secBox) secBox.style.display = tab === `sectors` ? `block` : `none`;
+      if (ctyBox) ctyBox.style.display = tab === `countries` ? `block` : `none`;
+      if (sortCtrl) sortCtrl.style.display = tab === `sectors` ? `inline-flex` : `none`;
+    }
+
+    function setSectorSort(mode) {
+      currentSectorSort = mode;
+      document.querySelectorAll(`[data-sort]`).forEach(function (btn) {
+        btn.classList.toggle(`is-active`, btn.dataset.sort === mode);
+      });
+      renderSectorBars();
+    }
+
+    function renderSectorBars() {
+      const list = document.getElementById(`sector-bar-list`);
+      if (!list) return;
+      const sorted = SECTORS_REBOUND.slice().sort(function (a, b) {
+        return currentSectorSort === `abs` ? (b.abs - a.abs) : (b.pct - a.pct);
+      });
+      const maxVal = currentSectorSort === `abs` ? 1772510 : 65;
+
+      list.innerHTML = sorted.map(function (s) {
+        const val = currentSectorSort === `abs` ? s.abs : s.pct;
+        const pctWidth = Math.min(100, (val / maxVal) * 100).toFixed(1);
+        const valLabel = currentSectorSort === `abs`
+          ? `+` + (s.abs / 1000000).toFixed(2) + `M`
+          : `+` + s.pct.toFixed(1) + `%`;
+        const fillCls = s.top6 ? (currentSectorSort === `pct` && (s.code === `C19` || s.code === `D`) ? `is-clay` : ``) : `is-context`;
+
+        return `<div class="bar-row">
+          <div class="bar-row-label" title="` + s.name + `"><span class="code">` + s.code + `</span>` + s.name + `</div>
+          <div class="bar-track"><div class="bar-fill ` + fillCls + `" style="width:` + pctWidth + `%;"></div></div>
+          <div class="bar-val">` + valLabel + `</div>
+        </div>`;
+      }).join(``);
+    }
+
+    function renderCountriesTable() {
+      const tbody = document.getElementById(`table-countries-body`);
+      if (!tbody) return;
+      tbody.innerHTML = TOP_COUNTRIES.map(function (c) {
+        const growth = (((c.vals[2022] - c.vals[2020]) / c.vals[2020]) * 100).toFixed(1);
+        const active = selectedCountryIso === c.iso ? ` class="is-active-row"` : ``;
+        return `<tr` + active + ` style="cursor:pointer;" onclick="selectCountry('` + c.iso + `')">
+          <td class="num">` + c.rank + `</td>
+          <td>` + c.nameZh + ` <span style="font-family:var(--font-label);font-size:0.7rem;color:var(--on-surface-variant);">` + c.iso + `</span></td>
+          <td class="num">` + c.vals[2018].toFixed(2) + `</td>
+          <td class="num">` + c.vals[2019].toFixed(2) + `</td>
+          <td class="num">` + c.vals[2020].toFixed(2) + `</td>
+          <td class="num">` + c.vals[2021].toFixed(2) + `</td>
+          <td class="num">` + c.vals[2022].toFixed(2) + `</td>
+          <td class="num" style="color:var(--secondary);font-weight:600;">+` + growth + `%</td>
+        </tr>`;
+      }).join(``);
+    }
+
+    /* ================================================================
+       05 METHODOLOGY: THRESHOLD SENSITIVITY
+       ================================================================ */
+    function setThreshold(t) {
+      currentThreshold = t;
+      document.querySelectorAll(`[data-thresh]`).forEach(function (btn) {
+        btn.classList.toggle(`is-active`, btn.dataset.thresh === t);
+      });
+      renderThresholdCards();
+    }
+
+    function renderThresholdCards() {
+      const box = document.getElementById(`threshold-cards`);
+      if (!box) return;
+      const d = THRESHOLD_SENSITIVITY[currentThreshold] || THRESHOLD_SENSITIVITY['10'];
+      box.innerHTML = `
+        <div class="metric-box">
+          <div class="metric-box-label">2022 骨幹邊數</div>
+          <div class="metric-box-val">` + d.edges2022 + `</div>
+          <div class="metric-box-note">五年存續：` + d.persistent + ` (` + d.share2022 + `)</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-box-label">重組峰值 (Jaccard)</div>
+          <div class="metric-box-val">` + d.peakVal + `</div>
+          <div class="metric-box-note">峰值區間：` + d.peakInterval + `</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-box-label">2022 跨境權重佔比</div>
+          <div class="metric-box-val">` + d.crossBorder + `</div>
+          <div class="metric-box-note">Top 6 產業一致：` + d.top6Consistent + `</div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

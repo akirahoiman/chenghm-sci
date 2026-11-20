@@ -1,0 +1,2698 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="narrative">
+  <meta name="design-style" content="haven">
+  <title>AI 與專利情報驅動之技術商品化與責任 AI 治理 — 3D 星際智權航行系統</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Hanken+Grotesk:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      /* Bright Morandi Blue (Day Mode Default) */
+      --background: #eef2f6;
+      --surface-container-low: rgba(255, 255, 255, 0.86);
+      --surface-container: #dde5ed;
+      --surface-container-high: #cfd9e4;
+      --on-surface: #1e2a36;
+      --on-surface-variant: #4f6070;
+      --outline: #9fb0c0;
+      --outline-variant: #cbd5df;
+      --primary: #4b6b88;
+      --on-primary: #ffffff;
+      --primary-container: #dbe6f0;
+      --on-primary-container: #243b50;
+      --secondary: #56726a;
+      --tertiary: #6a8a7e;
+      --error: #a64b42;
+      --on-error: #ffffff;
+      --positive: #3f7a62;
+      --warning: #a37438;
+      --focus: #4b6b88;
+
+      /* Metallic & Slate Accents + 3D Space Tokens */
+      --metallic-sheen: rgba(180, 198, 214, 0.45);
+      --glass-backdrop: rgba(247, 250, 253, 0.78);
+      --space-fog: #e4ebf2;
+      --planet-core: #6d89a3;
+      --planet-ring: #96adc2;
+      --star-tint: #6c849c;
+      --globe-ocean: #d9e4ee;
+      --globe-land: #88a0b5;
+      --globe-arc: #4b6b88;
+      --globe-alert: #b55b52;
+
+      /* Data Series */
+      --data-1: #4b6b88;
+      --data-2: #56726a;
+      --data-3: #9c7b5c;
+      --data-4: #7b6e8d;
+      --data-context: #b8c5d1;
+
+      /* Typography */
+      --font-headline: 'Noto Sans TC', 'Outfit', 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+      --font-body: 'Noto Sans TC', 'Hanken Grotesk', 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+      --font-label: 'Geist Mono', 'Noto Sans TC', monospace;
+
+      --display-size: clamp(1.85rem, 1.3rem + 2vw, 2.75rem);
+      --headline-size: clamp(1.35rem, 1.05rem + 1vw, 1.85rem);
+      --subhead-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.25rem);
+      --body-size: clamp(0.9375rem, 0.9rem + 0.15vw, 1rem);
+      --label-size: 0.75rem;
+
+      /* Spacing & Radii */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.25rem;
+      --space-2xl: 3.5rem;
+      --rounded: 0.5rem;
+      --rounded-lg: 0.875rem;
+      --rounded-full: 9999px;
+
+      /* Effects */
+      --hairline: 1px solid var(--outline-variant);
+      --hairline-control: 1px solid var(--outline);
+      --elevation: 0 12px 36px -12px rgba(36, 59, 80, 0.14);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 140ms;
+      --dur-short: 260ms;
+      --dur-long: 520ms;
+    }
+
+    [data-theme="night"] {
+      color-scheme: dark;
+      --background: #0a111a;
+      --surface-container-low: rgba(17, 27, 40, 0.84);
+      --surface-container: #152232;
+      --surface-container-high: #1e3045;
+      --on-surface: #e8f0f7;
+      --on-surface-variant: #9db2c7;
+      --outline: #38516b;
+      --outline-variant: #23364b;
+      --primary: #72bdd4;
+      --on-primary: #07131c;
+      --primary-container: #183549;
+      --on-primary-container: #cdeef8;
+      --secondary: #83c4aa;
+      --tertiary: #6ca892;
+      --error: #e87b72;
+      --on-error: #1d0707;
+      --positive: #74cfa6;
+      --warning: #dfb367;
+      --focus: #72bdd4;
+
+      --metallic-sheen: rgba(114, 189, 212, 0.25);
+      --glass-backdrop: rgba(13, 22, 34, 0.78);
+      --space-fog: #070d14;
+      --planet-core: #3c6988;
+      --planet-ring: #72bdd4;
+      --star-tint: #a9d5e8;
+      --globe-ocean: #102030;
+      --globe-land: #385b78;
+      --globe-arc: #72bdd4;
+      --globe-alert: #e87b72;
+
+      --data-1: #72bdd4;
+      --data-2: #83c4aa;
+      --data-3: #dfb367;
+      --data-4: #b99ae0;
+      --data-context: #3b536b;
+      --elevation: 0 18px 48px -12px rgba(0, 0, 0, 0.55);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.6;
+      transition: background-color var(--dur-long) var(--ease-in-out), color var(--dur-short) var(--ease-in-out);
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Fullscreen 3D Space Canvas */
+    #space-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      display: block;
+    }
+
+    /* Cockpit Atmospheric Vignette */
+    .cockpit-vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: radial-gradient(circle at 72% 45%, transparent 25%, var(--space-fog) 115%);
+      opacity: 0.45;
+      transition: opacity var(--dur-long) var(--ease-in-out);
+    }
+
+    /* Top Flight HUD Bar */
+    .hud-header {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--glass-backdrop);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: var(--hairline);
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      min-width: 0;
+    }
+
+    .brand-emblem {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--rounded);
+      background: var(--primary-container);
+      border: var(--hairline-control);
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand-titles {
+      min-width: 0;
+    }
+
+    .brand-kicker {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      color: var(--primary);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-name {
+      font-family: var(--font-headline);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    .hud-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 38px;
+      padding: 0 var(--space-md);
+      border-radius: var(--rounded-full);
+      border: var(--hairline-control);
+      background: var(--surface-container-low);
+      color: var(--on-surface);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+    }
+
+    .hud-btn:hover {
+      background: var(--surface-container-high);
+      border-color: var(--primary);
+    }
+
+    .hud-btn.active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+
+    .hud-select {
+      min-height: 38px;
+      padding: 0 28px 0 12px;
+      border-radius: var(--rounded-full);
+      border: var(--hairline-control);
+      background: var(--surface-container-low);
+      color: var(--on-surface);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* Left Planetary Orbit Rail */
+    .orbit-rail {
+      position: fixed;
+      left: var(--space-lg);
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: var(--space-sm);
+      background: var(--glass-backdrop);
+      backdrop-filter: blur(14px);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--elevation);
+      max-width: 220px;
+    }
+
+    .orbit-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 40px;
+      padding: 6px 10px;
+      border-radius: var(--rounded);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--on-surface-variant);
+      text-align: left;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+    }
+
+    .orbit-btn:hover {
+      background: var(--surface-container);
+      color: var(--on-surface);
+    }
+
+    .orbit-btn.active {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .orbit-num {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      width: 24px;
+      height: 24px;
+      border-radius: var(--rounded-full);
+      display: grid;
+      place-items: center;
+      background: var(--surface-container);
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .orbit-btn.active .orbit-num {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .orbit-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Main Interactive Content Viewport */
+    .stage-shell {
+      position: fixed;
+      top: 66px;
+      left: 256px;
+      right: var(--space-lg);
+      bottom: 68px;
+      z-index: 15;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      pointer-events: none;
+    }
+
+    .station-card {
+      pointer-events: auto;
+      width: min(860px, 100%);
+      max-height: 100%;
+      overflow-y: auto;
+      padding: var(--space-xl);
+      background: var(--glass-backdrop);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: var(--hairline);
+      border-top: 2px solid var(--metallic-sheen);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--elevation);
+      transition: opacity var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out);
+    }
+
+    .station-card.globe-mode {
+      width: min(500px, 100%);
+    }
+
+    .station-card.transitioning {
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+    }
+
+    .station-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding-bottom: var(--space-md);
+      border-bottom: var(--hairline);
+      margin-bottom: var(--space-lg);
+    }
+
+    .station-kicker {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .station-title {
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 400;
+      line-height: 1.18;
+      margin: 0;
+      color: var(--on-surface);
+    }
+
+    .station-title strong {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .station-subtitle {
+      margin: 6px 0 0;
+      color: var(--secondary);
+      font-size: 0.9375rem;
+      max-width: 65ch;
+    }
+
+    /* Grids & Panels */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .panel {
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+    }
+
+    .panel-highlight {
+      background: var(--primary-container);
+      border: 1px solid var(--primary);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+      color: var(--on-primary-container);
+    }
+
+    .metric-val {
+      font-family: var(--font-headline);
+      font-size: 1.65rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+      line-height: 1.15;
+    }
+
+    .metric-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      margin-bottom: 4px;
+    }
+
+    .metric-note {
+      font-size: 0.8125rem;
+      color: var(--secondary);
+      margin-top: 4px;
+    }
+
+    /* Pipeline Flow */
+    .pipeline-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-sm);
+      margin: var(--space-md) 0;
+    }
+
+    .pipe-step {
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-top: 3px solid var(--primary);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+      cursor: pointer;
+      text-align: left;
+      transition: background-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+    }
+
+    .pipe-step:hover {
+      background: var(--primary-container);
+      transform: translateY(-2px);
+    }
+
+    .pipe-idx {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .pipe-name {
+      font-weight: 600;
+      font-size: 0.92rem;
+      margin: 4px 0;
+      color: var(--on-surface);
+    }
+
+    .pipe-desc {
+      font-size: 0.8rem;
+      color: var(--on-surface-variant);
+    }
+
+    /* Controls & Tables */
+    .pill-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: var(--space-md);
+    }
+
+    .pill-tab {
+      min-height: 36px;
+      padding: 4px 14px;
+      border-radius: var(--rounded-full);
+      border: var(--hairline-control);
+      background: var(--surface-container-low);
+      color: var(--on-surface-variant);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+
+    .pill-tab.active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+
+    .chart-box {
+      position: relative;
+      width: 100%;
+      min-height: 260px;
+      height: 260px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    .data-table th {
+      font-family: var(--font-label);
+      font-size: 0.75rem;
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 2px solid var(--outline);
+      color: var(--on-surface-variant);
+    }
+
+    .data-table td {
+      padding: 9px 10px;
+      border-bottom: var(--hairline);
+      vertical-align: top;
+    }
+
+    .data-table tr:hover td {
+      background: var(--surface-container);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--rounded-full);
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .badge-safe { background: var(--primary-container); color: var(--positive); }
+    .badge-warn { background: var(--surface-container); color: var(--warning); }
+    .badge-risk { background: var(--surface-container); color: var(--error); border: 1px solid var(--error); }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: var(--space-sm);
+    }
+
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* Floating Globe Callout Overlay (Right side in Station 6) */
+    .globe-hud-overlay {
+      position: fixed;
+      right: var(--space-lg);
+      top: 84px;
+      width: min(350px, 34vw);
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: opacity var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out);
+    }
+
+    .globe-hud-overlay.visible {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .globe-callout {
+      background: var(--glass-backdrop);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--primary);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md);
+      box-shadow: var(--elevation);
+    }
+
+    /* Bottom Navigation Bar */
+    .hud-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--glass-backdrop);
+      backdrop-filter: blur(14px);
+      border-top: var(--hairline);
+    }
+
+    .progress-track {
+      flex: 1;
+      max-width: 420px;
+      height: 6px;
+      background: var(--surface-container);
+      border-radius: var(--rounded-full);
+      overflow: hidden;
+      margin: 0 var(--space-md);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 12.5%;
+      background: var(--primary);
+      border-radius: var(--rounded-full);
+      transition: width var(--dur-short) var(--ease-out);
+    }
+
+    /* Floating 3D Amoeba Assistant */
+    .amoeba-dock {
+      position: fixed;
+      right: var(--space-lg);
+      bottom: 66px;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .amoeba-bubble {
+      max-width: 160px;
+      padding: 8px 12px;
+      background: var(--surface-container-low);
+      border: var(--hairline-control);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--elevation);
+      font-size: 0.78rem;
+      color: var(--on-surface);
+      line-height: 1.4;
+    }
+
+    .amoeba-btn {
+      width: 84px;
+      height: 84px;
+      padding: 0;
+      border-radius: var(--rounded-full);
+      border: 1px solid var(--outline);
+      background: var(--glass-backdrop);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--elevation);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+    }
+
+    .amoeba-btn:hover {
+      transform: scale(1.06);
+      border-color: var(--primary);
+    }
+
+    #amoeba-canvas {
+      width: 84px;
+      height: 84px;
+      display: block;
+    }
+
+    .source-footer-note {
+      margin-top: var(--space-md);
+      padding-top: var(--space-sm);
+      border-top: var(--hairline);
+      font-size: 0.76rem;
+      color: var(--on-surface-variant);
+    }
+
+    @media (max-width: 960px) {
+      .orbit-rail { display: none; }
+      .stage-shell { left: var(--space-md); right: var(--space-md); }
+      .globe-hud-overlay { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .hud-header { padding: var(--space-xs) var(--space-sm); }
+      .brand-kicker { display: none; }
+      .stage-shell { top: 60px; left: var(--space-sm); right: var(--space-sm); bottom: 64px; }
+      .station-card { padding: var(--space-md); }
+      .grid-2, .grid-3, .grid-4, .pipeline-row { grid-template-columns: 1fr; }
+      .amoeba-dock { right: var(--space-sm); bottom: 66px; }
+      .amoeba-bubble { display: none; }
+      .amoeba-btn { width: 64px; height: 64px; }
+      #amoeba-canvas { width: 64px; height: 64px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Fullscreen 3D Space Canvas -->
+  <canvas id="space-canvas" aria-hidden="true"></canvas>
+  <div class="cockpit-vignette" aria-hidden="true"></div>
+
+  <!-- Top HUD -->
+  <header class="hud-header">
+    <div class="brand-cluster">
+      <div class="brand-emblem" aria-hidden="true">
+        <i data-lucide="orbit" style="width:18px;height:18px;"></i>
+      </div>
+      <div class="brand-titles">
+        <div class="brand-kicker" id="ui-kicker">AI × PATENT INTELLIGENCE NAVIGATION</div>
+        <div class="brand-name" id="ui-brand-title">AI 與專利情報驅動之技術商品化與責任 AI 治理</div>
+        <div class="author-strip" style="margin-top: 4px; font-size: 0.85rem;">
+    <span data-i18n="author_credits">國立中興大學 科技管理研究所｜鄭凱文 (Hoiman Cheng)</span>
+  </div>
+      </div>
+    </div>
+
+    <div class="hud-controls">
+      <button type="button" class="hud-btn" id="btn-autoplay" onclick="toggleAutoPlay()">
+        <i data-lucide="play" style="width:15px;height:15px;"></i>
+        <span id="ui-autoplay-label">自動巡航</span>
+      </button>
+      <button type="button" class="hud-btn" id="btn-tts" onclick="toggleTTS()">
+        <i data-lucide="volume-2" style="width:15px;height:15px;"></i>
+        <span id="ui-tts-label">語音導覽</span>
+      </button>
+      <label for="lang-select" style="position:absolute;width:1px;height:1px;overflow:hidden;">Language</label>
+      <select id="lang-select" class="hud-select" onchange="changeLanguage(this.value)">
+        <option value="zh-TW" selected>繁體中文</option>
+        <option value="en">English</option>
+        <option value="zh-CN">简体中文</option>
+        <option value="ja">日本語</option>
+        <option value="de">Deutsch</option>
+        <option value="fr">Français</option>
+      </select>
+      <button type="button" class="hud-btn" id="btn-theme" onclick="toggleTheme()" aria-label="Toggle Day/Night Mode">
+        <i data-lucide="sun-moon" style="width:15px;height:15px;"></i>
+        <span id="ui-theme-label">莫蘭迪日間</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Left Planetary Orbit Rail -->
+  <nav class="orbit-rail" id="orbit-rail" aria-label="Planetary Stations"></nav>
+
+  <!-- Main Floating Cockpit Card -->
+  <main class="stage-shell">
+    <section class="station-card" id="station-card" aria-live="polite">
+      <!-- Persistent DOM Chart & Metric Targets (moved cleanly into stations when active) -->
+      <div id="station-dynamic-body"></div>
+      <div id="persistent-targets-vault" hidden aria-hidden="true">
+        <canvas id="chart-m1"></canvas>
+        <canvas id="chart-m2"></canvas>
+        <canvas id="chart-m3"></canvas>
+        <span id="or-ttm"></span>
+        <span id="or-cost"></span>
+        <span id="or-res"></span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Right 3D IP Globe Node Callout (Visible on Station 6) -->
+  <aside class="globe-hud-overlay" id="globe-hud-overlay">
+    <div class="globe-callout" id="globe-callout-content"></div>
+  </aside>
+
+  <!-- Floating 3D Amoeba Companion -->
+  <div class="amoeba-dock">
+    <div class="amoeba-bubble" id="amoeba-bubble">點我切換莫蘭迪日間 / 深空夜間模式</div>
+    <button type="button" class="amoeba-btn" id="amoeba-btn" onclick="toggleTheme()" title="Switch Day/Night Mode">
+      <canvas id="amoeba-canvas" width="168" height="168"></canvas>
+    </button>
+  </div>
+
+  <!-- Bottom Flight Progress Footer -->
+  <footer class="hud-footer">
+    <button type="button" class="hud-btn" onclick="prevStation()">
+      <i data-lucide="chevron-left" style="width:15px;height:15px;"></i>
+      <span id="ui-prev-label">上一星體</span>
+    </button>
+    <div class="progress-track" aria-hidden="true">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="ui-station-counter" style="font-family:var(--font-label);font-size:0.8125rem;color:var(--on-surface-variant);">01 / 08</span>
+      <button type="button" class="hud-btn" onclick="nextStation()">
+        <span id="ui-next-label">下一星體</span>
+        <i data-lucide="chevron-right" style="width:15px;height:15px;"></i>
+      </button>
+    </div>
+  </footer>
+
+  <api-shim></api-shim>
+
+  <script>
+    // =========================================================================
+    // 1. MULTI-LANGUAGE TRANSLATION DICTIONARY (6 LANGUAGES)
+    // =========================================================================
+    const I18N = {
+      'zh-TW': {
+        brandTitle: `AI 與專利情報驅動之技術商品化與責任 AI 治理`,
+        kicker: `AI × PATENT INTELLIGENCE SPACECRAFT`,
+        autoplayOn: `暫停巡航`,
+        autoplayOff: `自動巡航`,
+        ttsOn: `停止朗讀`,
+        ttsOff: `語音導覽`,
+        themeDay: `莫蘭迪日間`,
+        themeNight: `深空夜間`,
+        prev: `上一星體`,
+        next: `下一星體`,
+        amoebaDay: `莫蘭迪藍調日間航行中 ✨ 點擊切換深空模式`,
+        amoebaNight: `深空觀測站運行中 🌙 點擊返回莫蘭迪日間`,
+        navNames: [
+          `01 總覽架構`,
+          `02 情報與探勘`,
+          `03 商業化矩陣`,
+          `04 資源最佳化`,
+          `05 責任 AI 治理`,
+          `06 全球 IP 節點`,
+          `07 方法與假說`,
+          `08 治理邏輯對照`
+        ],
+        ttsLang: `zh-TW`
+      },
+      'en': {
+        brandTitle: `AI & Patent Intelligence Driven Tech Commercialization & Responsible AI Governance`,
+        kicker: `AI × PATENT INTELLIGENCE SPACECRAFT`,
+        autoplayOn: `Pause Cruise`,
+        autoplayOff: `Auto-Cruise`,
+        ttsOn: `Stop Audio`,
+        ttsOff: `Voice Guide`,
+        themeDay: `Morandi Day`,
+        themeNight: `Deep Space`,
+        prev: `Prev Sphere`,
+        next: `Next Sphere`,
+        amoebaDay: `Morandi Blue Day Mode active. Click to enter Deep Space!`,
+        amoebaNight: `Deep Space Night Mode active. Click to return to Morandi Day!`,
+        navNames: [
+          `01 Overview`,
+          `02 Patent Mining`,
+          `03 Feasibility`,
+          `04 OR Optimization`,
+          `05 Responsible AI`,
+          `06 3D IP Globe`,
+          `07 Methods & H1–H4`,
+          `08 Governance Logic`
+        ],
+        ttsLang: `en-US`
+      },
+      'zh-CN': {
+        brandTitle: `AI 与专利情报驱动之技术商品化与责任 AI 治理`,
+        kicker: `AI × PATENT INTELLIGENCE SPACECRAFT`,
+        autoplayOn: `暂停巡航`,
+        autoplayOff: `自动巡航`,
+        ttsOn: `停止朗读`,
+        ttsOff: `语音导览`,
+        themeDay: `莫兰迪日间`,
+        themeNight: `深空夜间`,
+        prev: `上一星体`,
+        next: `下一星体`,
+        amoebaDay: `莫兰迪蓝调日间航行中 ✨ 点击切换深空模式`,
+        amoebaNight: `深空观测站运行中 🌙 点击返回莫兰迪日间`,
+        navNames: [
+          `01 总览架构`,
+          `02 情报与探勘`,
+          `03 商业化矩阵`,
+          `04 资源最佳化`,
+          `05 责任 AI 治理`,
+          `06 全球 IP 节点`,
+          `07 方法与假说`,
+          `08 治理逻辑对照`
+        ],
+        ttsLang: `zh-CN`
+      },
+      'ja': {
+        brandTitle: `AI・特許インテリジェンス駆動の技術商業化と責任あるAIガバナンス`,
+        kicker: `AI × PATENT INTELLIGENCE SPACECRAFT`,
+        autoplayOn: `自動巡航停止`,
+        autoplayOff: `自動巡航`,
+        ttsOn: `音声停止`,
+        ttsOff: `音声ガイド`,
+        themeDay: `モランディ昼`,
+        themeNight: `深宇宙夜`,
+        prev: `前の天体`,
+        next: `次の天体`,
+        amoebaDay: `モランディ・ブルー昼モード稼働中 ✨ クリックで深宇宙へ`,
+        amoebaNight: `深宇宙ナイトモード稼働中 🌙 クリックで昼モードへ`,
+        navNames: [
+          `01 全体概要`,
+          `02 特許マイニング`,
+          `03 事業性評価`,
+          `04 資源最適化`,
+          `05 責任あるAI`,
+          `06 3D IP地球儀`,
+          `07 手法と仮説`,
+          `08 ガバナンス比較`
+        ],
+        ttsLang: `ja-JP`
+      },
+      'de': {
+        brandTitle: `KI- & Patent-Intelligence-gestützte Kommerzialisierung und Responsible AI Governance`,
+        kicker: `AI × PATENT INTELLIGENCE SPACECRAFT`,
+        autoplayOn: `Pause`,
+        autoplayOff: `Auto-Flug`,
+        ttsOn: `Audio Stopp`,
+        ttsOff: `Sprachguide`,
+        themeDay: `Morandi Tag`,
+        themeNight: `Deep Space`,
+        prev: `Vorherige`,
+        next: `Nächste`,
+        amoebaDay: `Morandi-Tagmodus aktiv ✨ Klicken für Deep-Space-Modus`,
+        amoebaNight: `Deep-Space-Nachtmodus aktiv 🌙 Klicken für Tagmodus`,
+        navNames: [
+          `01 Überblick`,
+          `02 Patent-Mining`,
+          `03 Machbarkeit`,
+          `04 OR-Optimierung`,
+          `05 Responsible AI`,
+          `06 3D-IP-Globus`,
+          `07 Methodik H1–H4`,
+          `08 Governance-Logik`
+        ],
+        ttsLang: `de-DE`
+      },
+      'fr': {
+        brandTitle: `Commercialisation technologique et gouvernance IA responsable pilotées par les brevets`,
+        kicker: `AI × PATENT INTELLIGENCE SPACECRAFT`,
+        autoplayOn: `Pause`,
+        autoplayOff: `Croisière Auto`,
+        ttsOn: `Arrêter Audio`,
+        ttsOff: `Guide Vocal`,
+        themeDay: `Jour Morandi`,
+        themeNight: `Espace Profond`,
+        prev: `Précédent`,
+        next: `Suivant`,
+        amoebaDay: `Mode Jour Morandi actif ✨ Cliquez pour l’Espace Profond`,
+        amoebaNight: `Mode Nuit Espace Profond actif 🌙 Cliquez pour revenir`,
+        navNames: [
+          `01 Vue d’ensemble`,
+          `02 Fouille Brevets`,
+          `03 Faisabilité`,
+          `04 Optimisation RO`,
+          `05 IA Responsable`,
+          `06 Globe IP 3D`,
+          `07 Méthodes H1–H4`,
+          `08 Logique Comparée`
+        ],
+        ttsLang: `fr-FR`
+      }
+    };
+
+    // =========================================================================
+    // 2. DOMAIN CONTENT & INTERACTIVE STATE
+    // =========================================================================
+    let appState = {
+      station: 0,
+      lang: 'zh-TW',
+      theme: 'day',
+      autoplay: false,
+      tts: false,
+      activeRadarIndex: 0,
+      activeCaseIndex: 0,
+      orWeights: { speed: 60, budget: 70, resilience: 85 },
+      activeDb: 'USPTO'
+    };
+
+    let activeChart = null;
+    let autoplayTimer = null;
+
+    const RADAR_SCENARIOS = [
+      {
+        id: 'llzo',
+        labels: {
+          'zh-TW': `LLZO 固態鋰硫電池複合電解質`,
+          'en': `LLZO Solid-State Li-S Composite Electrolyte`,
+          'zh-CN': `LLZO 固态锂硫电池复合电解质`,
+          'ja': `LLZO 全固体リチウム硫黄複合電解質`,
+          'de': `LLZO Festkörper-Li-S-Kompositelektrolyt`,
+          'fr': `Électrolyte composite LLZO Li-S solide`
+        },
+        scores: [38, 86, 88, 74, 62, 48],
+        ftoRisk: `Very High (89/100)`,
+        strength: `86 / 100`,
+        fit: `88%`,
+        note: {
+          'zh-TW': `面臨 Solid Energies 專利圍欄（US-12463245-B2 等至少 4 件授權專利覆蓋組合物、梯度架構與製程），需透過 NASA SABERS 授權或改質界面層迴避。`,
+          'en': `Confronts Solid Energies patent fencing (US-12463245-B2, US-12283655-B2, US-12463249-B2); requires interface redesign or NASA SABERS licensing.`,
+          'zh-CN': `面临 Solid Energies 专利围栏（US-12463245-B2 等至少 4 件授权专利覆盖组合物、梯度架构与制程），需透过授权或改质界面层回避。`,
+          'ja': `Solid Energies の特許網（US-12463245-B2 ほか4件）により FTO リスク極高。界面層設計変更または NASA SABERS ライセンスが必要。`,
+          'de': `Konfrontiert mit Solid Energies Patent-Fencing (US-12463245-B2 u.a.); erfordert Grenzflächen-Redesign oder NASA SABERS-Lizenzierung.`,
+          'fr': `Exposé au clôturage de brevets Solid Energies (US-12463245-B2, etc.) ; nécessite licence NASA SABERS ou refonte d’interface.`
+        }
+      },
+      {
+        id: 'polyamide',
+        labels: {
+          'zh-TW': `蓖麻油衍生生物基聚醯胺合成`,
+          'en': `Castor-Oil Bio-Based Polyamide Synthesis`,
+          'zh-CN': `蓖麻油衍生生物基聚酰胺合成`,
+          'ja': `ヒマシ油由来バイオポリアミド合成`,
+          'de': `Rizinusöl-basierte Bio-Polyamid-Synthese`,
+          'fr': `Synthèse de polyamide biosourcé (ricin)`
+        },
+        scores: [76, 79, 82, 84, 78, 81],
+        ftoRisk: `Moderate (42/100)`,
+        strength: `79 / 100`,
+        fit: `82%`,
+        note: {
+          'zh-TW': `歐洲大廠（Arkema、Evonik）鎖定傳統熱裂解路徑，而中國新進者（Cathay Biotech、Kingfa）正以發酵與呋喃二甲酸（FDCA）路徑形成替代性商業白地。`,
+          'en': `European incumbents rely on pyrolysis to 11-aminoundecanoic acid while Asian entrants pioneer fermentation & FDCA routes, opening whitespace.`,
+          'zh-CN': `欧洲大厂锁定传统热裂解路径，而中国新进者正以发酵与呋喃二甲酸（FDCA）路径形成替代性商业白地。`,
+          'ja': `欧州大手は熱分解経路に集中する一方、アジア勢が発酵・FDCA 経路を開拓しており、代替プロセスの商業化余地が高い。`,
+          'de': `Europäische Marktführer setzen auf Pyrolyse, während neue Akteure Fermentations- und FDCA-Routen erschließen (hohes Whitespace-Potenzial).`,
+          'fr': `Les acteurs européens utilisent la pyrolyse tandis que la fermentation et le FDCA ouvrent un espace commercial libre.`
+        }
+      },
+      {
+        id: 'medtech',
+        labels: {
+          'zh-TW': `MedTech AI 數位病理與呼吸監測`,
+          'en': `MedTech AI Digital Pathology & Monitoring`,
+          'zh-CN': `MedTech AI 数字病理与呼吸监测`,
+          'ja': `MedTech AI デジタル病理・呼吸モニタリング`,
+          'de': `MedTech KI Digitale Pathologie & Monitoring`,
+          'fr': `MedTech IA pathologie numérique & suivi`
+        },
+        scores: [64, 83, 91, 68, 72, 66],
+        ftoRisk: `Elevated (61/100)`,
+        strength: `83 / 100`,
+        fit: `91%`,
+        note: {
+          'zh-TW': `199 個專利資料庫橫跨 24.6 年時間跨度分析顯示：癌症（19%）與呼吸道（16%）為核心聚類，但須嚴防如 Masimo 訴 Apple 脈搏血氧專利（6.34 億美元判賠與進口禁令）的硬體感測重疊。`,
+          'en': `Scoping across 199 databases shows oncology (19%) & respiratory (16%) clusters; hardware sensor overlap risks Masimo-scale injunctions ($634M verdict).`,
+          'zh-CN': `199 个专利数据库分析显示：癌症（19%）与呼吸道（16%）为核心聚类，须严防如 Masimo 诉 Apple（6.34 亿美元判赔）的硬件传感重叠。`,
+          'ja': `199 DB 分析で癌(19%)・呼吸器(16%)が集中。Masimo 対 Apple 訴訟（6.34億ドル評決・輸入差止）級のハード干渉リスクに警戒が必要。`,
+          'de': `199 Datenbanken zeigen Onkologie- (19 %) & Atemwegs-Cluster (16 %); Sensor-Überschneidungen bergen Masimo-ähnliche Unterlassungsrisiken.`,
+          'fr': `L’analyse de 199 bases montre les pôles oncologie (19%) et respiratoire (16%), avec un risque d’injonction type Masimo c. Apple.`
+        }
+      },
+      {
+        id: 'semifuse',
+        labels: {
+          'zh-TW': `半導體雷射熔斷保險絲互連架構`,
+          'en': `Semiconductor Laser-Severable Fuse Interconnect`,
+          'zh-CN': `半导体雷射熔断保险丝互连架构`,
+          'ja': `半導体レーザー溶断ヒューズ配線構造`,
+          'de': `Halbleiter-Laser-Fuse-Verbindungsarchitektur`,
+          'fr': `Architecture de fusible laser semi-conducteur`
+        },
+        scores: [82, 71, 77, 89, 85, 79],
+        ftoRisk: `Low-Mod (31/100)`,
+        strength: `71 / 100`,
+        fit: `77%`,
+        note: {
+          'zh-TW': `參考 EMI v. Cypress（104 F. Supp. 2d 370）判決：明確區分「純過渡金屬」與「鈦鎢合金（Ti-W）」，並以製程物理機制差異驗證非均等侵害與可實施性。`,
+          'en': `Anchored by EMI v. Cypress (104 F. Supp. 2d 370): distinguishing Ti-W alloy from pure refractory metal establishes non-infringement under DOE.`,
+          'zh-CN': `参考 EMI v. Cypress 判决：明确区分「纯过渡金属」与「钛钨合金（Ti-W）」，并以物理机制差异验证非均等侵害。`,
+          'ja': `EMI 対 Cypress 判決に基づき「純遷移金属」と「Ti-W 合金」を峻別し、均等論非侵害と実施可能性を実証した設計回避モデル。`,
+          'de': `Gestützt auf EMI v. Cypress (104 F. Supp. 2d 370): Die Abgrenzung von Ti-W-Legierungen zu Reinmetallen sichert DOE-Konformität.`,
+          'fr': `Appuyé sur EMI c. Cypress : la distinction entre alliage Ti-W et métal pur valide le contournement hors doctrine des équivalents.`
+        }
+      }
+    ];
+
+    const LITIGATION_CASES = [
+      {
+        id: 'graver',
+        title: `Graver Tank & Mfg. Co. v. Linde Air Products`,
+        tag: `Doctrine of Equivalents 奠基案`,
+        verdict: `均等侵權成立（實質無差異）`,
+        badge: `badge-risk`,
+        fwr: {
+          'zh-TW': `【功能 Function】相同焊接助熔功能 ｜ 【方式 Way】僅以鹼土金屬錳替代鎂 ｜ 【結果 Result】產生完全相同的焊縫保護效果。`,
+          'en': `Function: Identical welding flux | Way: Substituting manganese for magnesium | Result: Identical weld shielding outcome.`,
+          'zh-CN': `【功能】相同焊接助熔功能 ｜ 【方式】仅以碱土金属锰替代镁 ｜ 【结果】产生完全相同的焊缝保护效果。`,
+          'ja': `【機能】同一の溶接フラックス ｜ 【方法】マグネシウムをマンガンに置換 ｜ 【結果】同一の溶接保護効果。`,
+          'de': `Funktion: Identisches Flussmittel | Weg: Mangan statt Magnesium | Ergebnis: Identische Schweißnaht.`,
+          'fr': `Fonction : flux identique | Moyen : substitution Mn/Mg | Résultat : soudure identique.`
+        },
+        aiLesson: {
+          'zh-TW': `「偷換概念」警示：AI 輔助迴避設計若僅替換化學族系或表面參數而未改變 Function-Way-Result，將直接觸發均等論侵權。`,
+          'en': `Concept-Swapping Warning: Surface parameter swaps without altering Function-Way-Result trigger infringement under DOE.`,
+          'zh-CN': `「偷换概念」警示：AI 辅助回避设计若仅替换表面参数而未改变 Function-Way-Result，将直接触发均等论侵权。`,
+          'ja': `「概念すり替え」警告：F-W-R を変えない表層的置換は AI 設計でも均等侵害と認定される。`,
+          'de': `Warnung vor Schein-Umgehung: Oberflächliche Substitutionen ohne F-W-R-Änderung verletzen das Patent nach Äquivalenzlehre.`,
+          'fr': `Alerte de substitution fictive : changer un paramètre sans modifier Fonction-Moyen-Résultat reste une contrefaçon.`
+        }
+      },
+      {
+        id: 'festo',
+        title: `Festo Corp. v. Shoketsu Kinzoku Kogyo`,
+        tag: `事後技術 After-Arising & 禁反言`,
+        verdict: `申請歷程禁反言與可預見性界線`,
+        badge: `badge-warn`,
+        fwr: {
+          'zh-TW': `【核心爭點】專利申請後才出現的「事後技術（After-Arising Tech）」能否納入均等範圍？法院確立申請人因限縮請求項而放棄的範圍受禁反言拘束，除非該技術於申請時不可預見。`,
+          'en': `Core Issue: Prosecution history estoppel bars equivalents surrendered via narrowing amendments unless the after-arising technology was unforeseeable at filing.`,
+          'zh-CN': `【核心争点】申请历程禁反言限制申请人因限缩权利要求而放弃的范围，除非该事后技术在申请时不可预见。`,
+          'ja': `【争点】出願経過禁反言により減縮補正した範囲は均等論で主張不可。ただし出願時に予見不能な後発技術は例外。`,
+          'de': `Kernpunkt: Prosecution History Estoppel sperrt abgetretene Äquivalente, außer bei unvorhersehbarer Nachfolge-Technologie.`,
+          'fr': `Enjeu : l’estoppel de poursuite bloque les équivalents cédés, sauf technologie postérieure imprévisible au dépôt.`
+        },
+        aiLesson: {
+          'zh-TW': `責任 AI 檢索必須解析審查歷史（File Wrapper）與優先權日凍結語義（Filing-Date Semantic Freeze），不可僅讀核准公告文本。`,
+          'en': `Responsible AI must parse prosecution file wrappers and filing-date semantic freezes—not just granted claims.`,
+          'zh-CN': `责任 AI 检索必须解析审查历史与申请日语义冻结，不可仅读核准公告文本。`,
+          'ja': `責任あるAIは登録公報だけでなく包袋（審査履歴）と出願日基準の語義凍結を解析する必要がある。`,
+          'de': `Verantwortungsvolle KI muss Prüfungsakten und die semantische Einfrierung zum Anmeldetag auswerten.`,
+          'fr': `L’IA responsable doit analyser l’historique d’examen et le sens figé à la date de dépôt.`
+        }
+      },
+      {
+        id: 'emi',
+        title: `EMI Group v. Cypress Semiconductor (104 F. Supp. 2d 370)`,
+        tag: `半導體熔斷機制與 §101/§112 攻防`,
+        verdict: `不侵權且權利項因物理不可能無效`,
+        badge: `badge-safe`,
+        fwr: {
+          'zh-TW': `【Claim Construction】法院將「光學吸收性耐火過渡金屬」界定為僅限「純過渡金屬」，排除 Cypress 的「鈦鎢合金（Ti-W）」，且陪審團認定 EMI 主張之氣化引爆機制具物理不可能性（§101 缺乏實用性 / §112 缺乏可實施性）。`,
+          'en': `Court construed "optically absorptive refractory transition metal" to pure metals only, excluding Cypress Ti-W alloy; jury found claimed vapor-induced explosion physically impossible (§101/§112 invalid).`,
+          'zh-CN': `法院将「光学吸收性耐火过渡金属」界定为仅限纯金属，排除 Cypress 的「钛钨合金（Ti-W）」，且认定主张机制缺乏可实施性。`,
+          'ja': `裁判所は「純遷移金属」と限定解釈し Cypress の Ti-W 合金を非侵害と判断、さらに主張機構を物理的不可能（§101/§112 無効）とした。`,
+          'de': `Gericht begrenzte Anspruch auf reine Metalle (ohne Ti-W-Legierung) und erklärte den Explosionsmechanismus für physisch unmöglich (§101/§112).`,
+          'fr': `La cour a exclu l’alliage Ti-W et invalidé les revendications pour impossibilité physique (§101/§112).`
+        },
+        aiLesson: {
+          'zh-TW': `正當迴避設計範例：透過材料合金相變與不同熱物理機制實現功能，並同步結合逆向工程驗證專利可實施性（Enablement）。`,
+          'en': `Legitimate Design-Around: Combining alloy phase differences with distinct physical mechanisms and reverse-engineered enablement testing.`,
+          'zh-CN': `正当回避设计范例：透过合金相变与不同热物理机制实现功能，并结合逆向工程验证可实施性。`,
+          'ja': `正当な回避設計モデル：合金相と熱物理機構の差異を実証し、リバースエンジニアリングで実施可能要件を検証。`,
+          'de': `Legitimes Design-Around: Nachweis abweichender Materialphysik plus Reverse-Engineering-Enablement-Prüfung.`,
+          'fr': `Contournement légitime : différenciation physico-métallurgique vérifiée par rétro-ingénierie.`
+        }
+      },
+      {
+        id: 'tivo',
+        title: `TiVo Inc. v. EchoStar Corp. (聯邦巡迴上訴法院全院聯席)`,
+        tag: `迴避設計實質差異檢驗標準`,
+        verdict: `「不僅是顯著差異（Colorable Differences）」標準`,
+        badge: `badge-warn`,
+        fwr: {
+          'zh-TW': `【法律標準】當被控產品經修改作為迴避設計時，法院須審查新舊功能特徵間是否僅存在「微不足道／表面色彩差異（No more than colorable differences）」，並逐一比對修改後元件與申請專利範圍。`,
+          'en': `En Banc Standard: Modified design-arounds face contempt if differences are "no more than colorable" compared with adjudged infringing features.`,
+          'zh-CN': `【法律标准】法院审查回避设计修改后特征是否仅存在「表面色彩差异（Colorable Differences）」，并逐一比对权利要求。`,
+          'ja': `【法的基準】回避設計は既判事項の特徴と比較して「些細な差異以上（Colorable Differences）」があるかが厳格に審査される。`,
+          'de': `Maßstab: Ein Design-Around scheitert, wenn Änderungen gegenüber dem verletzenden Merkmal nur „colorable differences“ sind.`,
+          'fr': `Critère : un contournement échoue s’il ne présente que des différences purement cosmétiques (« colorable differences »).`
+        },
+        aiLesson: {
+          'zh-TW': `本系統模組四導入「語義向量距離 + 結構差異閘門」，在 AI 生成研發建議前即攔截低於實質差異門檻的「偽迴避方案」。`,
+          'en': `Module 4 enforces semantic + structural divergence gates to block pseudo-design-arounds before R&D execution.`,
+          'zh-CN': `本系统模块四导入「语义向量距离 + 结构差异闸门」，在生成研发建议前即拦截伪回避方案。`,
+          'ja': `モジュール4は意味的・構造的乖離ゲートを設け、偽の回避設計案を R&D 実行前に自動遮断する。`,
+          'de': `Modul 4 blockiert Schein-Umgehungen mittels semantischer und struktureller Divergenz-Schwellenwerte.`,
+          'fr': `Le module 4 impose un seuil de divergence sémantique et structurelle pour bloquer les faux contournements.`
+        }
+      }
+    ];
+
+    const IP_NODES = [
+      {
+        id: 'US',
+        lat: 37.38, lon: -122.08,
+        city: `San Jose / USPTO (US)`,
+        role: {
+          'zh-TW': `全球高風險訴訟樞紐 & AI 專利熱區`,
+          'en': `Global Litigation Hub & AI Patent Cluster`,
+          'zh-CN': `全球高风险诉讼枢纽 & AI 专利热区`,
+          'ja': `世界最大級の特許訴訟ハブ・AI特許集積地`,
+          'de': `Globaler Klage-Hotspot & KI-Patentcluster`,
+          'fr': `Pôle contentieux mondial & cluster brevets IA`
+        },
+        metrics: { filings: `350+ AI Cases`, verdicts: `$4.19B (2024)`, cagr: `56.5% CAGR` },
+        summary: {
+          'zh-TW': `2024 年美國專利陪審團判賠總額達 41.9 億美元（72 件案件，12 件逾 1 億），2025 上半年再增 19.1 億美元；AI 相關訴訟五年複合年成長率達 56.5%。Solid Energies 亦於此佈局 LLZO 複合電解質專利圍欄。`,
+          'en': `$4.19B in 2024 US jury verdicts (72 cases) plus $1.91B in H1 2025. AI litigation grew at 56.5% CAGR (84 new suits in 2025). Key LLZO battery fencing concentrated here.`,
+          'zh-CN': `2024 年美国专利陪审团判赔总额达 41.9 亿美元（72 件案件），2025 上半年再增 19.1 亿美元；AI 相关诉讼五年复合年增长率达 56.5%。`,
+          'ja': `2024年米国特許評決総額41.9億ドル、2025年上期19.1億ドル。AI関連訴訟は年率56.5%で急増中。LLZO電池の特許網も集中。`,
+          'de': `4,19 Mrd. $ US-Urteile 2024 (+1,91 Mrd. $ H1 2025). KI-Klagen wachsen mit 56,5 % CAGR; starkes LLZO-Patent-Fencing.`,
+          'fr': `4,19 Md$ de verdicts US en 2024 (+1,91 Md$ S1 2025). Croissance de 56,5 % CAGR des litiges IA.`
+        }
+      },
+      {
+        id: 'EU',
+        lat: 48.13, lon: 11.58,
+        city: `Munich / EPO & UPC (EU)`,
+        role: {
+          'zh-TW': `歐洲單一專利法院 & 生物聚醯胺強權`,
+          'en': `UPC Enforcement & Bio-Polyamide Incumbents`,
+          'zh-CN': `欧洲单一专利法院 & 生物聚酰胺强权`,
+          'ja': `欧州統一特許裁判所・バイオポリアミド拠点`,
+          'de': `EPÜ / EPG Vollstreckung & Bio-Polyamid-Zentrum`,
+          'fr': `Juridiction Unifiée (JUB) & acteurs bio-polyamides`
+        },
+        metrics: { filings: `199 MedTech DBs`, verdicts: `EU Interop Rule`, cagr: `Horiz. Scan` },
+        summary: {
+          'zh-TW': `歐洲企業（Arkema、Evonik、EMS）掌握傳統蓖麻油熱裂解至 11-氨基十一酸專利群；法規面亦明確保障軟體互通性反向工程權益（不同於美國 Bowers 案契約優先原則）。`,
+          'en': `European leaders (Arkema, Evonik, EMS) hold castor-oil pyrolysis patents, while EU statutory law shields interoperability reverse engineering over EULA bans.`,
+          'zh-CN': `欧洲企业（Arkema、Evonik、EMS）掌握传统蓖麻油热裂解专利群；法规面亦明确保障软件互通性反向工程权益。`,
+          'ja': `欧州大手（Arkema等）がヒマシ油熱分解特許を保有。米国と異なり EU 法は相互運用目的のリバースエンジニアリングを契約より優先保護。`,
+          'de': `Arkema, Evonik & EMS halten Pyrolyse-Patente; zudem schützt EU-Recht Interoperabilitäts-Reverse-Engineering vor EULA-Verboten.`,
+          'fr': `Arkema et Evonik dominent la pyrolyse du ricin ; la loi UE protège la rétro-ingénierie d’interopérabilité.`
+        }
+      },
+      {
+        id: 'TW',
+        lat: 24.80, lon: 120.97,
+        city: `Hsinchu / TIPO (Taiwan)`,
+        role: {
+          'zh-TW': `半導體供應鏈韌性 & 固態電池製造樞紐`,
+          'en': `Semiconductor Supply & Li-S Cell Node`,
+          'zh-CN': `半导体供应链韧性 & 固态电池制造枢纽`,
+          'ja': `半導体サプライチェーン＆全固体電池製造ハブ`,
+          'de': `Halbleiter-Lieferkette & Festkörperzellen-Knoten`,
+          'fr': `Chaîne semi-conducteurs & nœud batteries Li-S`
+        },
+        metrics: { filings: `HonHai/SolidEdge`, verdicts: `FTO Corridor`, cagr: `NSGA-III Node` },
+        summary: {
+          'zh-TW': `鴻海／SolidEdge 等針對固態鋰硫電池（Li-S）提交關鍵申請案（為通用 LLM 如 Claude/ChatGPT 所遺漏），是連結北美智權授權與東亞量產製造的核心供應鏈節點。`,
+          'en': `Key Li-S filings (HonHai/SolidEdge) missed by general LLMs sit here, linking US IP licensing with East Asian high-yield manufacturing.`,
+          'zh-CN': `鸿海／SolidEdge 等针对固态锂硫电池提交关键申请案，是连接北美智权授权与东亚量产制造的核心供应链节点。`,
+          'ja': `汎用 LLM が見落とした HonHai/SolidEdge の Li-S 関連出願が位置し、北米知財と東アジア量産を結ぶ要衝。`,
+          'de': `Wichtige Li-S-Anmeldungen (HonHai/SolidEdge), die von LLMs übersehen wurden, verbinden US-Lizenzen mit asiatischer Fertigung.`,
+          'fr': `Des dépôts clés Li-S (HonHai/SolidEdge) ignorés par les LLM relient les licences US à la fabrication asiatique.`
+        }
+      },
+      {
+        id: 'CN',
+        lat: 22.54, lon: 114.06,
+        city: `Shenzhen / CNIPA (China)`,
+        role: {
+          'zh-TW': `FDCA 生物基合成顛覆者 & 固態陶瓷材料聚類`,
+          'en': `FDCA Bio-Route Disruptors & LLZO Materials`,
+          'zh-CN': `FDCA 生物基合成颠覆者 & 固态陶瓷材料聚类`,
+          'ja': `FDCA バイオ合成・LLZO セラミック新興クラスター`,
+          'de': `FDCA-Bio-Disruptoren & LLZO-Keramik-Cluster`,
+          'fr': `Disrupteurs FDCA & matériaux céramiques LLZO`
+        },
+        metrics: { filings: `Kingfa 8–10`, verdicts: `Zhejiang NHU`, cagr: `Bio-Route Shift` },
+        summary: {
+          'zh-TW': `Cathay Biotech、Kingfa（8–10 件呋喃二甲酸聚醯胺）與 Zhejiang NHU（連續聚合製程）及 Shenzhen Solid Advanced Materials 正在改寫既有供應鏈與專利版圖。`,
+          'en': `Kingfa (8–10 FDCA polyamide filings), Zhejiang NHU, and Shenzhen Solid Advanced Materials bypass traditional castor-oil dependencies.`,
+          'zh-CN': `Cathay Biotech、Kingfa（8–10 件呋喃二甲酸聚酰胺）与 Zhejiang NHU（连续聚合制程）正在改写既有供应链与专利版图。`,
+          'ja': `Kingfa（FDCA ポリアミド8–10件）や浙江新和成、深圳企業群が従来のヒマシ油依存を覆す新規ルートを形成。`,
+          'de': `Kingfa (8–10 FDCA-Patente) und Zhejiang NHU umgehen die klassische Rizinusöl-Abhängigkeit.`,
+          'fr': `Kingfa (8–10 brevets FDCA) et Zhejiang NHU contournent la dépendance traditionnelle à l’huile de ricin.`
+        }
+      },
+      {
+        id: 'KR',
+        lat: 36.35, lon: 127.38,
+        city: `Daejeon / KIPO (South Korea)`,
+        role: {
+          'zh-TW': `三層複合電解質架構研發熱區`,
+          'en': `Three-Layer LLZO Architecture Cluster`,
+          'zh-CN': `三层复合电解质架构研发热区`,
+          'ja': `三層複合電解質アーキテクチャ研究拠点`,
+          'de': `Dreischicht-LLZO-Architektur-Cluster`,
+          'fr': `Pôle d’architecture LLZO tricouche`
+        },
+        metrics: { filings: `KIER Portfolio`, verdicts: `High FTO Risk`, cagr: `IAMV KOSDAQ` },
+        summary: {
+          'zh-TW': `韓國能源研究院（KIER）的三層複合固態電解質架構專利為通用 AI 幾乎完全漏檢的高風險專利群；Ocean Tomo 亦針對 KOSDAQ 進行無形資產市值（IAMV）結構驗證。`,
+          'en': `Korea Institute of Energy Research (KIER) three-layer electrolyte architecture filings were completely missed by general LLMs in FTO benchmarks.`,
+          'zh-CN': `韩国能源研究院（KIER）的三层复合固态电解质架构专利为通用 AI 几乎完全漏检的高风险专利群。`,
+          'ja': `韓国エネルギー研究院（KIER）の三層電解質特許は汎用 AI が完全に看過した高リスク群であり、精密監視が不可欠。`,
+          'de': `Die Dreischicht-Elektrolyt-Patente des KIER wurden in Benchmarks von allen Standard-LLMs übersehen.`,
+          'fr': `Les brevets d’électrolyte tricouche du KIER ont été totalement manqués par les LLM généralistes.`
+        }
+      },
+      {
+        id: 'JP',
+        lat: 35.68, lon: 139.76,
+        city: `Tokyo / JPO (Japan)`,
+        role: {
+          'zh-TW': `精密材料科學與跨境授權標準基地`,
+          'en': `Precision Materials & Cross-Border Licensing`,
+          'zh-CN': `精密材料科学与跨境授权标准基地`,
+          'ja': `精密材料科学・クロスボーダーライセンス拠点`,
+          'de': `Präzisionsmaterialien & Lizenz-Standardbasis`,
+          'fr': `Matériaux de précision & licences transfrontalières`
+        },
+        metrics: { filings: `Toray Cluster`, verdicts: `Entity Norm.`, cagr: `SEP / FRAND` },
+        summary: {
+          'zh-TW': `Toray 等日系化材龍頭跨足多重子公司與共同申請人關係；透過實體正規化（Assignee Normalization）可防止通用模型將同一集團重複計數兩次（如 Toray 與 Toray Additional Programs）。`,
+          'en': `Toray and Japanese materials giants use complex subsidiary structures; proper assignee normalization prevents LLM double-counting distortions.`,
+          'zh-CN': `Toray 等日系化材龙头跨足多重子公司与共同申请人关系；透过实体正规化可防止通用模型重复计数。`,
+          'ja': `東レ等の日本材料大手の複雑な共同出願構造では、名寄せ正規化（Assignee Normalization）が重複計上防止に不可欠。`,
+          'de': `Japanische Materialkonzerne erfordern strikte Anmelder-Normalisierung, um Doppelzählungen (wie bei Toray) zu vermeiden.`,
+          'fr': `Les conglomérats comme Toray exigent une normalisation des déposants pour éviter le double comptage des LLM.`
+        }
+      }
+    ];
+
+    // =========================================================================
+    // 3. THREE.JS FULLSCREEN PLANETARY SPACECRAFT & 3D IP GLOBE ENGINE
+    // =========================================================================
+    let spaceScene, spaceCamera, spaceRenderer;
+    let planetGroups = [];
+    let starPoints = null;
+    let ipGlobeGroup = null;
+    let ipGlobeNodes = [];
+    let targetCamPos = new THREE.Vector3(0, 0, 18);
+    let targetLookAt = new THREE.Vector3(0, 0, 0);
+    let currentLookAt = new THREE.Vector3(0, 0, 0);
+    let mouseOffset = { x: 0, y: 0 };
+    let worldLandGeo = null;
+    let lastFrontNodeId = null;
+
+    const PLANET_COORDS = [
+      { x: 6.5,  y: 0.4,   z: 0,    r: 2.3, rings: true  },
+      { x: 24,   y: 5.5,   z: -22,  r: 2.7, rings: false },
+      { x: 42,   y: -3.5,  z: -46,  r: 2.4, rings: true  },
+      { x: 20,   y: -11,   z: -74,  r: 2.8, rings: false },
+      { x: -12,  y: 6,     z: -98,  r: 2.6, rings: true  },
+      { x: -34,  y: -1.5,  z: -128, r: 4.1, rings: false, isGlobe: true },
+      { x: -14,  y: 9,     z: -158, r: 2.5, rings: true  },
+      { x: 14,   y: -2,    z: -186, r: 2.9, rings: true  }
+    ];
+
+    function getToken(name, fallback) {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return val || fallback;
+    }
+
+    function initThreeSpace() {
+      const canvas = document.getElementById('space-canvas');
+      if (!canvas || typeof THREE === 'undefined') return;
+
+      spaceScene = new THREE.Scene();
+      spaceCamera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 600);
+      spaceCamera.position.set(0, 0, 18);
+
+      spaceRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+      spaceRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      spaceRenderer.setSize(window.innerWidth, window.innerHeight);
+
+      // Lights
+      const amb = new THREE.AmbientLight(0xffffff, 0.82);
+      const dir = new THREE.DirectionalLight(0xffffff, 1.15);
+      dir.position.set(16, 22, 18);
+      const rim = new THREE.DirectionalLight(0x88b4d8, 0.55);
+      rim.position.set(-18, -10, -14);
+      spaceScene.add(amb, dir, rim);
+
+      // Starfield
+      const starGeo = new THREE.BufferGeometry();
+      const count = 950;
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 260;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 180;
+        positions[i * 3 + 2] = 40 - Math.random() * 290;
+      }
+      starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const starMat = new THREE.PointsMaterial({ size: 0.35, transparent: true, opacity: 0.72 });
+      starPoints = new THREE.Points(starGeo, starMat);
+      spaceScene.add(starPoints);
+
+      // Build 8 Planetary Spheres
+      PLANET_COORDS.forEach((cfg, idx) => {
+        const g = new THREE.Group();
+        g.position.set(cfg.x, cfg.y, cfg.z);
+
+        if (cfg.isGlobe) {
+          ipGlobeGroup = g;
+          buildIPGlobe(g, cfg.r);
+        } else {
+          const coreGeo = new THREE.SphereGeometry(cfg.r, 42, 42);
+          const coreMat = new THREE.MeshStandardMaterial({
+            roughness: 0.42,
+            metalness: 0.25,
+            transparent: true,
+            opacity: 0.92
+          });
+          const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+          g.add(coreMesh);
+
+          // Wireframe lat-long meridian shell
+          const wireGeo = new THREE.SphereGeometry(cfg.r * 1.03, 18, 12);
+          const wireMat = new THREE.MeshBasicMaterial({
+            wireframe: true,
+            transparent: true,
+            opacity: 0.16
+          });
+          g.add(new THREE.Mesh(wireGeo, wireMat));
+
+          if (cfg.rings) {
+            const ringGeo = new THREE.TorusGeometry(cfg.r * 1.55, 0.045, 12, 80);
+            const ringMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.42 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = Math.PI * 0.42;
+            ring.rotation.y = (idx % 2 === 0 ? 0.25 : -0.25);
+            g.add(ring);
+          }
+
+          // Orbiting Moonlet
+          const satGeo = new THREE.SphereGeometry(0.24, 16, 16);
+          const satMat = new THREE.MeshStandardMaterial({ roughness: 0.3, metalness: 0.4 });
+          const sat = new THREE.Mesh(satGeo, satMat);
+          sat.userData = { orbitRadius: cfg.r * 1.85, speed: 0.6 + idx * 0.12, phase: idx * 1.1 };
+          g.add(sat);
+        }
+
+        spaceScene.add(g);
+        planetGroups.push(g);
+      });
+
+      // Connecting Interstellar Trajectory Curve
+      const curvePts = PLANET_COORDS.map(p => new THREE.Vector3(p.x, p.y, p.z));
+      const curve = new THREE.CatmullRomCurve3(curvePts);
+      const tubeGeo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(160));
+      const lineMat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.3 });
+      const routeLine = new THREE.Line(tubeGeo, lineMat);
+      routeLine.userData.isRoute = true;
+      spaceScene.add(routeLine);
+
+      syncThreeThemeColors();
+      flyToStation(0);
+      loadWorldTopoJSON();
+
+      window.addEventListener('mousemove', (e) => {
+        mouseOffset.x = (e.clientX / window.innerWidth - 0.5) * 1.4;
+        mouseOffset.y = (e.clientY / window.innerHeight - 0.5) * 1.0;
+      });
+
+      window.addEventListener('resize', () => {
+        if (!spaceCamera || !spaceRenderer) return;
+        spaceCamera.aspect = window.innerWidth / window.innerHeight;
+        spaceCamera.updateProjectionMatrix();
+        spaceRenderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      animateSpace();
+    }
+
+    function latLonToVec3(lat, lon, r) {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lon + 180) * (Math.PI / 180);
+      return new THREE.Vector3(
+        -r * Math.sin(phi) * Math.cos(theta),
+        r * Math.cos(phi),
+        r * Math.sin(phi) * Math.sin(theta)
+      );
+    }
+
+    function buildIPGlobe(group, radius) {
+      const oceanGeo = new THREE.SphereGeometry(radius, 48, 48);
+      const oceanMat = new THREE.MeshStandardMaterial({
+        roughness: 0.55,
+        metalness: 0.18,
+        transparent: true,
+        opacity: 0.94
+      });
+      const oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
+      oceanMesh.userData.role = 'globe-ocean';
+      group.add(oceanMesh);
+
+      // Graticule Rings
+      const gratGeo = new THREE.SphereGeometry(radius * 1.008, 24, 16);
+      const gratMat = new THREE.MeshBasicMaterial({ wireframe: true, transparent: true, opacity: 0.14 });
+      const gratMesh = new THREE.Mesh(gratGeo, gratMat);
+      gratMesh.userData.role = 'globe-wire';
+      group.add(gratMesh);
+
+      // Country Nodes + Cross-Border Patent Transfer Arcs
+      IP_NODES.forEach((node) => {
+        const pos = latLonToVec3(node.lat, node.lon, radius * 1.02);
+        const pinGeo = new THREE.SphereGeometry(0.14, 16, 16);
+        const pinMat = new THREE.MeshBasicMaterial();
+        const pin = new THREE.Mesh(pinGeo, pinMat);
+        pin.position.copy(pos);
+        pin.userData = { role: 'globe-node', nodeData: node };
+        group.add(pin);
+        ipGlobeNodes.push(pin);
+
+        // Beacon Halo
+        const haloGeo = new THREE.RingGeometry(0.19, 0.27, 24);
+        const haloMat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.72 });
+        const halo = new THREE.Mesh(haloGeo, haloMat);
+        halo.position.copy(pos.clone().multiplyScalar(1.01));
+        halo.lookAt(pos.clone().multiplyScalar(2));
+        halo.userData.role = 'globe-halo';
+        group.add(halo);
+      });
+
+      // Cross-Border Tech Transfer Arcs
+      const pairs = [
+        [0, 2], [0, 1], [1, 3], [2, 4], [2, 5], [0, 3], [4, 5]
+      ];
+      pairs.forEach(([aIdx, bIdx]) => {
+        const vA = latLonToVec3(IP_NODES[aIdx].lat, IP_NODES[aIdx].lon, radius * 1.02);
+        const vB = latLonToVec3(IP_NODES[bIdx].lat, IP_NODES[bIdx].lon, radius * 1.02);
+        const mid = vA.clone().add(vB).multiplyScalar(0.5).normalize().multiplyScalar(radius * 1.38);
+        const arcCurve = new THREE.QuadraticBezierCurve3(vA, mid, vB);
+        const arcGeo = new THREE.BufferGeometry().setFromPoints(arcCurve.getPoints(36));
+        const arcMat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.78 });
+        const arcLine = new THREE.Line(arcGeo, arcMat);
+        arcLine.userData.role = 'globe-arc';
+        group.add(arcLine);
+      });
+    }
+
+    function loadWorldTopoJSON() {
+      if (typeof topojson === 'undefined' || !ipGlobeGroup) return;
+      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json')
+        .then(res => res.json())
+        .then(topo => {
+          const geo = topojson.feature(topo, topo.objects.countries);
+          const radius = 4.13;
+          const points = [];
+          geo.features.forEach((feat) => {
+            const geom = feat.geometry;
+            if (!geom) return;
+            const polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+            polys.forEach((poly) => {
+              poly.forEach((ring) => {
+                for (let i = 0; i < ring.length - 1; i++) {
+                  const p1 = latLonToVec3(ring[i][1], ring[i][0], radius);
+                  const p2 = latLonToVec3(ring[i + 1][1], ring[i + 1][0], radius);
+                  points.push(p1, p2);
+                }
+              });
+            });
+          });
+          const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+          const lineMat = new THREE.LineBasicMaterial({
+            color: new THREE.Color(getToken('--globe-land', '#88a0b5')),
+            transparent: true,
+            opacity: 0.78
+          });
+          const coastLines = new THREE.LineSegments(lineGeo, lineMat);
+          coastLines.userData.role = 'globe-coast';
+          ipGlobeGroup.add(coastLines);
+          worldLandGeo = coastLines;
+        })
+        .catch(() => {
+          // Graceful fallback: wire graticule & country nodes already rendered
+        });
+    }
+
+    function syncThreeThemeColors() {
+      if (!spaceScene) return;
+      const bgHex = getToken('--background', '#eef2f6');
+      const coreHex = getToken('--planet-core', '#6d89a3');
+      const ringHex = getToken('--planet-ring', '#96adc2');
+      const starHex = getToken('--star-tint', '#6c849c');
+      const oceanHex = getToken('--globe-ocean', '#d9e4ee');
+      const landHex = getToken('--globe-land', '#88a0b5');
+      const arcHex = getToken('--globe-arc', '#4b6b88');
+      const alertHex = getToken('--globe-alert', '#b55b52');
+
+      spaceScene.fog = new THREE.FogExp2(bgHex, 0.0085);
+      if (starPoints) starPoints.material.color.set(starHex);
+
+      spaceScene.children.forEach(c => {
+        if (c.userData && c.userData.isRoute) c.material.color.set(ringHex);
+      });
+
+      planetGroups.forEach((g, idx) => {
+        if (PLANET_COORDS[idx].isGlobe) {
+          g.children.forEach(ch => {
+            if (!ch.userData) return;
+            if (ch.userData.role === 'globe-ocean') ch.material.color.set(oceanHex);
+            if (ch.userData.role === 'globe-wire') ch.material.color.set(ringHex);
+            if (ch.userData.role === 'globe-coast') ch.material.color.set(landHex);
+            if (ch.userData.role === 'globe-arc') ch.material.color.set(arcHex);
+            if (ch.userData.role === 'globe-node') ch.material.color.set(alertHex);
+            if (ch.userData.role === 'globe-halo') ch.material.color.set(arcHex);
+          });
+        } else {
+          g.children.forEach((ch, ci) => {
+            if (ci === 0 && ch.material) ch.material.color.set(coreHex);
+            else if (ch.material) ch.material.color.set(ringHex);
+          });
+        }
+      });
+    }
+
+    function flyToStation(idx) {
+      const cfg = PLANET_COORDS[idx] || PLANET_COORDS[0];
+      if (cfg.isGlobe) {
+        // Position camera so globe sits clearly visible on the right half while card shrinks
+        targetCamPos.set(cfg.x - 1.5, cfg.y + 0.6, cfg.z + 12.2);
+        targetLookAt.set(cfg.x - 2.3, cfg.y, cfg.z);
+      } else {
+        // Position planet gently to the right of the floating cockpit card
+        targetCamPos.set(cfg.x - 3.6, cfg.y + 0.8, cfg.z + 11.2);
+        targetLookAt.set(cfg.x - 2.6, cfg.y, cfg.z);
+      }
+    }
+
+    function animateSpace() {
+      requestAnimationFrame(animateSpace);
+      const t = performance.now() * 0.001;
+
+      if (spaceCamera) {
+        const desiredCam = targetCamPos.clone().add(new THREE.Vector3(mouseOffset.x, -mouseOffset.y, 0));
+        spaceCamera.position.lerp(desiredCam, 0.055);
+        currentLookAt.lerp(targetLookAt, 0.065);
+        spaceCamera.lookAt(currentLookAt);
+      }
+
+      planetGroups.forEach((g, idx) => {
+        if (PLANET_COORDS[idx].isGlobe) {
+          g.rotation.y += 0.0038;
+        } else {
+          g.rotation.y += 0.0022;
+          g.children.forEach(ch => {
+            if (ch.userData && ch.userData.orbitRadius) {
+              const a = t * ch.userData.speed + ch.userData.phase;
+              ch.position.set(Math.cos(a) * ch.userData.orbitRadius, Math.sin(a * 0.7) * 0.4, Math.sin(a) * ch.userData.orbitRadius);
+            }
+          });
+        }
+      });
+
+      if (appState.station === 5 && ipGlobeGroup && spaceCamera) {
+        detectFrontIPNode();
+      }
+
+      if (spaceRenderer && spaceScene && spaceCamera) {
+        spaceRenderer.render(spaceScene, spaceCamera);
+      }
+    }
+
+    function detectFrontIPNode() {
+      let bestNode = null;
+      let bestZ = -Infinity;
+      const worldPos = new THREE.Vector3();
+      ipGlobeNodes.forEach(pin => {
+        pin.getWorldPosition(worldPos);
+        const rel = worldPos.clone().sub(ipGlobeGroup.position);
+        // Closest to camera (+Z relative to globe center)
+        const camDir = spaceCamera.position.clone().sub(ipGlobeGroup.position).normalize();
+        const dot = rel.dot(camDir);
+        if (dot > bestZ) {
+          bestZ = dot;
+          bestNode = pin.userData.nodeData;
+        }
+      });
+      if (bestNode && bestNode.id !== lastFrontNodeId) {
+        lastFrontNodeId = bestNode.id;
+        renderGlobeCallout(bestNode);
+      }
+    }
+
+    function renderGlobeCallout(node) {
+      const el = document.getElementById('globe-callout-content');
+      if (!el || !node) return;
+      const lang = appState.lang;
+      el.innerHTML = `
+        <div class="station-kicker"><i data-lucide="globe" style="width:14px;height:14px;"></i> LIVE 3D NODE LOCK · ${node.id}</div>
+        <h3 style="margin:0 0 4px;font-size:1.1rem;font-weight:600;">${node.city}</h3>
+        <div style="font-size:0.82rem;color:var(--primary);font-weight:600;margin-bottom:8px;">${node.role[lang] || node.role['zh-TW']}</div>
+        <div class="grid-3" style="margin-bottom:10px;">
+          <div class="panel" style="padding:6px 8px;"><div class="metric-label">Filings</div><div style="font-weight:600;font-size:0.82rem;">${node.metrics.filings}</div></div>
+          <div class="panel" style="padding:6px 8px;"><div class="metric-label">Risk/Rule</div><div style="font-weight:600;font-size:0.82rem;">${node.metrics.verdicts}</div></div>
+          <div class="panel" style="padding:6px 8px;"><div class="metric-label">Signal</div><div style="font-weight:600;font-size:0.82rem;">${node.metrics.cagr}</div></div>
+        </div>
+        <p style="margin:0;font-size:0.84rem;color:var(--on-surface-variant);">${node.summary[lang] || node.summary['zh-TW']}</p>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 4. FLOATING 3D AMOEBA COMPANION (ORGANIC MORPHING BLOB IN CANVAS)
+    // =========================================================================
+    function initAmoebaCanvas() {
+      const canvas = document.getElementById('amoeba-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let t = 0;
+
+      function drawAmoeba() {
+        t += 0.045;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const baseR = 46;
+
+        const isNight = appState.theme === 'night';
+        const c1 = isNight ? '#72bdd4' : '#6c8dab';
+        const c2 = isNight ? '#264d68' : '#43607b';
+        const shine = isNight ? 'rgba(220,248,255,0.65)' : 'rgba(255,255,255,0.72)';
+
+        // Organic 3D blob contour
+        ctx.beginPath();
+        const pts = 48;
+        for (let i = 0; i <= pts; i++) {
+          const ang = (i / pts) * Math.PI * 2;
+          const wobble = Math.sin(ang * 3 + t) * 5.5 + Math.cos(ang * 2 - t * 1.3) * 4.2;
+          const r = baseR + wobble;
+          const x = cx + Math.cos(ang) * r;
+          const y = cy + Math.sin(ang) * r;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+
+        const grad = ctx.createRadialGradient(cx - 16, cy - 18, 6, cx, cy, baseR + 12);
+        grad.addColorStop(0, shine);
+        grad.addColorStop(0.35, c1);
+        grad.addColorStop(1, c2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Cute 2000s-style blinking eyes
+        const blink = Math.sin(t * 0.45) > 0.96 ? 0.18 : 1;
+        const lookX = Math.sin(t * 0.5) * 3;
+        [-14, 14].forEach((ox) => {
+          ctx.save();
+          ctx.translate(cx + ox + lookX, cy - 4);
+          ctx.scale(1, blink);
+          ctx.beginPath();
+          ctx.arc(0, 0, 6.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(1.2, 0.5, 3.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#182430';
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Happy little smile
+        ctx.beginPath();
+        ctx.arc(cx + lookX, cy + 7, 8, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.4;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        requestAnimationFrame(drawAmoeba);
+      }
+      drawAmoeba();
+    }
+
+    // =========================================================================
+    // 5. STATION RENDERERS (MODULES 1–8)
+    // =========================================================================
+    function renderStation(idx, skipTransition) {
+      appState.station = Math.max(0, Math.min(7, idx));
+      const card = document.getElementById('station-card');
+      const globeOverlay = document.getElementById('globe-hud-overlay');
+      if (!card) return;
+
+      if (activeChart) {
+        activeChart.destroy();
+        activeChart = null;
+      }
+
+      if (!skipTransition) {
+        card.classList.add('transitioning');
+        setTimeout(() => {
+          populateStationDOM(card);
+          card.classList.remove('transitioning');
+        }, 160);
+      } else {
+        populateStationDOM(card);
+      }
+
+      card.classList.toggle('globe-mode', appState.station === 5);
+      if (globeOverlay) {
+        globeOverlay.classList.toggle('visible', appState.station === 5);
+      }
+
+      flyToStation(appState.station);
+      updateChromeUI();
+      saveState();
+
+      if (appState.tts) {
+        speakCurrentStation();
+      }
+    }
+
+    function populateStationDOM(card) {
+      const s = appState.station;
+      const lang = appState.lang;
+      const isEn = lang === 'en';
+      const isJa = lang === 'ja';
+      const isDe = lang === 'de';
+      const isFr = lang === 'fr';
+      const isCN = lang === 'zh-CN';
+
+      // Helper for quick multi-language text
+      function tx(tw, en, cn, ja, de, fr) {
+        if (isEn) return en;
+        if (isCN) return cn || tw;
+        if (isJa) return ja || en;
+        if (isDe) return de || en;
+        if (isFr) return fr || en;
+        return tw;
+      }
+
+      if (s === 0) {
+        card.innerHTML = `
+          <div class="station-header">
+            <div>
+              <div class="station-kicker">STATION 01 · EXECUTIVE OVERVIEW</div>
+              <h1 class="station-title">${tx(
+                `以 <strong>AI 專利情報與責任治理</strong> 打通技術商品化全鏈路`,
+                `Bridging Tech Commercialization via <strong>AI Patent Intelligence & Responsible Governance</strong>`,
+                `以 <strong>AI 专利情报与责任治理</strong> 打通技术商品化全链路`,
+                `<strong>AI特許インテリジェンスと責任あるガバナンス</strong>による技術商業化統合基盤`,
+                `Technologie-Kommerzialisierung durch <strong>KI-Patent-Intelligence & Responsible Governance</strong>`,
+                `Commercialisation technologique par <strong>l’Intelligence Brevets IA & Gouvernance Responsable</strong>`
+              )}</h1>
+              <p class="station-subtitle">${tx(
+                `整合「專利探勘 → 商業化評估 → 作業研究最佳化 → 責任 AI 防侵權」，解決通用 LLM 高幻覺與高訴訟風險痛點。`,
+                `Integrating Mining → Feasibility → OR Optimization → Anti-Infringement Guardrails to overcome general LLM coverage blind spots.`,
+                `整合「专利探勘 → 商业化评估 → 作业研究最佳化 → 责任 AI 防侵权」，解决通用 LLM 高幻觉与高诉讼风险痛点。`,
+                `特許マイニング→事業性評価→OR最適化→責任あるAI侵害防止を統合し、汎用LLMの網羅性欠如を克服。`,
+                `Verbindet Patent-Mining → Machbarkeit → OR-Optimierung → Anti-Verletzungs-Guardrails gegen LLM-Blindstellen.`,
+                `Intègre Fouille → Faisabilité → Optimisation RO → Garde-fous IA contre les angles morts des LLM.`
+              )}</p>
+            </div>
+          </div>
+
+          <div class="pipeline-row">
+            <button type="button" class="pipe-step" onclick="renderStation(1)">
+              <div class="pipe-idx">STAGE 01</div>
+              <div class="pipe-name">${tx(`專利情報與技術探勘`, `Patent Intelligence & Mining`, `专利情报与技术探勘`, `特許情報・技術マイニング`, `Patent-Mining`, `Fouille Brevets`)}</div>
+              <div class="pipe-desc">${tx(`請求項拆解、TRL 估算、LLM/SBERT 功效矩陣`, `Claim parsing, TRL, SBERT tech-effect matrix`, `权利要求拆解、TRL 估算、功效矩阵`, `請求項解析・TRL推定・機能効果マトリクス`, `Anspruchsanalyse, TRL, SBERT-Matrix`, `Analyse revendications, TRL, matrice SBERT`)}</div>
+            </button>
+            <button type="button" class="pipe-step" onclick="renderStation(2)">
+              <div class="pipe-idx">STAGE 02</div>
+              <div class="pipe-name">${tx(`技術商品化潛力評估`, `Commercial Feasibility Matrix`, `技术商品化潜力评估`, `技術商業化ポテンシャル評価`, `Kommerzielle Machbarkeit`, `Faisabilité Commerciale`)}</div>
+              <div class="pipe-desc">${tx(`FTO 風險指數、專利強度、市場契合雷達`, `FTO risk index, patent strength & market-fit radar`, `FTO 风险指数、专利强度、市场契合雷达`, `FTOリスク指数・特許強度・市場適合レーダー`, `FTO-Risikoindex, Patentstärke-Radar`, `Indice FTO, force brevet & radar marché`)}</div>
+            </button>
+            <button type="button" class="pipe-step" onclick="renderStation(3)">
+              <div class="pipe-idx">STAGE 03</div>
+              <div class="pipe-name">${tx(`產品開發與資源最佳化`, `Product Dev & OR Optimization`, `产品开发与资源最佳化`, `製品開発・資源最適化`, `OR-Ressourcenoptimierung`, `Optimisation R&D (RO)`)}</div>
+              <div class="pipe-desc">${tx(`NSGA-III 多目標求解與 Gurobi 供應鏈韌性`, `NSGA-III Pareto & Gurobi supply resilience`, `NSGA-III 多目标求解与供应链韧性`, `NSGA-III多目的最適化・Gurobi供給網強靭性`, `NSGA-III Pareto & Gurobi Lieferkette`, `NSGA-III & résilience Gurobi`)}</div>
+            </button>
+            <button type="button" class="pipe-step" onclick="renderStation(4)">
+              <div class="pipe-idx">STAGE 04</div>
+              <div class="pipe-name">${tx(`責任 AI 治理與市場落地`, `Responsible AI & Market Launch`, `责任 AI 治理与市场落地`, `責任あるAIガバナンスと市場投入`, `Responsible AI & Launch`, `IA Responsable & Lancement`)}</div>
+              <div class="pipe-desc">${tx(`防「偷換概念」與均等論檢驗，安全迴避設計`, `Blocking concept-swapping & DOE infringement`, `防「偷换概念」与均等论检验`, `「概念すり替え」防止と均等論検証`, `Schutz vor Schein-Umgehung & Äquivalenz`, `Blocage des contournements factices`)}</div>
+            </button>
+          </div>
+
+          <div class="grid-4" style="margin-top:var(--space-md);">
+            <div class="panel">
+              <div class="metric-label">US VERDICTS (2024)</div>
+              <div class="metric-val">$4.19B</div>
+              <div class="metric-note">${tx(`72 件陪審團判決（12 件逾 1 億美元）`, `Across 72 cases (12 over $100M)`, `72 件陪审团判决（12 件逾 1 亿美元）`, `72件の評決（1億ドル超12件）`, `72 Jury-Urteile (12 über 100 Mio. $)`, `72 verdicts (12 > 100 M$)`)}</div>
+            </div>
+            <div class="panel">
+              <div class="metric-label">AI LITIGATION GROWTH</div>
+              <div class="metric-val">56.5%</div>
+              <div class="metric-note">${tx(`五年複合年成長率（350+ 訴訟案）`, `5-yr CAGR (350+ cases; 84 in 2025)`, `五年复合年增长率（350+ 诉讼案）`, `5年CAGR（累計350件超・2025年84件）`, `5-Jahres-CAGR (350+ Klagen)`, `CAGR sur 5 ans (350+ litiges)`)}</div>
+            </div>
+            <div class="panel">
+              <div class="metric-label">MEDTECH HORIZON SCAN</div>
+              <div class="metric-val">199 DBs</div>
+              <div class="metric-note">${tx(`篩選 1,741 篇文獻，納入 124 篇研究`, `1,741 screened / 124 included (24.6 yr span)`, `筛选 1,741 篇文献，纳入 124 篇研究`, `1,741件スクリーニング / 124件採択`, `1.741 gescreent / 124 Studien`, `1 741 criblées / 124 retenues`)}</div>
+            </div>
+            <div class="panel">
+              <div class="metric-label">APPLE WATCH VERDICT</div>
+              <div class="metric-val">$634M</div>
+              <div class="metric-note">${tx(`Masimo 脈搏血氧專利禁令與重設計成本`, `Nov 2025 verdict + US import ban`, `Masimo 脉搏血氧专利禁令与重设计成本`, `Masimo社とのパルスオキシメータ紛争`, `Masimo-Urteil Nov. 2025 + Importverbot`, `Verdict Masimo nov. 2025 + interdiction`)}</div>
+            </div>
+          </div>
+
+          <div class="source-footer-note">
+            ${tx(
+              `實證來源：Cypris Patent Intelligence Gap Study (2026)、J.S. Held AI Disputes Monitor (2026)、Ocean Tomo AI as IP™ Framework、medRxiv MedTech Horizon Scanning Review (2024)。`,
+              `Sources: Cypris Patent Intelligence Gap Study (2026), J.S. Held AI Disputes Monitor (2026), Ocean Tomo AI as IP™, medRxiv MedTech Review (2024).`,
+              `实证来源：Cypris Patent Intelligence Gap Study (2026)、J.S. Held AI Disputes Monitor (2026)、Ocean Tomo AI as IP™、medRxiv MedTech Review (2024)。`,
+              `出典：Cypris (2026), J.S. Held AI Disputes Monitor (2026), Ocean Tomo AI as IP™, medRxiv MedTech Review (2024).`,
+              `Quellen: Cypris (2026), J.S. Held AI Disputes Monitor (2026), Ocean Tomo AI as IP™, medRxiv MedTech Review (2024).`,
+              `Sources : Cypris (2026), J.S. Held AI Disputes Monitor (2026), Ocean Tomo AI as IP™, medRxiv MedTech Review (2024).`
+            )}
+          </div>
+        `;
+      } else if (s === 1) {
+        card.innerHTML = `
+          <div class="station-header">
+            <div>
+              <div class="station-kicker">MODULE 01 · PATENT INTELLIGENCE & TECH MINING</div>
+              <h2 class="station-title">${tx(
+                `專利情報與技術探勘：<strong>結構化專利檢索 vs. 通用 LLM 盲區</strong>`,
+                `Patent Mining: <strong>Structured IP Feeds vs. General LLM Blind Spots</strong>`,
+                `专利情报与技术探勘：<strong>结构化专利检索 vs. 通用 LLM 盲区</strong>`,
+                `特許マイニング：<strong>構造化DB vs. 汎用LLMの盲点</strong>`,
+                `Patent-Mining: <strong>Strukturierte IP-Daten vs. LLM-Lücken</strong>`,
+                `Fouille de brevets : <strong>Données structurées vs angles morts LLM</strong>`
+              )}</h2>
+              <p class="station-subtitle">${tx(
+                `結合請求項句法解析、TRL 技術成熟度估算與 LLM/SBERT 技術-功效矩陣，揭露 Solid Energies 專利圍欄與隱性高風險專利。`,
+                `Combining claim parsing, TRL scoring, and LLM/SBERT tech-effect matrices to uncover hidden patent fencing.`,
+                `结合权利要求句法解析、TRL 技术成熟度估算与 LLM/SBERT 技术-功效矩阵，揭露 Solid Energies 专利围栏。`,
+                `請求項解析・TRL推定・LLM/SBERT技術効果マトリクスにより、潜在的な特許フェンスを可視化。`,
+                `Anspruchsanalyse, TRL-Schätzung und SBERT-Technologie-Effekt-Matrix zur Aufdeckung verdeckter Patent-Fences.`,
+                `Analyse des revendications, TRL et matrice SBERT pour détecter les clôtures de brevets.`
+              )}</p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="metric-label">${tx(`實證基準測試：LLZO 固態鋰硫電池 FTO 檢出數量`, `Benchmark: Active US Patents Found (LLZO Li-S FTO)`, `实证基准测试：LLZO 固态锂硫电池 FTO 检出数量`, `ベンチマーク：LLZO全固体電池 FTO 検出特許数`, `Benchmark: Erkannte US-Patente (LLZO Li-S FTO)`, `Benchmark : brevets US détectés (LLZO Li-S)`)}</div>
+              <div class="chart-box"><canvas id="chart-m1"></canvas></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+              <div class="panel-highlight">
+                <div class="metric-label" style="color:var(--on-primary-container);">PATENT FENCING DETECTED · SOLID ENERGIES</div>
+                <div style="font-weight:600;margin-bottom:4px;">${tx(`多維度專利圍欄偵測（通用模型幾乎全數漏檢）`, `Coordinated 4-Layer Fencing Missed by General LLMs`, `多维度专利围栏侦测（通用模型几乎全数漏检）`, `汎用モデルが見落とした4層特許フェンス`, `4-stufiges Patent-Fencing (von LLMs übersehen)`, `Clôturage à 4 couches manqué par les LLM`)}</div>
+                <ul style="margin:0;padding-left:18px;font-size:0.83rem;">
+                  <li><strong>US-12463245-B2</strong> — ${tx(`組合物配方保護`, `Composite Electrolyte Composition`, `组合物配方保护`, `複合電解質組成`, `Zusammensetzung`, `Composition`)}</li>
+                  <li><strong>US-12283655-B2</strong> — ${tx(`梯度多層結構`, `Gradient Architecture`, `梯度多层结构`, `勾配多層構造`, `Gradienten-Architektur`, `Architecture en gradient`)}</li>
+                  <li><strong>US-12463249-B2</strong> — ${tx(`電極界面整合`, `Electrode Integration`, `电极界面整合`, `電極界面統合`, `Elektroden-Integration`, `Intégration électrode`)}</li>
+                  <li><strong>US-20230035720-A1</strong> — ${tx(`製程方法封鎖`, `Manufacturing Process`, `制程方法封锁`, `製造プロセス`, `Herstellungsverfahren`, `Procédé de fabrication`)}</li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="metric-label">SBERT TECH-EFFECT & ATTRIBUTION INTEGRITY</div>
+                <p style="margin:0;font-size:0.84rem;">${tx(
+                  `Test 2（生物基聚醯胺）中，專用引擎引用 <strong>100+ 筆</strong>真實專利號，而三大通用模型（Claude / ChatGPT / Co-Pilot）均引用 <strong>0 筆</strong>；且 ChatGPT 對 US 11,367,895 B1 虛構歸屬為「Likely startup cluster」。`,
+                  `In Test 2 (Bio-Polyamide), purpose-built retrieval cited <strong>100+</strong> patent numbers vs. <strong>0</strong> across general LLMs, while ChatGPT fabricated assignees ("Likely startup cluster").`,
+                  `Test 2（生物基聚酰胺）中，专用引擎引用 <strong>100+ 笔</strong>真实专利号，而三大通用模型均引用 <strong>0 笔</strong>，且出现归属幻觉。`,
+                  `Test 2（バイオポリアミド）では専用基盤が<strong>100件超</strong>の特許番号を引用した一方、汎用LLMは<strong>0件</strong>かつ権利者ハルシネーションが発生。`,
+                  `In Test 2 nannten Allzweck-LLMs <strong>0</strong> Patentnummern (vs. <strong>100+</strong>) und erfanden Anmelder.`,
+                  `Dans le Test 2, les LLM généralistes ont cité <strong>0</strong> numéro de brevet (contre <strong>100+</strong>) avec des attributions fictives.`
+                )}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        setTimeout(() => initModule1Chart(tx), 30);
+      } else if (s === 2) {
+        const sc = RADAR_SCENARIOS[appState.activeRadarIndex] || RADAR_SCENARIOS[0];
+        const tabButtons = RADAR_SCENARIOS.map((item, i) => `
+          <button type="button" class="pill-tab ${i === appState.activeRadarIndex ? 'active' : ''}" onclick="selectRadarScenario(${i})">
+            ${item.labels[lang] || item.labels['zh-TW']}
+          </button>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="station-header">
+            <div>
+              <div class="station-kicker">MODULE 02 · COMMERCIAL FEASIBILITY MATRIX</div>
+              <h2 class="station-title">${tx(
+                `技術商品化潛力評估：<strong>FTO 自由實施與市場契合雷達</strong>`,
+                `Commercial Feasibility: <strong>FTO Risk & Market-Tech Fit Radar</strong>`,
+                `技术商品化潜力评估：<strong>FTO 自由实施与市场契合雷达</strong>`,
+                `事業性評価：<strong>FTOリスク・特許強度・市場適合レーダー</strong>`,
+                `Kommerzielle Machbarkeit: <strong>FTO-Risiko & Market-Fit-Radar</strong>`,
+                `Faisabilité commerciale : <strong>Radar FTO & adéquation marché</strong>`
+              )}</h2>
+              <p class="station-subtitle">${tx(
+                `量化評估 FTO 自由實施指數、專利強度、市場需求契合度、技術成熟度與資本可獲性（Ocean Tomo AI as IP™ 估值框架）。`,
+                `Quantifying FTO safety, patent strength, market-tech fit, and capital readiness under the AI as IP™ valuation lens.`,
+                `量化评估 FTO 自由实施指数、专利强度、市场需求契合度、技术成熟度与资本可获性。`,
+                `FTO自由実施指数・特許強度・市場適合度・TRL・資本調達適性を多角的に評価。`,
+                `Quantifizierung von FTO-Sicherheit, Patentstärke, Market-Tech-Fit und Investitionsreife.`,
+                `Quantification de la liberté d’exploitation (FTO), force brevet et adéquation marché.`
+              )}</p>
+            </div>
+          </div>
+
+          <div class="pill-tabs">${tabButtons}</div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="chart-box"><canvas id="chart-m2"></canvas></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+              <div class="grid-3">
+                <div class="panel">
+                  <div class="metric-label">FTO RISK</div>
+                  <div style="font-weight:600;font-size:0.98rem;color:var(--error);">${sc.ftoRisk}</div>
+                </div>
+                <div class="panel">
+                  <div class="metric-label">PATENT STRENGTH</div>
+                  <div style="font-weight:600;font-size:0.98rem;color:var(--primary);">${sc.strength}</div>
+                </div>
+                <div class="panel">
+                  <div class="metric-label">MARKET FIT</div>
+                  <div style="font-weight:600;font-size:0.98rem;color:var(--positive);">${sc.fit}</div>
+                </div>
+              </div>
+              <div class="panel" style="flex:1;">
+                <div class="metric-label">COMMERCIALIZATION INTELLIGENCE BRIEF</div>
+                <p style="margin:6px 0 0;font-size:0.9rem;">${sc.note[lang] || sc.note['zh-TW']}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        setTimeout(() => initModule2Radar(sc, tx), 30);
+      } else if (s === 3) {
+        const w = appState.orWeights;
+        const orRes = computeORMetrics(w);
+        card.innerHTML = `
+          <div class="station-header">
+            <div>
+              <div class="station-kicker">MODULE 03 · OPERATIONS RESEARCH (NSGA-III & GUROBI)</div>
+              <h2 class="station-title">${tx(
+                `產品開發與資源最佳化：<strong>多目標柏拉圖前緣排程</strong>`,
+                `R&D Resource Optimization: <strong>NSGA-III & Gurobi Pareto Frontier</strong>`,
+                `产品开发与资源最佳化：<strong>多目标帕累托前沿排程</strong>`,
+                `製品開発・資源最適化：<strong>NSGA-III・Gurobi パレート最適</strong>`,
+                `Ressourcenoptimierung: <strong>NSGA-III & Gurobi Pareto-Front</strong>`,
+                `Optimisation R&D : <strong>Front de Pareto NSGA-III & Gurobi</strong>`
+              )}</h2>
+              <p class="station-subtitle">${tx(
+                `在「研發時程壓縮」、「預算上限」與「跨境供應鏈斷鏈韌性（含美國進口禁令避險）」間進行動態權衡。`,
+                `Dynamic MILP & evolutionary trade-offs across R&D schedule compression, budget caps, and cross-border supply resilience.`,
+                `在「研发时程压缩」、「预算上限」与「跨境供应链断链韧性」间进行动态权衡。`,
+                `開発期間短縮・予算上限・サプライチェーン強靭性（輸入差止回避）の動的トレードオフ解析。`,
+                `Dynamische Abwägung zwischen Entwicklungszeit, Budgetlimit und Lieferketten-Resilienz.`,
+                `Arbitrage dynamique entre délais R&D, plafond budgétaire et résilience d’approvisionnement.`
+              )}</p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="metric-label">OPTIMIZATION WEIGHT CONTROLS</div>
+              <div class="slider-group">
+                <div class="slider-label-row">
+                  <label for="sl-speed">${tx(`時程加速權重 (Schedule Priority)`, `Schedule Priority`, `时程加速权重`, `開発速度優先度`, `Zeitplan-Priorität`, `Priorité délais`)}</label>
+                  <span id="val-speed">${w.speed}%</span>
+                </div>
+                <input id="sl-speed" type="range" min="20" max="100" value="${w.speed}" oninput="updateORSlider('speed', this.value)">
+              </div>
+              <div class="slider-group">
+                <div class="slider-label-row">
+                  <label for="sl-budget">${tx(`成本控制嚴格度 (Gurobi Budget Cap)`, `Budget Cap Strictness`, `成本控制严格度`, `予算制約厳格度`, `Budget-Restriktion`, `Contrainte budgétaire`)}</label>
+                  <span id="val-budget">${w.budget}%</span>
+                </div>
+                <input id="sl-budget" type="range" min="20" max="100" value="${w.budget}" oninput="updateORSlider('budget', this.value)">
+              </div>
+              <div class="slider-group">
+                <div class="slider-label-row">
+                  <label for="sl-resil">${tx(`供應網雙軌備援 (Supply Resilience)`, `Supply Network Resilience`, `供应网双轨备援`, `供給網レジリエンス`, `Lieferketten-Resilienz`, `Résilience chaîne`)}</label>
+                  <span id="val-resil">${w.resilience}%</span>
+                </div>
+                <input id="sl-resil" type="range" min="20" max="100" value="${w.resilience}" oninput="updateORSlider('resil', this.value)">
+              </div>
+
+              <div class="grid-3" style="margin-top:var(--space-md);">
+                <div class="panel" style="padding:8px 10px;">
+                  <div class="metric-label">TIME-TO-MARKET</div>
+                  <div class="metric-val" style="font-size:1.25rem;" id="or-ttm">${orRes.ttm} mo</div>
+                </div>
+                <div class="panel" style="padding:8px 10px;">
+                  <div class="metric-label">CAPEX USAGE</div>
+                  <div class="metric-val" style="font-size:1.25rem;" id="or-cost">$${orRes.cost}M</div>
+                </div>
+                <div class="panel" style="padding:8px 10px;">
+                  <div class="metric-label">RESILIENCE</div>
+                  <div class="metric-val" style="font-size:1.25rem;color:var(--positive);" id="or-res">${orRes.resScore}%</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="metric-label">NSGA-III PARETO OPTIMAL FRONTIER (COST vs. RESILIENCE)</div>
+              <div class="chart-box"><canvas id="chart-m3"></canvas></div>
+            </div>
+          </div>
+        `;
+        setTimeout(() => initModule3Chart(orRes, tx), 30);
+      } else if (s === 4) {
+        const c = LITIGATION_CASES[appState.activeCaseIndex] || LITIGATION_CASES[0];
+        const caseTabs = LITIGATION_CASES.map((item, i) => `
+          <button type="button" class="pill-tab ${i === appState.activeCaseIndex ? 'active' : ''}" onclick="selectCase(${i})">
+            ${item.title.split(' v. ')[0]}
+          </button>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="station-header">
+            <div>
+              <div class="station-kicker">MODULE 04 · RESPONSIBLE AI & ANTI-INFRINGEMENT GOVERNANCE</div>
+              <h2 class="station-title">${tx(
+                `責任 AI 治理：<strong>「迴避設計 vs. 均等論」與防偷換概念檢驗</strong>`,
+                `Responsible AI: <strong>Design-Around vs. Doctrine of Equivalents</strong>`,
+                `责任 AI 治理：<strong>「回避设计 vs. 均等论」与防偷换概念检验</strong>`,
+                `責任あるAIガバナンス：<strong>回避設計 vs. 均等論（概念すり替え防止）</strong>`,
+                `Responsible AI: <strong>Design-Around vs. Äquivalenzlehre</strong>`,
+                `IA Responsable : <strong>Contournement vs Doctrine des Équivalents</strong>`
+              )}</h2>
+              <p class="station-subtitle">${tx(
+                `以真實半導體與材料判例校準 AI 語義閘門，區分「合法正當迴避」與「僅改換名詞的偷換概念侵權」。`,
+                `Calibrating AI semantic guardrails with landmark rulings to separate legitimate design-arounds from concept-swapping.`,
+                `以真实半导体与材料判例校准 AI 语义闸门，区分「合法正当回避」与「仅改换名词的偷换概念侵权」。`,
+                `半導体・材料判例に基づき AI 意味ゲートを校正し、正当な回避設計と「概念すり替え」侵害を識別。`,
+                `Kalibrierung von KI-Leitplanken an Leitentscheidungen zur Trennung von Design-Around und Schein-Umgehung.`,
+                `Calibrage des garde-fous IA sur la jurisprudence pour distinguer contournement légitime et substitution fictive.`
+              )}</p>
+            </div>
+          </div>
+
+          <div class="pill-tabs">${caseTabs}</div>
+
+          <div class="panel" style="margin-bottom:var(--space-md);">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+              <h3 style="margin:0;font-size:1.1rem;">${c.title}</h3>
+              <span class="badge ${c.badge}">${c.verdict}</span>
+            </div>
+            <div style="font-family:var(--font-label);font-size:0.76rem;color:var(--primary);margin-bottom:8px;">${c.tag}</div>
+            <p style="margin:0 0 10px;font-size:0.9rem;">${c.fwr[lang] || c.fwr['zh-TW']}</p>
+            <div class="panel-highlight" style="padding:10px 14px;">
+              <strong style="font-size:0.84rem;">AI GUARDRAIL RULE:</strong>
+              <span style="font-size:0.86rem;"> ${c.aiLesson[lang] || c.aiLesson['zh-TW']}</span>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="metric-label">${tx(`❌ 禁止：偷換概念 (Concept Swapping)`, `❌ Blocked: Concept Swapping`, `❌ 禁止：偷换概念`, `❌ 遮断：概念すり替え`, `❌ Blockiert: Schein-Umgehung`, `❌ Bloqué : substitution fictive`)}</div>
+              <p style="margin:0;font-size:0.84rem;color:var(--on-surface-variant);">${tx(
+                `僅以同義詞、相近元素（如 Graver Tank 案中以錳代鎂）或表面軟體封裝替換請求項元件，未改變 Function-Way-Result 或僅存 Colorable Differences（TiVo 案）。`,
+                `Swapping equivalent elements or surface wrappers without changing Function-Way-Result (Graver Tank) or exceeding colorable differences (TiVo).`,
+                `仅以同义词、相近元素或表面封装替换权利要求元件，未改变 Function-Way-Result。`,
+                `F-W-R を変えない同族元素置換や表層的言い換え（Graver Tank・TiVo基準に抵触）。`,
+                `Reiner Austausch äquivalenter Elemente ohne Änderung von Funktion-Weg-Ergebnis.`,
+                `Substitution cosmétique sans modification de Fonction-Moyen-Résultat.`
+              )}</p>
+            </div>
+            <div class="panel">
+              <div class="metric-label">${tx(`✅ 核准：正當迴避設計 (Legitimate Design-Around)`, `✅ Cleared: Legitimate Design-Around`, `✅ 核准：正当回避设计`, `✅ 承認：正当な回避設計`, `✅ Zulässig: Legitimes Design-Around`, `✅ Validé : contournement légitime`)}</div>
+              <p style="margin:0;font-size:0.84rem;color:var(--on-surface-variant);">${tx(
+                `具備無塵室隔離紀錄（Sega 案）、事前審查 EULA 合約（Bowers 案）、並具實質物理機制差異（EMI v. Cypress 案 Ti-W 合金相較純過渡金屬）且通過逆向工程舉證。`,
+                `Clean-room separation (Sega), EULA clearance (Bowers), and distinct physical mechanisms verified via reverse engineering (EMI v. Cypress).`,
+                `具备洁净室隔离纪录、事前审查 EULA 合约，并具实质物理机制差异且通过逆向工程举证。`,
+                `クリーンルーム分離（Sega）・事前契約確認（Bowers）・物理機構差異の実証（EMI対Cypress）。`,
+                `Clean-Room-Trennung (Sega), EULA-Prüfung (Bowers) und belegte physikalische Differenz (EMI v. Cypress).`,
+                `Chambre propre (Sega), vérification CLUF (Bowers) et mécanisme physique distinct (EMI c. Cypress).`
+              )}</p>
+            </div>
+          </div>
+        `;
+      } else if (s === 5) {
+        const nodeBtns = IP_NODES.map(n => `
+          <button type="button" class="pill-tab" onclick="focusIPNode('${n.id}')">${n.id}</button>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="station-header">
+            <div>
+              <div class="station-kicker">MODULE 05 · 3D GLOBAL IP NODE MAP</div>
+              <h2 class="station-title">${tx(
+                `全球智權節點 <strong>3D 旋轉地球</strong>`,
+                `Global IP Node <strong>3D Rotating Globe</strong>`,
+                `全球智权节点 <strong>3D 旋转地球</strong>`,
+                `グローバル知財ノード <strong>3D 回転地球儀</strong>`,
+                `Globaler IP-Knoten <strong>3D-Rotationsglobus</strong>`,
+                `Carte mondiale IP <strong>Globe 3D rotatif</strong>`
+              )}</h2>
+              <p class="station-subtitle">${tx(
+                `右側 3D 地球正即時旋轉追蹤 USPTO、EPO、TIPO、CNIPA、KIPO 與 JPO 六大跨境技術移轉與專利阻塞節點；當節點轉入正前方視野時，右側情報卡片將自動展開。`,
+                `As the 3D globe rotates, country clusters entering the foreground automatically expand live patent flow, blockage, and litigation callouts.`,
+                `右侧 3D 地球正实时旋转追踪六大跨境技术移转与专利阻塞节点；当节点转入正前方视野时，右侧情报卡片将自动展开。`,
+                `3D地球儀の回転に伴い、正面視野に入った主要国ノードの特許フロー・訴訟ホットスポット情報が右側に自動展開されます。`,
+                `Während der 3D-Globus rotiert, öffnen sich rechts automatisch Live-Analysen zu Patentflüssen und Klage-Hotspots.`,
+                `À mesure que le globe 3D pivote, les flux de brevets et zones de litige s’affichent automatiquement à droite.`
+              )}</p>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-bottom:var(--space-md);">
+            <div class="metric-label">${tx(`快速定位並檢視節點情報`, `INSPECT SPECIFIC IP NODE`, `快速定位并检视节点情报`, `ノード手動選択`, `IP-KNOTEN WÄHLEN`, `SÉLECTIONNER UN NŒUD`)}</div>
+            <div class="pill-tabs" style="margin-top:8px;margin-bottom:0;">${nodeBtns}</div>
+          </div>
+
+          <div class="panel-highlight">
+            <div class="metric-label" style="color:var(--on-primary-container);">CROSS-BORDER ARCS LEGEND</div>
+            <p style="margin:0;font-size:0.85rem;">${tx(
+              `連線弧線代表跨區專利家族佈局（US-TW 半導體／電池走廊、EU-CN 生物基化學路徑分歧），警示高風險熱區包括美國德拉瓦州／加州法院與 KIER／Solid Energies 專利叢林。`,
+              `Glowing arcs trace cross-border patent families (US–TW semiconductor/battery corridor, EU–CN bio-chemistry divergence) and litigation hotspots.`,
+              `连线弧线代表跨区专利家族布局，警示高风险热区包括美国诉讼枢纽与高密度专利丛林。`,
+              `アーク線はクロスボーダー特許ファミリー（米台半導体・電池回廊、欧中バイオ化学分岐）と訴訟集中地帯を可視化。`,
+              `Bögen zeigen grenzüberschreitende Patentfamilien (US–TW Korridor, EU–CN Bio-Route) und Klage-Hotspots.`,
+              `Les arcs tracent les familles transfrontalières (corridor US–TW, divergence EU–CN) et zones à risque.`
+            )}</p>
+          </div>
+        `;
+        if (ipGlobeNodes.length > 0 && !lastFrontNodeId) {
+          renderGlobeCallout(IP_NODES[0]);
+        }
+      } else if (s === 6) {
+        const dbs = [
+          { id: 'USPTO', desc: { 'zh-TW': `美國專利局核准與公開審查歷史（File Wrapper），精確校驗禁反言與終止放棄（Terminal Disclaimer）。`, 'en': `Official USPTO Patent Center records, prosecution wrappers, and terminal disclaimers.`, 'zh-CN': `美国专利局核准与公开审查历史，精确校验禁反言与终止放弃。`, 'ja': `米国特許庁（USPTO）の審査履歴・包袋・ターミナルディスクレイマー検証。`, 'de': `Offizielle USPTO-Prüfungsakten und Terminal Disclaimers.`, 'fr': `Dossiers officiels USPTO et historique d’examen.` } },
+          { id: 'EPO', desc: { 'zh-TW': `歐洲專利局（Espacenet / WIPO PATENTSCOPE）跨國同族專利與 CPC 分類碼結構化映射。`, 'en': `European Patent Office & WIPO PATENTSCOPE structured patent families and CPC classifications.`, 'zh-CN': `欧洲专利局跨国同族专利与 CPC 分类码结构化映射。`, 'ja': `欧州特許庁（EPO）および WIPO PATENTSCOPE のファミリー・CPC 分類統合。`, 'de': `EPO & WIPO PATENTSCOPE Patentfamilien und CPC-Klassifikationen.`, 'fr': `Familles de brevets OEB/OMPI et classifications CPC.` } },
+          { id: 'IEEE Xplore', desc: { 'zh-TW': `非專利文獻（NPL）與 Embase / Web of Science 前瞻技術訊號，支援 TRL 技術成熟度與 MedTech 水平掃描。`, 'en': `Non-patent literature (IEEE, Embase, WoS) powering early-stage TRL estimation and horizon scanning.`, 'zh-CN': `非专利文献前瞻技术信号，支持 TRL 技术成熟度与水平扫描。`, 'ja': `非特許文献（IEEE/WoS）による初期 TRL 推定とホライズンスキャニング。`, 'de': `Nicht-Patent-Literatur (IEEE, Embase, WoS) für TRL-Schätzung und Horizon Scanning.`, 'fr': `Littérature scientifique (IEEE, WoS) pour l’estimation TRL et la veille.` } },
+          { id: 'Lex Machina', desc: { 'zh-TW': `訴訟判例與損害賠償資料庫（結合 J.S. Held AI Disputes Monitor），量化各管轄區訴訟勝率與判賠分佈。`, 'en': `Patent litigation analytics & damages tracking paired with J.S. Held AI Disputes Monitor.`, 'zh-CN': `诉讼判例与损害赔偿数据库，量化各管辖区诉讼胜率与判赔分布。`, 'ja': `特許訴訟・損害賠償データベース（J.S. Held AI Disputes Monitor 連携）。`, 'de': `Klage- und Schadensersatz-Analytik gekoppelt mit AI Disputes Monitor.`, 'fr': `Analytique des litiges et dommages-intérêts couplée à AI Disputes Monitor.` } },
+          { id: 'ImportGenius', desc: { 'zh-TW': `跨境海關提單與供應商實體流向，驗證競爭對手真實商業化出貨與 337 條款進口禁令曝險。`, 'en': `Customs bill-of-lading & supply-chain flow tracking to assess ITC 337 import ban exposure.`, 'zh-CN': `跨境海关提单与供应商实体流向，验证商业化出货与进口禁令曝险。`, 'ja': `税関船荷証券データによる商業化実態と ITC 337 輸入差止リスクの検証。`, 'de': `Zoll-Frachtbriefdaten zur Bewertung von Lieferketten und ITC-337-Risiken.`, 'fr': `Données douanières pour évaluer les flux réels et l’exposition ITC 337.` } }
+        ];
+        const dbTabs = dbs.map(d => `
+          <button type="button" class="pill-tab ${d.id === appState.activeDb ? 'active' : ''}" onclick="selectDb('${d.id}')">${d.id}</button>
+        `).join('');
+        const curDb = dbs.find(d => d.id === appState.activeDb) || dbs[0];
+
+        card.innerHTML = `
+          <div class="station-header">
+            <div>
+              <div class="station-kicker">MODULE 06 · METHODOLOGY, DATABASES & HYPOTHESES</div>
+              <h2 class="station-title">${tx(
+                `實證方法論、五大核心資料庫與 <strong>假說檢定架構 (H1–H4)</strong>`,
+                `Methodology, Core Databases & <strong>Hypothesis Testing (H1–H4)</strong>`,
+                `实证方法论、五大核心数据库与 <strong>假说检定架构 (H1–H4)</strong>`,
+                `研究手法・5大データベースと<strong>仮説検証フレームワーク (H1–H4)</strong>`,
+                `Methodik, Datenbanken & <strong>Hypothesentests (H1–H4)</strong>`,
+                `Méthodologie, bases de données & <strong>hypothèses (H1–H4)</strong>`
+              )}</h2>
+            </div>
+          </div>
+
+          <div class="pill-tabs">${dbTabs}</div>
+          <div class="panel" style="margin-bottom:var(--space-md);">
+            <div class="metric-label">SELECTED DATA INFRASTRUCTURE · ${curDb.id}</div>
+            <p style="margin:4px 0 0;font-size:0.9rem;">${curDb.desc[lang] || curDb.desc['zh-TW']}</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="metric-label">H1 · VERTICALIZED RETRIEVAL</div>
+              <p style="margin:0;font-size:0.85rem;">${tx(`結構化專利 API 相較通用 LLM 可顯著提升高風險 FTO 召回率（實證達 3.3× 至 10× 覆蓋差距）並消除權屬幻覺。`, `Structured patent feeds outperform general LLMs by 3.3×–10× in FTO recall while eliminating fabricated assignees.`, `结构化专利 API 较通用 LLM 提升 3.3×–10× FTO 召回率并消除幻觉。`, `構造化特許APIは汎用LLM比3.3〜10倍のFTO再現率を達成し帰属誤認を排除。`, `Strukturierte Patent-APIs übertreffen LLMs um Faktor 3,3–10 im FTO-Recall.`, `Les flux structurés surpassent les LLM de 3,3× à 10× en rappel FTO.`)}</p>
+            </div>
+            <div class="panel">
+              <div class="metric-label">H2 · AI ASSET REGISTER</div>
+              <p style="margin:0;font-size:0.85rem;">${tx(`依據 Ocean Tomo AI as IP™ 建立訓練資料、模型權重與提示資產登錄冊，能符合營業秘密「合理保密措施」並提升估值。`, `Maintaining an AI Asset Register across data, compute, and algorithms satisfies reasonable-measures standards and lifts valuation.`, `建立 AI 资产登录册可符合营业秘密合理保密措施并提升企业估值。`, `AI資産台帳の整備は営業秘密の合理的管理要件を満たし企業価値評価を高める。`, `Ein KI-Asset-Register erfüllt Trade-Secret-Schutzstandards und steigert die Bewertung.`, `Un registre d’actifs IA sécurise les secrets d’affaires et valorise l’entreprise.`)}</p>
+            </div>
+            <div class="panel">
+              <div class="metric-label">H3 · NSGA-III SUPPLY RESILIENCE</div>
+              <p style="margin:0;font-size:0.85rem;">${tx(`將專利迴避設計時程與多區製造限制納入 MILP 模型，可在不突破預算上限前提下降低單點斷鏈衝擊。`, `Embedding FTO redesign lead times into NSGA-III/Gurobi models lowers disruption exposure within fixed CapEx bounds.`, `将回避设计时程纳入 MILP 模型可降低断链冲击。`, `回避設計リードタイムを組込んだNSGA-IIIモデルは予算内で供給途絶リスクを低減。`, `Die Integration von Redesign-Vorlaufzeiten in NSGA-III senkt Ausfallrisiken im Budget.`, `L’intégration des délais FTO dans NSGA-III réduit le risque de rupture.`)}</p>
+            </div>
+            <div class="panel">
+              <div class="metric-label">H4 · SEMANTIC DOE GUARDRAILS</div>
+              <p style="margin:0;font-size:0.85rem;">${tx(`在生成式研發推薦前加入「功能-方式-結果」語義閘門，能有效過濾違反 Festo 禁反言與 TiVo 顯著差異之偽迴避提案。`, `Pre-generation Function-Way-Result gates filter out Festo/TiVo-violating pseudo-design-arounds prior to prototyping.`, `「功能-方式-结果」语义闸门能过滤伪回避提案。`, `F-W-R意味ゲートにより Festo/TiVo 基準に反する偽の回避設計を試作前に遮断。`, `Vorab-F-W-R-Gates filtern Festo/TiVo-verletzende Schein-Umgehungen vor dem Prototyping.`, `Des filtres F-W-R bloquent les faux contournements avant le prototypage.`)}</p>
+            </div>
+          </div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="station-header">
+            <div>
+              <div class="station-kicker">MODULE 07 · GOVERNANCE LOGIC COMPARISON</div>
+              <h2 class="station-title">${tx(
+                `治理邏輯對照：<strong>既有靜態專利法 vs. 本研究 AI 動態治理邏輯</strong>`,
+                `Governance Comparison: <strong>Static Patent Law vs. AI-Driven Dynamic Logic</strong>`,
+                `治理逻辑对照：<strong>既有静态专利法 vs. 本研究 AI 动态治理逻辑</strong>`,
+                `ガバナンス比較：<strong>静的特許法規 vs. AI動的ガバナンス論理</strong>`,
+                `Governance-Vergleich: <strong>Statisches Patentrecht vs. KI-Dynamik</strong>`,
+                `Comparaison : <strong>Droit statique vs Gouvernance IA dynamique</strong>`
+              )}</h2>
+            </div>
+          </div>
+
+          <div class="panel" style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>${tx(`治理維度`, `Governance Dimension`, `治理维度`, `ガバナンス軸`, `Dimension`, `Dimension`)}</th>
+                  <th>${tx(`既有靜態專利法與人工實務`, `Traditional Static Patent Law`, `既有静态专利法与人工实务`, `従来の静的特許法・手作業`, `Statisches Patentrecht`, `Droit statique traditionnel`)}</th>
+                  <th>${tx(`本研究 AI 與專利情報動態治理邏輯`, `Proposed AI-Driven Dynamic Governance`, `本研究 AI 与专利情报动态治理逻辑`, `提案AI駆動の動的ガバナンス`, `KI-gestützte dynamische Logik`, `Logique dynamique pilotée par IA`)}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>${tx(`事後技術與申請日凍結`, `After-Arising Tech`, `事后技术与申请日冻结`, `後発技術・出願日基準`, `Nachfolge-Technologie`, `Technologie postérieure`)}</strong></td>
+                  <td>${tx(`字面範圍凍結於申請日理解，仰賴事後訴訟法官裁量均等論（Festo 案）。`, `Literal scope frozen at filing date; after-arising coverage resolved only via costly litigation.`, `字面范围冻结于申请日理解，仰赖事后诉讼裁量均等论。`, `出願日基準で固定され、後発技術の均等範囲は高額な訴訟で事後判断。`, `Wortlaut zum Anmeldetag fixiert; Klärung erst im teuren Prozess.`, `Portée figée au dépôt ; arbitrage coûteux a posteriori.`)}</td>
+                  <td>${tx(`透過動態語義飄移追蹤與審查歷史自動解析，於研發立項前即預警禁反言禁區。`, `Continuous semantic drift tracking + automated file-wrapper parsing flags estoppel zones pre-R&D.`, `透过动态语义追踪与审查历史自动解析，于研发立项前即预警禁反言禁区。`, `意味ドリフト追跡と包袋自動解析により、研究開発着手前に禁反言リスクを警告。`, `Semantische Drift-Analyse & Aktenprüfung warnen vor Estoppel-Zonen vor F&E-Start.`, `Suivi sémantique et analyse automatique d’historique avant R&D.`)}</td>
+                </tr>
+                <tr>
+                  <td><strong>${tx(`迴避設計驗證標準`, `Design-Around Test`, `回避设计验证标准`, `回避設計検証基準`, `Design-Around-Test`, `Test de contournement`)}</strong></td>
+                  <td>${tx(`人工比對易受「表面替換」誤導，至 TiVo 藐視法庭階段才揭露實質無差異。`, `Manual review risks superficial swaps until TiVo contempt or Graver Tank DOE rulings.`, `人工比对易受表面替换误导，至诉讼阶段才揭露实质无差异。`, `人手検証では表層置換を見逃しやすく、TiVo基準等の紛争段階で発覚。`, `Manuelle Prüfung übersieht oft Schein-Umgehungen bis zur Klage.`, `L’audit manuel risque de manquer les substitutions superficielles.`)}</td>
+                  <td>${tx(`內建「功能-方式-結果」向量檢驗與物理機制差異閘門（EMI v. Cypress 模式），阻斷偷換概念。`, `Embedded F-W-R vector gate & physical-mechanism validator (EMI model) blocks concept-swapping.`, `内建「功能-方式-结果」向量检验与物理机制差异闸门，阻断偷换概念。`, `F-W-Rベクトルゲートと物理機構差異検証（EMIモデル）で概念すり替えを自動遮断。`, `Integrierte F-W-R-Vektorprüfung & Physik-Gate blockieren Schein-Umgehungen.`, `Filtre vectoriel F-W-R et validation physique bloquant les substitutions.`)}</td>
+                </tr>
+                <tr>
+                  <td><strong>${tx(`資料涵蓋度與可驗證性`, `Data Completeness`, `资料涵盖度与可验证性`, `網羅性と検証可能性`, `Datenabdeckung`, `Complétude des données`)}</strong></td>
+                  <td>${tx(`通用 AI 依賴網路爬蟲片段且面臨 robots.txt 封鎖，容易自信輸出 10% 殘缺圖譜。`, `General LLMs rely on blocked web scrapes, confidently returning ~10% coverage with fake assignees.`, `通用 AI 依赖网络爬虫片段，易自信输出残缺图谱与虚构权属。`, `汎用LLMはクロール制限の影響を受け、約10%の断片情報や架空権利者を自信満々に提示。`, `Standard-LLMs liefern teils nur ~10 % Abdeckung mit erfundenen Anmeldern.`, `Les LLM généralistes n’offrent qu’une couverture partielle avec hallucinations.`)}</td>
+                  <td>${tx(`直連 USPTO / EPO / WIPO 結構化資料庫，強制所有主張附帶可稽核專利號與法律狀態。`, `Direct USPTO/EPO/WIPO structured feeds enforcing verifiable patent IDs and live legal status.`, `直连结构化数据库，强制所有主张附带可稽核专利号与法律状态。`, `USPTO/EPO/WIPO直結により、全ての分析に検証可能な特許番号と法的ステータスを義務付け。`, `Direkte USPTO/EPO/WIPO-Feeds garantieren verifizierbare Patentnummern.`, `Flux directs USPTO/EPO/WIPO garantissant traçabilité et statut légal.`)}</td>
+                </tr>
+                <tr>
+                  <td><strong>${tx(`營業秘密與 AI 治理`, `Trade Secret & EULA`, `营业秘密与 AI 治理`, `営業秘密・契約管理`, `Geschäftsgeheimnisse`, `Secrets & Contrats`)}</strong></td>
+                  <td>${tx(`分散於法務與工程端，常忽略 EULA 對反向工程的契約凌駕效應（Bowers 案）。`, `Siloed legal/R&D reviews overlook EULA overrides of statutory fair use (Bowers v. Baystate).`, `分散于法务与工程端，常忽略 EULA 对反向工程的契约凌驾效应。`, `法務と開発の分断により、EULAが法定例外に優越するリスク（Bowers判決）を見落としがち。`, `Isolierte Prüfungen übersehen oft EULA-Vorrang vor Fair Use (Bowers).`, `Les revues isolées négligent souvent la primauté du CLUF (Bowers).`)}</td>
+                  <td>${tx(`整合 AI 資產登錄冊（AI Asset Register）、Clean Room 隔離程序與商業化最佳化排程一體化落地。`, `Unified AI Asset Register, clean-room protocols, and OR-optimized licensing/launch workflows.`, `整合 AI 资产登录册、洁净室隔离程序与商业化最佳化排程一体化落地。`, `AI資産台帳・クリーンルーム手順・OR最適化を単一のガバナンス基盤へ統合。`, `Einheitliches KI-Asset-Register, Clean-Room-Protokolle und OR-Zeitplanung.`, `Registre d’actifs IA, protocole salle blanche et planification RO unifiés.`)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // 6. EMBEDDED CHARTS & INTERACTIVE HANDLERS (ALL HOISTED FUNCTIONS)
+    // =========================================================================
+    function initModule1Chart(tx) {
+      const ctxEl = document.getElementById('chart-m1');
+      if (!ctxEl || typeof Chart === 'undefined') return;
+      const c1 = getToken('--data-1', '#4b6b88');
+      const cCtx = getToken('--data-context', '#b8c5d1');
+      const textCol = getToken('--on-surface-variant', '#4f6070');
+      const gridCol = getToken('--outline-variant', '#cbd5df');
+
+      activeChart = new Chart(ctxEl, {
+        type: 'bar',
+        data: {
+          labels: ['Purpose-Built AI', 'Claude', 'ChatGPT', 'MS Co-Pilot'],
+          datasets: [{
+            label: tx(`檢出有效專利數`, `Active Patents Found`, `检出有效专利数`, `検出特許数`, `Erkannte Patente`, `Brevets détectés`),
+            data: [42, 12, 7, 4],
+            backgroundColor: [c1, cCtx, cCtx, cCtx],
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { color: textCol }, grid: { color: gridCol } },
+            x: { ticks: { color: textCol }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function initModule2Radar(sc, tx) {
+      const ctxEl = document.getElementById('chart-m2');
+      if (!ctxEl || typeof Chart === 'undefined') return;
+      const c1 = getToken('--data-1', '#4b6b88');
+      const textCol = getToken('--on-surface-variant', '#4f6070');
+      const gridCol = getToken('--outline-variant', '#cbd5df');
+
+      activeChart = new Chart(ctxEl, {
+        type: 'radar',
+        data: {
+          labels: [
+            tx(`FTO 安全度`, `FTO Safety`, `FTO 安全度`, `FTO安全性`, `FTO-Sicherheit`, `Sécurité FTO`),
+            tx(`專利強度`, `Patent Strength`, `专利强度`, `特許強度`, `Patentstärke`, `Force brevet`),
+            tx(`市場契合`, `Market Fit`, `市场契合`, `市場適合`, `Market-Fit`, `Marché`),
+            tx(`技術成熟 TRL`, `TRL Readiness`, `技术成熟 TRL`, `TRL成熟度`, `TRL-Reife`, `Maturité TRL`),
+            tx(`供應韌性`, `Supply Resilience`, `供应韧性`, `供給強靭性`, `Lieferresilienz`, `Résilience`),
+            tx(`資本估值潛力`, `Valuation Upside`, `资本估值潜力`, `価値評価`, `Bewertung`, `Valorisation`)
+          ],
+          datasets: [{
+            label: sc.labels[appState.lang] || sc.labels['zh-TW'],
+            data: sc.scores,
+            borderColor: c1,
+            backgroundColor: appState.theme === 'night' ? 'rgba(114, 189, 212, 0.22)' : 'rgba(75, 107, 136, 0.2)',
+            pointBackgroundColor: c1,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            r: {
+              min: 0, max: 100,
+              ticks: { display: false },
+              grid: { color: gridCol },
+              angleLines: { color: gridCol },
+              pointLabels: { color: textCol, font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+
+    function computeORMetrics(w) {
+      const ttm = (26 - (w.speed - 20) * 0.14 + (w.resilience - 50) * 0.03).toFixed(1);
+      const cost = (14.5 + (w.speed * 0.07) + (w.resilience * 0.05) - (w.budget * 0.08)).toFixed(1);
+      const resScore = Math.min(99, Math.round(45 + w.resilience * 0.52 + (100 - w.budget) * 0.08));
+      return { ttm, cost, resScore };
+    }
+
+    function initModule3Chart(orRes, tx) {
+      const ctxEl = document.getElementById('chart-m3');
+      if (!ctxEl || typeof Chart === 'undefined') return;
+      const c1 = getToken('--data-1', '#4b6b88');
+      const c2 = getToken('--data-2', '#56726a');
+      const textCol = getToken('--on-surface-variant', '#4f6070');
+      const gridCol = getToken('--outline-variant', '#cbd5df');
+
+      const pareto = [
+        { x: 9.2, y: 58 }, { x: 11.4, y: 69 }, { x: 13.8, y: 79 },
+        { x: 16.5, y: 88 }, { x: 19.6, y: 95 }, { x: 22.8, y: 98 }
+      ];
+
+      activeChart = new Chart(ctxEl, {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: tx(`NSGA-III 柏拉圖前緣`, `NSGA-III Pareto Front`, `NSGA-III 帕累托前沿`, `NSGA-IIIパレート最適線`, `Pareto-Front`, `Front de Pareto`),
+              data: pareto,
+              showLine: true,
+              borderColor: c2,
+              backgroundColor: c2,
+              pointRadius: 4,
+              borderWidth: 2
+            },
+            {
+              label: tx(`當前最佳解`, `Active Gurobi Solution`, `当前最佳解`, `現在の最適解`, `Aktuelle Lösung`, `Solution active`),
+              data: [{ x: parseFloat(orRes.cost), y: orRes.resScore }],
+              backgroundColor: c1,
+              pointRadius: 9,
+              pointHoverRadius: 11
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: textCol } } },
+          scales: {
+            x: { title: { display: true, text: 'CapEx ($M)', color: textCol }, ticks: { color: textCol }, grid: { color: gridCol } },
+            y: { min: 45, max: 100, title: { display: true, text: 'Supply Resilience (%)', color: textCol }, ticks: { color: textCol }, grid: { color: gridCol } }
+          }
+        }
+      });
+    }
+
+    function updateORSlider(key, val) {
+      appState.orWeights[key === 'resil' ? 'resilience' : key] = Number(val);
+      const lbl = document.getElementById(`val-${key}`);
+      if (lbl) lbl.textContent = `${val}%`;
+      const orRes = computeORMetrics(appState.orWeights);
+      const elT = document.getElementById('or-ttm');
+      const elC = document.getElementById('or-cost');
+      const elR = document.getElementById('or-res');
+      if (elT) elT.textContent = `${orRes.ttm} mo`;
+      if (elC) elC.textContent = `$${orRes.cost}M`;
+      if (elR) elR.textContent = `${orRes.resScore}%`;
+      if (activeChart && activeChart.data.datasets[1]) {
+        activeChart.data.datasets[1].data = [{ x: parseFloat(orRes.cost), y: orRes.resScore }];
+        activeChart.update('none');
+      }
+      saveState();
+    }
+
+    function selectRadarScenario(idx) {
+      appState.activeRadarIndex = idx;
+      renderStation(2, true);
+    }
+
+    function selectCase(idx) {
+      appState.activeCaseIndex = idx;
+      renderStation(4, true);
+    }
+
+    function selectDb(id) {
+      appState.activeDb = id;
+      renderStation(6, true);
+    }
+
+    function focusIPNode(id) {
+      const node = IP_NODES.find(n => n.id === id);
+      if (!node || !ipGlobeGroup) return;
+      // Rotate globe so selected node faces camera
+      const targetLonRad = -(node.lon + 90) * (Math.PI / 180);
+      ipGlobeGroup.rotation.y = targetLonRad;
+      lastFrontNodeId = node.id;
+      renderGlobeCallout(node);
+    }
+
+    function nextStation() {
+      renderStation((appState.station + 1) % 8);
+    }
+
+    function prevStation() {
+      renderStation((appState.station + 7) % 8);
+    }
+
+    function toggleTheme() {
+      appState.theme = appState.theme === 'day' ? 'night' : 'day';
+      document.documentElement.setAttribute('data-theme', appState.theme === 'night' ? 'night' : '');
+      syncThreeThemeColors();
+      updateChromeUI();
+      renderStation(appState.station, true);
+    }
+
+    function changeLanguage(lang) {
+      appState.lang = lang;
+      document.documentElement.lang = lang;
+      updateChromeUI();
+      renderStation(appState.station, true);
+      if (appState.station === 5 && lastFrontNodeId) {
+        const nd = IP_NODES.find(n => n.id === lastFrontNodeId);
+        if (nd) renderGlobeCallout(nd);
+      }
+    }
+
+    function toggleAutoPlay() {
+      appState.autoplay = !appState.autoplay;
+      if (autoplayTimer) {
+        clearInterval(autoplayTimer);
+        autoplayTimer = null;
+      }
+      if (appState.autoplay) {
+        autoplayTimer = setInterval(() => {
+          nextStation();
+        }, 8500);
+      }
+      updateChromeUI();
+      saveState();
+    }
+
+    function toggleTTS() {
+      appState.tts = !appState.tts;
+      if (!appState.tts && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      } else if (appState.tts) {
+        speakCurrentStation();
+      }
+      updateChromeUI();
+    }
+
+    function speakCurrentStation() {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const card = document.getElementById('station-card');
+      if (!card) return;
+      const titleEl = card.querySelector('.station-title');
+      const subEl = card.querySelector('.station-subtitle');
+      const text = `${titleEl ? titleEl.textContent : ''}. ${subEl ? subEl.textContent : ''}`;
+      const utt = new SpeechSynthesisUtterance(text);
+      const pack = I18N[appState.lang] || I18N['zh-TW'];
+      utt.lang = pack.ttsLang;
+      utt.rate = 1.02;
+      window.speechSynthesis.speak(utt);
+    }
+
+    function updateChromeUI() {
+      const pack = I18N[appState.lang] || I18N['zh-TW'];
+      const setTxt = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+      setTxt('ui-kicker', pack.kicker);
+      setTxt('ui-brand-title', pack.brandTitle);
+      setTxt('ui-autoplay-label', appState.autoplay ? pack.autoplayOn : pack.autoplayOff);
+      setTxt('ui-tts-label', appState.tts ? pack.ttsOn : pack.ttsOff);
+      setTxt('ui-theme-label', appState.theme === 'night' ? pack.themeNight : pack.themeDay);
+      setTxt('ui-prev-label', pack.prev);
+      setTxt('ui-next-label', pack.next);
+      setTxt('amoeba-bubble', appState.theme === 'night' ? pack.amoebaNight : pack.amoebaDay);
+      setTxt('ui-station-counter', `0${appState.station + 1} / 08`);
+
+      const btnAuto = document.getElementById('btn-autoplay');
+      if (btnAuto) btnAuto.classList.toggle('active', appState.autoplay);
+      const btnTts = document.getElementById('btn-tts');
+      if (btnTts) btnTts.classList.toggle('active', appState.tts);
+
+      const prog = document.getElementById('progress-fill');
+      if (prog) prog.style.width = `${((appState.station + 1) / 8) * 100}%`;
+
+      const rail = document.getElementById('orbit-rail');
+      if (rail) {
+        rail.innerHTML = pack.navNames.map((name, i) => `
+          <button type="button" class="orbit-btn ${i === appState.station ? 'active' : ''}" onclick="renderStation(${i})">
+            <span class="orbit-num">0${i + 1}</span>
+            <span class="orbit-label">${name.replace(/^0\d\s*/, '')}</span>
+          </button>
+        `).join('');
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 7. STATE PERSISTENCE (GEMINI NOTEBOOK SHIM API) & BOOTSTRAP
+    // =========================================================================
+    async function saveState() {
+      if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === 'function') {
+        try {
+          await window.notebookAppApi.setAppState({
+            station: appState.station,
+            lang: appState.lang,
+            theme: appState.theme,
+            activeRadarIndex: appState.activeRadarIndex,
+            activeCaseIndex: appState.activeCaseIndex,
+            orWeights: appState.orWeights,
+            activeDb: appState.activeDb
+          });
+        } catch (e) {}
+      }
+    }
+
+    async function initApp() {
+      if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === 'function') {
+        try {
+          const saved = await window.notebookAppApi.getAppState();
+          if (saved) {
+            if (typeof saved.station === 'number') appState.station = saved.station;
+            if (saved.lang && I18N[saved.lang]) appState.lang = saved.lang;
+            if (saved.theme === 'night' || saved.theme === 'day') appState.theme = saved.theme;
+            if (typeof saved.activeRadarIndex === 'number') appState.activeRadarIndex = saved.activeRadarIndex;
+            if (typeof saved.activeCaseIndex === 'number') appState.activeCaseIndex = saved.activeCaseIndex;
+            if (saved.orWeights) appState.orWeights = saved.orWeights;
+            if (saved.activeDb) appState.activeDb = saved.activeDb;
+          }
+        } catch (e) {}
+      }
+
+      document.documentElement.lang = appState.lang;
+      document.documentElement.setAttribute('data-theme', appState.theme === 'night' ? 'night' : '');
+      const langSel = document.getElementById('lang-select');
+      if (langSel) langSel.value = appState.lang;
+
+      initThreeSpace();
+      initAmoebaCanvas();
+      updateChromeUI();
+      renderStation(appState.station, true);
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
+        window.notebookAppApi.notifyAppReady();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>

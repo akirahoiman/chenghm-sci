@@ -1,0 +1,2439 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="carbon">
+  <title>城市物質供給的國家—產業生產網絡骨幹韌性 | PAUSB 互動儀表板 (2018–2022)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" defer></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* 1. Carbon Base & User-Specified Clean Light Mode Palette */
+      --background: #ffffff;
+      --surface-container-low: #f8f9fa;
+      --surface-container: #f1f3f5;
+      --surface-container-high: #e5e7eb;
+
+      /* Ink */
+      --on-surface: #111827;
+      --on-surface-variant: #374151;
+      --on-surface-muted: #6b7280;
+
+      /* Rules */
+      --outline: #9ca3af;
+      --outline-variant: #e5e7eb;
+
+      /* Accents */
+      --primary: #0f62fe;
+      --on-primary: #ffffff;
+      --primary-container: #e8f0fe;
+      --on-primary-container: #111827;
+      --secondary: #4b5563;
+      --tertiary: #15803d;
+      --error: #b91c1c;
+      --on-error: #ffffff;
+
+      /* Semantic */
+      --positive: #15803d;
+      --positive-bg: #dcfce7;
+      --warning: #b45309;
+      --warning-bg: #fef3c7;
+      --error-bg: #fee2e2;
+      --focus: #0f62fe;
+
+      /* Data series */
+      --data-1: #0f62fe;
+      --data-2: #0d9488;
+      --data-3: #d97706;
+      --data-4: #4f46e5;
+      --data-context: #9ca3af;
+
+      /* Subtle World Map & Network Canvas Tokens */
+      --map-land: #e5e7eb;
+      --map-dot: #cbd5e1;
+      --map-grid: #f1f3f5;
+      --network-edge: rgb(17 24 39 / 0.10);
+      --network-edge-core: rgb(15 98 254 / 0.34);
+      --network-edge-rewire: rgb(217 119 6 / 0.45);
+      --network-edge-active: rgb(15 98 254 / 0.72);
+
+      /* Fonts (Non-Latin first per foundation spec) */
+      --font-headline: 'Noto Sans TC', 'IBM Plex Sans', sans-serif;
+      --font-body: 'Noto Sans TC', 'IBM Plex Sans', sans-serif;
+      --font-label: 'IBM Plex Mono', 'Noto Sans TC', monospace;
+
+      /* Shape */
+      --rounded: 0.125rem;
+      --rounded-lg: 0.25rem;
+      --rounded-full: 0.75rem;
+
+      /* Effects */
+      --shadow-1: 0 2px 8px rgb(17 24 39 / 0.08);
+      --shadow-2: 0 8px 24px rgb(17 24, 39 / 0.10);
+      --rule: 1px solid var(--outline-variant);
+      --field-rule: 1px solid var(--outline);
+      --indicator: 2px solid var(--primary);
+
+      /* Type scale (Dashboard) */
+      --display-size: clamp(1.5rem, 1.2rem + 1.1vw, 2.05rem);
+      --headline-size: clamp(1.125rem, 1.02rem + 0.4vw, 1.35rem);
+      --subhead-size: clamp(0.975rem, 0.94rem + 0.2vw, 1.0625rem);
+      --body-size: clamp(0.9375rem, 0.9rem + 0.12vw, 0.975rem);
+      --label-size: 0.75rem;
+
+      /* Spacing scale (4pt base) */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.25rem;
+      --space-2xl: 3.5rem;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 140ms;
+      --dur-short: 240ms;
+      --dur-long: 420ms;
+    }
+
+    /* Base reset */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      overflow-x: clip;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    header { position: static !important; }
+    button, input, select, textarea { font-family: inherit; }
+
+    /* Focus rings */
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Background Subtle Geometric World Map */
+    .world-bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      opacity: 0.55;
+    }
+    .world-bg-svg {
+      width: min(1600px, 120vw);
+      height: auto;
+      margin-top: var(--space-lg);
+      opacity: 0.42;
+    }
+
+    /* Page Container */
+    .page-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: var(--space-lg);
+      padding: var(--space-lg) var(--space-xl);
+      max-width: 1380px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .page-grid * { min-width: 0; }
+
+    /* Typography helpers */
+    .mono-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      letter-spacing: 0.04em;
+      color: var(--on-surface-muted);
+      font-weight: 500;
+    }
+    .mono-num {
+      font-family: var(--font-label);
+      font-variant-numeric: tabular-nums;
+    }
+    .section-title {
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--on-surface);
+      margin: 0;
+    }
+    .section-sub {
+      font-size: 0.875rem;
+      color: var(--on-surface-variant);
+      margin: var(--space-xs) 0 0 0;
+    }
+
+    /* Masthead */
+    .masthead {
+      border-bottom: var(--rule);
+      padding-bottom: var(--space-lg);
+      display: grid;
+      gap: var(--space-md);
+    }
+    .masthead-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+    .masthead-kicker {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--primary);
+      font-weight: 500;
+      margin-bottom: var(--space-xs);
+    }
+    .masthead-title {
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 300;
+      line-height: 1.2;
+      color: var(--on-surface);
+      margin: 0;
+    }
+    .masthead-title strong {
+      font-weight: 700;
+    }
+    .masthead-deck {
+      font-size: var(--body-size);
+      color: var(--on-surface-variant);
+      margin: var(--space-xs) 0 0 0;
+      max-width: 72ch;
+    }
+    .dataset-pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      align-items: center;
+    }
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-sm);
+      background-color: var(--surface-container);
+      border: var(--rule);
+      border-radius: var(--rounded);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      white-space: nowrap;
+    }
+
+    /* Control Strip (Timeline + Threshold) */
+    .control-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-md);
+      background-color: var(--surface-container-low);
+      border: var(--rule);
+      padding: var(--space-sm) var(--space-md);
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .control-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-muted);
+      font-weight: 500;
+    }
+    .segmented-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .seg-btn {
+      min-height: 44px;
+      padding: 0 var(--space-md);
+      border: var(--rule);
+      background-color: var(--background);
+      color: var(--on-surface-variant);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: var(--rounded);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out);
+    }
+    .seg-btn:hover {
+      background-color: var(--surface-container);
+      color: var(--on-surface);
+    }
+    .seg-btn.is-active {
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+      border-color: var(--primary);
+      box-shadow: inset 0 -2px 0 var(--primary);
+      font-weight: 600;
+    }
+    .seg-btn-year {
+      font-family: var(--font-label);
+    }
+    .year-badge {
+      font-size: 0.7rem;
+      padding: 1px var(--space-xs);
+      border-radius: var(--rounded);
+      font-family: var(--font-body);
+    }
+    .year-badge-shock {
+      background-color: var(--warning-bg);
+      color: var(--warning);
+    }
+    .year-badge-peak {
+      background-color: var(--primary-container);
+      color: var(--primary);
+    }
+    .year-badge-rebound {
+      background-color: var(--positive-bg);
+      color: var(--positive);
+    }
+
+    .play-btn {
+      min-height: 44px;
+      padding: 0 var(--space-md);
+      border: 1px solid var(--primary);
+      background-color: var(--primary);
+      color: var(--on-primary);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: var(--rounded);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+    .play-btn:hover {
+      background-color: color-mix(in srgb, var(--primary), var(--on-surface) 20%);
+    }
+    .play-btn.is-playing {
+      background-color: var(--on-surface);
+      border-color: var(--on-surface);
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+    .kpi-card {
+      background-color: var(--surface-container-low);
+      border: var(--rule);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      border-bottom: 2px solid var(--outline-variant);
+      transition: background-color var(--dur-short) var(--ease-out),
+                  border-color var(--dur-short) var(--ease-out);
+    }
+    .kpi-card.is-focal {
+      background-color: var(--background);
+      border-bottom: var(--indicator);
+    }
+    .kpi-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+    }
+    .kpi-tag {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .kpi-value {
+      font-family: var(--font-label);
+      font-size: clamp(1.5rem, 1.25rem + 0.85vw, 2rem);
+      font-weight: 400;
+      line-height: 1.15;
+      color: var(--on-surface);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+    .kpi-sub {
+      font-size: 0.8125rem;
+      color: var(--on-surface-variant);
+      line-height: 1.4;
+    }
+    .kpi-delta {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      padding: 2px var(--space-xs);
+      border-radius: var(--rounded);
+    }
+    .delta-pos { background-color: var(--positive-bg); color: var(--positive); }
+    .delta-warn { background-color: var(--warning-bg); color: var(--warning); }
+    .delta-err { background-color: var(--error-bg); color: var(--error); }
+    .delta-info { background-color: var(--primary-container); color: var(--primary); }
+
+    /* Main Topology + Inspector Split (8 + 4) */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+      gap: var(--space-lg);
+      align-items: stretch;
+    }
+    .panel {
+      background-color: var(--background);
+      border: var(--rule);
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-tinted {
+      background-color: var(--surface-container-low);
+    }
+    .panel-head {
+      padding: var(--space-md);
+      border-bottom: var(--rule);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-sm);
+    }
+    .panel-body {
+      padding: var(--space-md);
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    /* Network Canvas Wrapper */
+    .network-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background-color: var(--surface-container-low);
+      border-bottom: var(--rule);
+    }
+    .mode-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+    .mode-btn {
+      min-height: 44px;
+      padding: 0 var(--space-sm);
+      border: 1px solid transparent;
+      background-color: transparent;
+      color: var(--on-surface-variant);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      border-radius: var(--rounded);
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out);
+    }
+    .mode-btn:hover {
+      background-color: var(--surface-container);
+      color: var(--on-surface);
+    }
+    .mode-btn.is-active {
+      background-color: var(--background);
+      border-color: var(--outline-variant);
+      color: var(--primary);
+      font-weight: 600;
+      box-shadow: inset 0 -2px 0 var(--primary);
+    }
+    .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .icon-btn {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 var(--space-sm);
+      border: var(--rule);
+      background-color: var(--background);
+      color: var(--on-surface-variant);
+      border-radius: var(--rounded);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8125rem;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out);
+    }
+    .icon-btn:hover {
+      background-color: var(--surface-container);
+      color: var(--on-surface);
+    }
+
+    .canvas-stage {
+      position: relative;
+      width: 100%;
+      min-height: 480px;
+      height: 500px;
+      background-color: var(--background);
+      background-image:
+        radial-gradient(var(--outline-variant) 1px, transparent 1px);
+      background-size: 24px 24px;
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+    }
+    .canvas-stage:active { cursor: grabbing; }
+    #network-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .canvas-legend {
+      position: absolute;
+      left: var(--space-md);
+      bottom: var(--space-md);
+      background-color: color-mix(in srgb, var(--background) 92%, transparent);
+      border: var(--rule);
+      padding: var(--space-xs) var(--space-sm);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm) var(--space-md);
+      font-size: 0.75rem;
+      color: var(--on-surface-variant);
+      pointer-events: none;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .swatch {
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+    }
+    .swatch-circle { border-radius: 50%; }
+    .swatch-square { border-radius: 0; }
+    .swatch-econ { background-color: var(--on-surface); }
+    .swatch-core-sec { background-color: var(--data-1); }
+    .swatch-other-sec { background-color: var(--data-context); }
+    .swatch-rewire { background-color: var(--data-3); }
+
+    .canvas-hint {
+      position: absolute;
+      right: var(--space-md);
+      bottom: var(--space-md);
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      color: var(--on-surface-muted);
+      background-color: color-mix(in srgb, var(--background) 92%, transparent);
+      border: var(--rule);
+      padding: var(--space-xs) var(--space-sm);
+      pointer-events: none;
+    }
+
+    /* Floating Tooltip */
+    .net-tooltip {
+      position: absolute;
+      z-index: 10;
+      pointer-events: none;
+      background-color: var(--background);
+      border: var(--rule);
+      box-shadow: var(--shadow-1);
+      padding: var(--space-sm) var(--space-md);
+      min-width: 210px;
+      max-width: 280px;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity var(--dur-micro) var(--ease-out),
+                  transform var(--dur-micro) var(--ease-out);
+    }
+    .net-tooltip.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Inspector Panel */
+    .inspector-box {
+      background-color: var(--background);
+      border: var(--rule);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .inspector-metric-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: var(--space-xs) 0;
+      border-bottom: var(--rule);
+      font-size: 0.875rem;
+    }
+    .inspector-metric-row:last-child { border-bottom: none; }
+    .sparkline-wrap {
+      width: 100%;
+      min-height: 76px;
+      padding-top: var(--space-xs);
+    }
+    .chip-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+    .node-chip {
+      min-height: 36px;
+      padding: var(--space-xs) var(--space-sm);
+      border: var(--rule);
+      background-color: var(--background);
+      color: var(--on-surface-variant);
+      font-size: 0.78rem;
+      font-family: var(--font-label);
+      border-radius: var(--rounded);
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out);
+    }
+    .node-chip:hover {
+      background-color: var(--surface-container);
+      color: var(--on-surface);
+    }
+    .node-chip.is-selected {
+      background-color: var(--primary-container);
+      border-color: var(--primary);
+      color: var(--on-primary-container);
+      font-weight: 600;
+    }
+
+    /* PAUSB Three Pillars Mini List */
+    .pausb-list {
+      display: grid;
+      gap: var(--space-xs);
+    }
+    .pausb-item {
+      padding: var(--space-sm);
+      background-color: var(--background);
+      border-left: 3px solid var(--primary);
+      border-top: var(--rule);
+      border-right: var(--rule);
+      border-bottom: var(--rule);
+      font-size: 0.8125rem;
+    }
+    .pausb-item.is-teal { border-left-color: var(--data-2); }
+    .pausb-item.is-amber { border-left-color: var(--data-3); }
+    .pausb-item strong {
+      display: block;
+      color: var(--on-surface);
+      margin-bottom: 2px;
+    }
+
+    /* Lower Analytical Grids */
+    .analytics-row-1 {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--space-lg);
+    }
+    .analytics-row-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .chart-box {
+      position: relative;
+      width: 100%;
+      min-height: 290px;
+      height: 300px;
+    }
+
+    /* Transition Flow Diagram (Panel B) */
+    .transition-cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+    .trans-stat {
+      background-color: var(--surface-container-low);
+      border: var(--rule);
+      padding: var(--space-sm) var(--space-md);
+    }
+    .trans-stat-val {
+      font-family: var(--font-label);
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--on-surface);
+    }
+    .persistence-bar-track {
+      height: 22px;
+      width: 100%;
+      background-color: var(--surface-container);
+      display: flex;
+      overflow: hidden;
+      border: var(--rule);
+    }
+    .p-seg-5yr { background-color: var(--data-1); height: 100%; }
+    .p-seg-4yr { background-color: var(--data-2); height: 100%; }
+    .p-seg-3yr { background-color: var(--data-context); height: 100%; }
+
+    /* Tables */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border-top: var(--rule);
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+    .data-table th {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--on-surface-variant);
+      background-color: var(--surface-container);
+      padding: var(--space-sm) var(--space-sm);
+      text-align: left;
+      border-bottom: 1px solid var(--outline);
+      white-space: nowrap;
+    }
+    .data-table th.num, .data-table td.num {
+      text-align: right;
+      font-family: var(--font-label);
+      font-variant-numeric: tabular-nums;
+    }
+    .data-table td {
+      padding: var(--space-sm) var(--space-sm);
+      border-bottom: var(--rule);
+      color: var(--on-surface);
+    }
+    .data-table tbody tr:nth-child(even) {
+      background-color: var(--surface-container-low);
+    }
+    .data-table tbody tr.is-clickable {
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+    .data-table tbody tr.is-clickable:hover {
+      background-color: var(--primary-container);
+    }
+    .data-table tbody tr.is-selected {
+      background-color: var(--primary-container);
+      font-weight: 600;
+    }
+
+    /* Callout Strip */
+    .callout-strip {
+      background-color: var(--surface-container-low);
+      border-left: 3px solid var(--primary);
+      border-top: var(--rule);
+      border-right: var(--rule);
+      border-bottom: var(--rule);
+      padding: var(--space-sm) var(--space-md);
+      font-size: 0.84rem;
+      color: var(--on-surface-variant);
+    }
+    .callout-strip.is-warn {
+      border-left-color: var(--warning);
+    }
+
+    /* Footer */
+    .page-footer {
+      border-top: var(--rule);
+      padding-top: var(--space-lg);
+      padding-bottom: var(--space-xl);
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      font-size: 0.8125rem;
+      color: var(--on-surface-muted);
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1120px) {
+      .workspace-grid { grid-template-columns: minmax(0, 1fr); }
+      .analytics-row-1 { grid-template-columns: minmax(0, 1fr); }
+      .analytics-row-2 { grid-template-columns: minmax(0, 1fr); }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .page-grid {
+        padding: var(--space-md);
+        gap: var(--space-md);
+      }
+      .kpi-grid { grid-template-columns: minmax(0, 1fr); }
+      .transition-cards { grid-template-columns: minmax(0, 1fr); }
+      .page-footer { grid-template-columns: minmax(0, 1fr); }
+      .canvas-stage { min-height: 360px; height: 380px; }
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Subtle Geometric World Map Background -->
+  <div class="world-bg-layer" aria-hidden="true">
+    <svg id="world-bg-svg" class="world-bg-svg" viewBox="0 0 1200 620" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <main class="page-grid">
+    <!-- 1. Masthead & Global Controls -->
+    <header class="masthead">
+      <div class="masthead-top">
+        <div>
+          <div class="masthead-kicker">Journal of Cleaner Production · Vol. 568 (2026) · PAUSB Framework</div>
+          <h1 class="masthead-title">城市物質供給的<strong>國家—產業生產網絡骨幹韌性</strong></h1>
+          <p class="masthead-deck">
+            追蹤 2018–2022 年全球生產網絡在衝擊前後的「持續性（Persistence）、重組（Rewiring）與反彈（Rebound）」動態結構（Chengwang Lin &amp; Hoiman Cheng, 2026）。
+          </p>
+        </div>
+        <div class="dataset-pill-group">
+          <span class="meta-tag"><i data-lucide="globe" width="14" height="14"></i> OECD ICIO · 81 國 × 49 產業</span>
+          <span class="meta-tag"><i data-lucide="share-2" width="14" height="14"></i> 3,926 節點 · Top 10% 骨幹邊</span>
+          <span class="meta-tag"><i data-lucide="layers" width="14" height="14"></i> 涵蓋 99.5% 總流量</span>
+        </div>
+      </div>
+
+      <div class="control-bar" role="region" aria-label="時間軸與骨幹門檻控制">
+        <div class="control-group">
+          <span class="control-label">時間軸切換 (2018–2022)</span>
+          <div class="segmented-row" id="year-switcher">
+            <button type="button" class="seg-btn seg-btn-year" data-year="2018" onclick="setActiveYear(2018)">2018</button>
+            <button type="button" class="seg-btn seg-btn-year" data-year="2019" onclick="setActiveYear(2019)">2019</button>
+            <button type="button" class="seg-btn seg-btn-year" data-year="2020" onclick="setActiveYear(2020)">
+              2020 <span class="year-badge year-badge-shock">衝擊</span>
+            </button>
+            <button type="button" class="seg-btn seg-btn-year" data-year="2021" onclick="setActiveYear(2021)">
+              2021 <span class="year-badge year-badge-peak">重組峰值</span>
+            </button>
+            <button type="button" class="seg-btn seg-btn-year is-active" data-year="2022" onclick="setActiveYear(2022)">
+              2022 <span class="year-badge year-badge-rebound">再擴張</span>
+            </button>
+            <button type="button" class="play-btn" id="btn-play-timeline" onclick="toggleTimelinePlay()">
+              <i data-lucide="play" width="14" height="14"></i>
+              <span id="play-btn-text">播放演變</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">骨幹提取門檻敏感度 (Table A2)</span>
+          <div class="segmented-row" id="threshold-switcher">
+            <button type="button" class="seg-btn" data-thresh="top5" onclick="setThreshold('top5')">Top 5%</button>
+            <button type="button" class="seg-btn is-active" data-thresh="top10" onclick="setThreshold('top10')">Top 10% (基準)</button>
+            <button type="button" class="seg-btn" data-thresh="top15" onclick="setThreshold('top15')">Top 15%</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. Top Core KPI Strip -->
+    <section class="kpi-grid" aria-label="核心韌性指標摘要">
+      <article class="kpi-card is-focal">
+        <div class="kpi-head">
+          <span class="kpi-tag" id="kpi-flow-label">2022 骨幹總流量</span>
+          <span class="kpi-delta delta-pos" id="kpi-flow-delta">+25.6% vs 2020</span>
+        </div>
+        <div class="kpi-value" id="kpi-flow-val">1.02 × 10⁸</div>
+        <div class="kpi-sub" id="kpi-flow-sub">保留骨幹邊：1,017,060 條 · 涵蓋 99.53% 總中間流量</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-tag">持續性 · Persistence</span>
+          <span class="kpi-delta delta-info" id="kpi-persist-badge">5年全程穩定</span>
+        </div>
+        <div class="kpi-value" id="kpi-persist-val">55.5%</div>
+        <div class="kpi-sub" id="kpi-persist-sub">唯一骨幹邊全程存在；佔 2022 骨幹 73.82% (750,767 條)</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-tag">重組峰值 · Rewiring</span>
+          <span class="kpi-delta delta-warn" id="kpi-rewire-badge">2020–2021 滯後峰值</span>
+        </div>
+        <div class="kpi-value" id="kpi-rewire-val">0.1973</div>
+        <div class="kpi-sub" id="kpi-rewire-sub">Jaccard 距離量測；&gt;98.9% 新晉骨幹源自前一年邊緣層</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-tag" id="kpi-cross-label">2022 跨國骨幹整合</span>
+          <span class="kpi-delta delta-pos" id="kpi-cross-delta">自適應再全球化</span>
+        </div>
+        <div class="kpi-value" id="kpi-cross-val">14.81%</div>
+        <div class="kpi-sub" id="kpi-cross-sub">自 2020 年低點 12.83% 回升 +1.98 個百分點</div>
+      </article>
+    </section>
+
+    <!-- 3. Primary Workspace: Interactive 60FPS Network + PAUSB Inspector -->
+    <section class="workspace-grid" aria-label="互動式生產網絡拓撲與節點檢視">
+      <!-- Left: Interactive Network -->
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="section-title">國家—產業骨幹拓撲動態投影 (60FPS Damped Network)</h2>
+            <p class="section-sub">
+              實證代表性投影：整合 Table 4 前 10 大入流經濟體與 Table 5 前 10 大反彈供給產業（含 C28 機械對照組）。支援拖拽、滾輪縮放與節點點選連動。
+            </p>
+          </div>
+          <span class="meta-tag mono-num" id="net-year-pill">YEAR: 2022</span>
+        </div>
+
+        <div class="network-toolbar">
+          <div class="mode-pills" role="group" aria-label="拓撲視圖模式">
+            <button type="button" class="mode-btn is-active" data-mode="all" onclick="setNetworkMode('all')">全層骨幹結構</button>
+            <button type="button" class="mode-btn" data-mode="persistent" onclick="setNetworkMode('persistent')">僅看持續核心 (Core)</button>
+            <button type="button" class="mode-btn" data-mode="rewiring" onclick="setNetworkMode('rewiring')">邊緣晉升重組 (Rewiring)</button>
+          </div>
+          <div class="zoom-controls">
+            <button type="button" class="icon-btn" onclick="adjustZoom(1.2)" aria-label="放大拓撲" title="放大">
+              <i data-lucide="zoom-in" width="16" height="16"></i>
+            </button>
+            <button type="button" class="icon-btn" onclick="adjustZoom(0.83)" aria-label="縮小拓撲" title="縮小">
+              <i data-lucide="zoom-out" width="16" height="16"></i>
+            </button>
+            <button type="button" class="icon-btn" onclick="resetNetworkView()" aria-label="重置視角與物理位置" title="重置視角">
+              <i data-lucide="rotate-ccw" width="16" height="16"></i>
+              <span style="margin-left: var(--space-xs);">重置</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="canvas-stage" id="canvas-stage">
+          <canvas id="network-canvas"></canvas>
+          <div class="net-tooltip" id="net-tooltip" role="status" aria-live="polite"></div>
+
+          <div class="canvas-legend">
+            <span class="legend-item"><span class="swatch swatch-circle swatch-econ"></span> 主要經濟體 (Table 4)</span>
+            <span class="legend-item"><span class="swatch swatch-square swatch-core-sec"></span> Top 6 核心維生產業</span>
+            <span class="legend-item"><span class="swatch swatch-square swatch-other-sec"></span> 其他產業與資本對照</span>
+            <span class="legend-item"><span class="swatch swatch-square swatch-rewire"></span> 邊緣層晉升連線</span>
+          </div>
+          <div class="canvas-hint">滾輪縮放 · 拖拽節點 · 點擊鎖定檢視</div>
+        </div>
+      </div>
+
+      <!-- Right: PAUSB Inspector -->
+      <aside class="panel panel-tinted" aria-label="節點與年度拓撲檢視器">
+        <div class="panel-head">
+          <div>
+            <h2 class="section-title" id="inspector-title">2022 系統拓撲與節點檢視</h2>
+            <p class="section-sub" id="inspector-subtitle">點選左側拓撲節點或下方快捷標籤以檢視細節</p>
+          </div>
+          <button type="button" class="node-chip" id="btn-clear-node" onclick="selectNode(null)" style="display: none;">返回全局</button>
+        </div>
+
+        <div class="panel-body">
+          <!-- Selected Node / System Metrics Box -->
+          <div class="inspector-box" id="inspector-detail-box">
+            <!-- Dynamically populated by JS -->
+          </div>
+
+          <!-- Quick Select Chips -->
+          <div>
+            <div class="control-label" style="margin-bottom: var(--space-xs);">快速定位核心經濟體 / 維生產業</div>
+            <div class="chip-grid" id="quick-node-chips"></div>
+          </div>
+
+          <!-- PAUSB Framework Summary -->
+          <div class="pausb-list">
+            <div class="control-label">PAUSB 三維度非線性韌性架構</div>
+            <div class="pausb-item">
+              <strong>1. 持續性 (Persistence · 55.5%)</strong>
+              <span>沉沒成本與技術互補性形成核心路徑依賴，2020 衝擊下仍保留 3,842 個強連通分量節點。</span>
+            </div>
+            <div class="pausb-item is-amber">
+              <strong>2. 重組 (Rewiring · Jaccard 0.1973)</strong>
+              <span>結構調整呈時間滯後，於 2020–2021 達峰值，主要透過「骨幹—邊緣」狀態重分配達成。</span>
+            </div>
+            <div class="pausb-item is-teal">
+              <strong>3. 反彈 (Rebound · 功能層級)</strong>
+              <span>反彈高度集中於營建、批發零售、石化、電力瓦斯、食品與化學品等城市維生核心。</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- 4. Lower Row 1: System Trajectory + Backbone-Periphery Transitions -->
+    <section class="analytics-row-1" aria-label="系統動態與骨幹邊緣轉化分析">
+      <!-- Panel A: 2018-2022 System Evolution -->
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="section-title">系統拓撲演變與自適應再全球化 (2018–2022)</h2>
+            <p class="section-sub">驗證 2020 年為「流量收縮而非結構崩潰」，且跨國骨幹比例於 2022 年創下 14.81% 新高。</p>
+          </div>
+          <div class="segmented-row" role="group" aria-label="系統指標切換">
+            <button type="button" class="mode-btn is-active" data-sysmetric="crossBorder" onclick="setSystemMetric('crossBorder')">跨國比例 (%)</button>
+            <button type="button" class="mode-btn" data-sysmetric="totalWeight" onclick="setSystemMetric('totalWeight')">總權重 (10⁷)</button>
+            <button type="button" class="mode-btn" data-sysmetric="topology" onclick="setSystemMetric('topology')">密度與互惠性</button>
+            <button type="button" class="mode-btn" data-sysmetric="rewiring" onclick="setSystemMetric('rewiring')">重組與保留率</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-box">
+            <canvas id="chart-system"></canvas>
+          </div>
+          <div class="callout-strip" id="system-insight-note">
+            <strong>自適應再全球化 (Adaptive Re-globalization)：</strong>跨國骨幹流量佔比自 2019 年 13.46% 降至 2020 年 12.83%，並未形成持久性去全球化，而是於 2021–2022 年快速反彈並擴張至 14.81%。
+          </div>
+        </div>
+      </article>
+
+      <!-- Panel B: Backbone vs Periphery Transition Dynamics -->
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="section-title">骨幹—邊緣雙層轉化機制 (Table A3)</h2>
+            <p class="section-sub">Top 10% 骨幹邊承載 99.5% 以上流量；邊緣層則是調適時期的關鍵候補儲備池。</p>
+          </div>
+          <span class="meta-tag mono-num">99.53%–99.57% FLOW SHARE</span>
+        </div>
+        <div class="panel-body">
+          <!-- Persistence Composition Bar (Fig. 3) -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-xs);">
+              <span class="control-label">2018–2022 唯一骨幹邊持續年數分佈 (Fig. 3)</span>
+              <span class="mono-label">5 年全程持續：55.5%</span>
+            </div>
+            <div class="persistence-bar-track" role="img" aria-label="55.5% 骨幹邊連續 5 年穩定存在，其餘 44.5% 屬於 4 年或 3 年以下之調適層">
+              <div class="p-seg-5yr" style="width: 55.5%;" title="連續 5 年穩定核心：55.5%"></div>
+              <div class="p-seg-3yr" style="width: 44.5%;" title="非全程持續之調適邊緣層 (1–4 年)：44.5%"></div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-xs); font-size: 0.75rem; color: var(--on-surface-variant);">
+              <span class="legend-item"><span class="swatch swatch-square" style="background-color: var(--data-1);"></span> 連續 5 年穩定核心 (55.5%)</span>
+              <span class="legend-item"><span class="swatch swatch-square" style="background-color: var(--data-context);"></span> 1–4 年間歇與調適層 (44.5%)</span>
+            </div>
+          </div>
+
+          <!-- Interval Selector for Table A3 -->
+          <div class="segmented-row" id="interval-switcher">
+            <button type="button" class="mode-btn" data-intv="2018-2019" onclick="setTransitionInterval('2018-2019')">2018–19</button>
+            <button type="button" class="mode-btn" data-intv="2019-2020" onclick="setTransitionInterval('2019-2020')">2019–20</button>
+            <button type="button" class="mode-btn is-active" data-intv="2020-2021" onclick="setTransitionInterval('2020-2021')">2020–21 (峰值)</button>
+            <button type="button" class="mode-btn" data-intv="2021-2022" onclick="setTransitionInterval('2021-2022')">2021–22</button>
+          </div>
+
+          <div class="transition-cards" id="transition-cards">
+            <!-- Populated by JS -->
+          </div>
+
+          <div class="callout-strip">
+            <strong>結構狀態重分配 (Edge-Status Reallocation)：</strong>網絡重組並非連結的憑空產生或消滅，而是既有關聯在「核心骨幹」與「邊緣儲備層」之間的雙向升降級。
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- 5. Lower Row 2: Top 10 Rebound Sectors + Top 10 Economies & Diagnostics -->
+    <section class="analytics-row-2" aria-label="產業反彈層級與經濟體診斷">
+      <!-- Panel C: Top 10 Rebound Sectors -->
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="section-title">Top 10 供給反彈產業與功能層級 (Table 5)</h2>
+            <p class="section-sub">2020→2022 反彈高度集中於 Top 6 城市維生關鍵產業，資本密集型機械設備 (C28) 復甦較緩。</p>
+          </div>
+          <div class="segmented-row">
+            <button type="button" class="mode-btn is-active" data-secmode="abs" onclick="setSectorChartMode('abs')">絕對增量</button>
+            <button type="button" class="mode-btn" data-secmode="pct" onclick="setSectorChartMode('pct')">相對成長率 (%)</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-box" style="min-height: 320px; height: 330px;">
+            <canvas id="chart-sectors"></canvas>
+          </div>
+          <div class="callout-strip is-warn">
+            <strong>韌性與永續的張力 (Sec. 5.5)：</strong>石油煉製 (C19, +64.12%) 與電力燃氣 (D, +53.10%) 強力反彈穩定了城市供給，卻也可能強化高碳排路徑依賴，需結合低碳轉型治理。
+          </div>
+        </div>
+      </article>
+
+      <!-- Panel D: Top 10 Economies, Sensitivity & Regression -->
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="section-title">核心經濟體位階與實證檢定 (Tables 4, 6 &amp; A2)</h2>
+            <p class="section-sub">反彈呈「層級錨定 (Hierarchical Rebound)」特徵，少數核心節點貢獻絕大部分增量。</p>
+          </div>
+          <div class="segmented-row">
+            <button type="button" class="mode-btn is-active" data-reftab="economies" onclick="setRefTab('economies')">Top 10 經濟體</button>
+            <button type="button" class="mode-btn" data-reftab="sensitivity" onclick="setRefTab('sensitivity')">門檻敏感度</button>
+            <button type="button" class="mode-btn" data-reftab="regression" onclick="setRefTab('regression')">迴歸診斷</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="ref-tab-content">
+            <!-- Dynamically rendered table for Table 4, Table A2, or Table 6 -->
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- 6. Footer & Scope Conditions -->
+    <footer class="page-footer">
+      <div>
+        <strong style="color: var(--on-surface);">研究來源與分析邊界聲明</strong>
+        <p style="margin: var(--space-xs) 0 0 0;">
+          資料來源：Lin, C., &amp; Cheng, H. (2026). Backbone resilience of national-sectoral production networks for urban provisioning: Persistence, rewiring, and rebound. <em>Journal of Cleaner Production</em>, 568, 148690.
+          本分析採用 OECD ICIO 國家—產業尺度（81 國 × 49 產業）作為城市物質供給的宏觀結構代理，揭示系統層級之持續性與自適應再全球化特徵，而非個別城市之微觀供應鏈追蹤。
+        </p>
+      </div>
+      <div>
+        <strong style="color: var(--on-surface);">底圖與視覺規範</strong>
+        <p style="margin: var(--space-xs) 0 0 0;">
+          世界幾何背景依據 Natural Earth 公開領域向量邊界（110m）繪製；所有數值採等寬數字對齊呈現，門檻敏感度測試橫跨 Top 5% / 10% / 15% 規格以確認結構穩健性。
+        </p>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    /* =========================================================================
+       1. EMPIRICAL DATA (100% Grounded in Lin & Cheng, 2026)
+       ========================================================================= */
+    const YEAR_METRICS = {
+      2018: { edges: 972333, nodes: 3926, weightM: 83.1, density: 0.0631, reciprocity: 0.2847, scc: 3883, crossBorder: 13.82, hhi: 0.1130, flowShare: 99.55, tag: `衝擊前基準`, deltaLabel: `基準起始年`, deltaClass: `delta-info` },
+      2019: { edges: 976055, nodes: 3924, weightM: 84.1, density: 0.0634, reciprocity: 0.2866, scc: 3878, crossBorder: 13.46, hhi: 0.1170, flowShare: 99.55, tag: `衝擊前高峰`, deltaLabel: `+1.2% vs 2018`, deltaClass: `delta-pos` },
+      2020: { edges: 966994, nodes: 3926, weightM: 81.2, density: 0.0628, reciprocity: 0.2891, scc: 3842, crossBorder: 12.83, hhi: 0.1242, flowShare: 99.57, tag: `全球衝擊收縮`, deltaLabel: `-3.4% vs 2019`, deltaClass: `delta-err` },
+      2021: { edges: 992230, nodes: 3926, weightM: 96.1, density: 0.0644, reciprocity: 0.2910, scc: 3846, crossBorder: 13.82, hhi: 0.1271, flowShare: 99.56, tag: `重組峰值與回升`, deltaLabel: `+18.3% vs 2020`, deltaClass: `delta-warn` },
+      2022: { edges: 1017060, nodes: 3926, weightM: 102.0, density: 0.0659, reciprocity: 0.2881, scc: 3842, crossBorder: 14.81, hhi: 0.1226, flowShare: 99.53, tag: `再擴張創高`, deltaLabel: `+25.6% vs 2020`, deltaClass: `delta-pos` }
+    };
+
+    const THRESHOLD_SENSITIVITY = {
+      top5: { label: `Top 5%`, edges2022: 508529, persistentEdges: 368062, persistentShare2022: 72.38, peakInterval: `2020–2021`, peakRewiring: 0.2101, crossBorder2022: 14.78, top6Stable: `是 (完全一致)` },
+      top10: { label: `Top 10% (基準)`, edges2022: 1017060, persistentEdges: 750767, persistentShare2022: 73.82, peakInterval: `2020–2021`, peakRewiring: 0.1973, crossBorder2022: 14.81, top6Stable: `是 (完全一致)` },
+      top15: { label: `Top 15%`, edges2022: 1525589, persistentEdges: 1147296, persistentShare2022: 75.20, peakInterval: `2020–2021`, peakRewiring: 0.1850, crossBorder2022: 15.59, top6Stable: `是 (完全一致)` }
+    };
+
+    const TRANSITION_DATA = {
+      '2018-2019': { label: `2018–2019`, retention: 92.23, jaccard: 0.1472, entrants: 79424, fromPeriphery: 99.40, departures: 75681, toPeriphery: 99.07, note: `衝擊前常態微調，骨幹保留率最高` },
+      '2019-2020': { label: `2019–2020`, retention: 89.45, jaccard: 0.1840, entrants: 94084, fromPeriphery: 99.27, departures: 103158, toPeriphery: 99.60, note: `衝擊當年流量壓縮，邊緣流出略高於流入` },
+      '2020-2021': { label: `2020–2021`, retention: 90.21, jaccard: 0.1973, entrants: 120069, fromPeriphery: 99.09, departures: 94808, toPeriphery: 99.62, note: `重組峰值：120,069 條新入選邊中 99.09% 來自前一年邊緣層` },
+      '2021-2022': { label: `2021–2022`, retention: 91.67, jaccard: 0.1715, entrants: 105836, fromPeriphery: 98.97, departures: 82800, toPeriphery: 99.76, note: `骨幹架構趨穩，跨國與供給再擴張延續` }
+    };
+
+    const ECONOMIES = [
+      { id: `CHN`, name: `中國 (CHN)`, type: `economy`, values: { 2018: 21.23, 2019: 22.08, 2020: 22.60, 2021: 27.52, 2022: 27.78 }, role: `超級反彈錨點 · 唯一在 2020 年仍正成長之核心節點` },
+      { id: `USA`, name: `美國 (USA)`, type: `economy`, values: { 2018: 15.76, 2019: 16.14, 2020: 15.38, 2021: 17.95, 2022: 20.08 }, role: `北美核心需求與供給樞紐 · 2022 強勁反彈 +30.6%` },
+      { id: `DEU`, name: `德國 (DEU)`, type: `economy`, values: { 2018: 3.59, 2019: 3.47, 2020: 3.45, 2021: 3.97, 2022: 4.05 }, role: `歐洲製造與能源化工中樞 · 2022 位階超越日本` },
+      { id: `JPN`, name: `日本 (JPN)`, type: `economy`, values: { 2018: 4.28, 2019: 4.29, 2020: 4.02, 2021: 4.26, 2022: 4.02 }, role: `東亞高度持久化節點 · 衝擊後復甦節奏較平緩` },
+      { id: `IND`, name: `印度 (IND)`, type: `economy`, values: { 2018: 2.37, 2019: 2.45, 2020: 2.25, 2021: 2.79, 2022: 3.11 }, role: `新興高成長節點 · 2021–2022 位階躍升至第 5` },
+      { id: `ROW`, name: `其他地區 (ROW)`, type: `economy`, values: { 2018: 2.69, 2019: 2.71, 2020: 2.48, 2021: 2.72, 2022: 3.05 }, role: `廣域外圍供給集合 · 承接部分邊緣重組與轉單` },
+      { id: `GBR`, name: `英國 (GBR)`, type: `economy`, values: { 2018: 2.28, 2019: 2.23, 2020: 2.09, 2021: 2.49, 2022: 2.70 }, role: `服務貿易與金融協調樞紐 · 2022 排名升至第 7` },
+      { id: `FRA`, name: `法國 (FRA)`, type: `economy`, values: { 2018: 2.37, 2019: 2.32, 2020: 2.16, 2021: 2.55, 2022: 2.67 }, role: `歐洲農食與基礎工業核心節點` },
+      { id: `KOR`, name: `南韓 (KOR)`, type: `economy`, values: { 2018: 2.16, 2019: 2.04, 2020: 1.90, 2021: 2.46, 2022: 2.56 }, role: `石化、基本金屬與中間財高連結製造節點` },
+      { id: `ITA`, name: `義大利 (ITA)`, type: `economy`, values: { 2018: 2.00, 2019: 1.91, 2020: 1.78, 2021: 2.14, 2022: 2.24 }, role: `南歐製造與建築材料供給節點` }
+    ];
+
+    const SECTORS = [
+      { id: `F`, code: `F`, name: `營建工程`, en: `Construction`, v2020: 7558048, v2022: 9330558, abs: 1772510, pct: 23.45, top6: true, note: `城市建成環境維護與擴張的絕對核心` },
+      { id: `G`, code: `G`, name: `批發與零售貿易`, en: `Wholesale & retail trade`, v2020: 5993471, v2022: 7509054, abs: 1515583, pct: 25.29, top6: true, note: `確保民生與商業物質跨區流通之神經節` },
+      { id: `C19`, code: `C19`, name: `焦炭與精煉石油`, en: `Coke & refined petroleum`, v2020: 2036581, v2022: 3342419, abs: 1305838, pct: 64.12, top6: true, note: `成長率居冠 (+64.12%)，同時凸顯高碳排韌性張力` },
+      { id: `D`, code: `D`, name: `電力、燃氣與空調`, en: `Electricity, gas & steam`, v2020: 2317814, v2022: 3548589, abs: 1230775, pct: 53.10, top6: true, note: `城市動力、供暖與製冷基礎，剛性基準需求極高` },
+      { id: `C10T12`, code: `C10T12`, name: `食品飲料與菸草`, en: `Food, beverages & tobacco`, v2020: 5085202, v2022: 6211798, abs: 1126596, pct: 22.15, top6: true, note: `日常民生維生底線，衝擊期間展現高度抗跌性` },
+      { id: `C20`, code: `C20`, name: `化學品及製品`, en: `Chemicals & products`, v2020: 2477971, v2022: 3339513, abs: 861542, pct: 34.77, top6: true, note: `上游原物料關鍵節點，嵌入多重供給鏈` },
+      { id: `C24A`, code: `C24A`, name: `基本金屬`, en: `Basic metals`, v2020: 1743091, v2022: 2419423, abs: 676332, pct: 38.80, top6: false, note: `支撐營建與基礎設施修復之上游材料部門` },
+      { id: `A01`, code: `A01`, name: `農業與狩獵服務`, en: `Agriculture & hunting`, v2020: 2614525, v2022: 3276016, abs: 661491, pct: 25.30, top6: false, note: `食品鏈最上游物質來源` },
+      { id: `I`, code: `I`, name: `住宿與餐飲服務`, en: `Accommodation & food`, v2020: 1805071, v2022: 2449013, abs: 643942, pct: 35.67, top6: false, note: `城市解封後內需與人流服務反彈代表` },
+      { id: `M`, code: `M`, name: `專業與科學技術`, en: `Professional & scientific`, v2020: 3409396, v2022: 4049323, abs: 639927, pct: 18.77, top6: false, note: `高知識密集度協調支援服務` }
+    ];
+
+    const REGRESSION_ROWS = [
+      { varName: `截距項 (const)`, coef: `0.5762`, se: `0.6350`, t: `0.9073`, p: `0.3642`, sig: `` },
+      { varName: `入流持續性 (Persistence incoming)`, coef: `0.4158`, se: `0.6707`, t: `0.6200`, p: `0.5353`, sig: `` },
+      { varName: `2019 供給多樣性 (Diversity 2019)`, coef: `0.0875`, se: `0.1460`, t: `0.5993`, p: `0.5490`, sig: `` },
+      { varName: `2019 網絡中心性 (Centrality 2019)`, coef: `0.2544`, se: `0.3448`, t: `0.7377`, p: `0.4607`, sig: `` },
+      { varName: `2020 衝擊暴露 (Shock exposure 2020)`, coef: `1.2183`, se: `0.4665`, t: `2.6116`, p: `0.0090`, sig: `***` }
+    ];
+
+    /* =========================================================================
+       2. GLOBAL DASHBOARD STATE
+       ========================================================================= */
+    const state = {
+      year: 2022,
+      threshold: `top10`,
+      networkMode: `all`,
+      selectedNodeId: null,
+      systemMetric: `crossBorder`,
+      transitionInterval: `2020-2021`,
+      sectorChartMode: `abs`,
+      refTab: `economies`,
+      playing: false,
+      playTimer: null
+    };
+
+    let sysChart = null;
+    let secChart = null;
+
+    function getToken(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    /* =========================================================================
+       3. SUBTLE GEOMETRIC WORLD MAP BACKGROUND (Public-domain Natural Earth)
+       ========================================================================= */
+    function renderFallbackWorldDots(svg) {
+      const ns = `http://www.w3.org/2000/svg`;
+      const dotColor = getToken(`--map-dot`) || `#cbd5e1`;
+      const strokeColor = getToken(`--map-land`) || `#e5e7eb`;
+      const g = document.createElementNS(ns, `g`);
+      g.setAttribute(`fill`, dotColor);
+      // Subtle geographic latitude/longitude graticule + geometric landmass silhouette
+      for (let x = 60; x <= 1140; x += 28) {
+        for (let y = 60; y <= 540; y += 28) {
+          const inAmericas = (x > 160 && x < 390 && y > 90 && y < 480) && ((y < 270 && x < 330) || (y >= 270 && x > 260));
+          const inEurasia = (x > 470 && x < 1020 && y > 80 && y < 350);
+          const inAfrica = (x > 500 && x < 670 && y > 240 && y < 460);
+          const inOceania = (x > 890 && x < 1060 && y > 370 && y < 490);
+          if (inAmericas || inEurasia || inAfrica || inOceania) {
+            const c = document.createElementNS(ns, `circle`);
+            c.setAttribute(`cx`, String(x));
+            c.setAttribute(`cy`, String(y));
+            c.setAttribute(`r`, `1.4`);
+            g.appendChild(c);
+          }
+        }
+      }
+      const line = document.createElementNS(ns, `line`);
+      line.setAttribute(`x1`, `40`);
+      line.setAttribute(`x2`, `1160`);
+      line.setAttribute(`y1`, `310`);
+      line.setAttribute(`y2`, `310`);
+      line.setAttribute(`stroke`, strokeColor);
+      line.setAttribute(`stroke-dasharray`, `4 6`);
+      svg.appendChild(line);
+      svg.appendChild(g);
+    }
+
+    function initWorldMapBackground() {
+      const svgEl = document.getElementById(`world-bg-svg`);
+      if (!svgEl) return;
+
+      if (typeof d3 === `undefined` || typeof topojson === `undefined`) {
+        renderFallbackWorldDots(svgEl);
+        return;
+      }
+
+      fetch(`https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json`)
+        .then(r => {
+          if (!r.ok) throw new Error(`Network fetch unavailable`);
+          return r.json();
+        })
+        .then(topo => {
+          const countries = topojson.feature(topo, topo.objects.countries);
+          const svg = d3.select(`#world-bg-svg`);
+          svg.selectAll(`*`).remove();
+
+          const projection = d3.geoNaturalEarth1()
+            .scale(215)
+            .translate([600, 325]);
+          const path = d3.geoPath(projection);
+
+          // Ultra-faint graticule
+          svg.append(`path`)
+            .datum(d3.geoGraticule10())
+            .attr(`d`, path)
+            .attr(`fill`, `none`)
+            .attr(`stroke`, getToken(`--map-grid`))
+            .attr(`stroke-width`, 0.7);
+
+          // Subtle dotted pattern fill + ultra-fine country borders
+          const defs = svg.append(`defs`);
+          const pat = defs.append(`pattern`)
+            .attr(`id`, `geo-dots`)
+            .attr(`width`, 6)
+            .attr(`height`, 6)
+            .attr(`patternUnits`, `userSpaceOnUse`);
+          pat.append(`circle`)
+            .attr(`cx`, 2.5)
+            .attr(`cy`, 2.5)
+            .attr(`r`, 1.05)
+            .attr(`fill`, getToken(`--map-dot`));
+
+          svg.append(`g`)
+            .selectAll(`path`)
+            .data(countries.features)
+            .join(`path`)
+            .attr(`d`, path)
+            .attr(`fill`, `url(#geo-dots)`)
+            .attr(`stroke`, getToken(`--map-land`))
+            .attr(`stroke-width`, 0.55);
+        })
+        .catch(() => {
+          renderFallbackWorldDots(svgEl);
+        });
+    }
+
+    /* =========================================================================
+       4. 60FPS DAMPED PHYSICS NETWORK TOPOLOGY ENGINE
+       ========================================================================= */
+    const netEngine = {
+      canvas: null,
+      ctx: null,
+      width: 800,
+      height: 500,
+      dpr: 1,
+      nodes: [],
+      edges: [],
+      cam: { x: 0, y: 0, zoom: 1, targetZoom: 1, targetX: 0, targetY: 0 },
+      dragNode: null,
+      panning: false,
+      lastMouse: { x: 0, y: 0 },
+      hoverNode: null,
+      rafId: null,
+      pulsePhase: 0,
+      reducedMotion: window.matchMedia(`(prefers-reduced-motion: reduce)`).matches
+    };
+
+    function buildNetworkGraph() {
+      const econAngles = ECONOMIES.length;
+      const nodes = [];
+
+      // Outer ring: Top 10 Economies (Table 4)
+      ECONOMIES.forEach((ec, idx) => {
+        const ang = (idx / econAngles) * Math.PI * 2 - Math.PI / 2;
+        const rx = 255;
+        const ry = 175;
+        nodes.push({
+          id: ec.id,
+          label: ec.id,
+          fullName: ec.name,
+          kind: `economy`,
+          top6: false,
+          x: Math.cos(ang) * rx,
+          y: Math.sin(ang) * ry,
+          anchorX: Math.cos(ang) * rx,
+          anchorY: Math.sin(ang) * ry,
+          vx: 0,
+          vy: 0,
+          radius: 14,
+          targetRadius: 14,
+          data: ec
+        });
+      });
+
+      // Inner cluster: Top 10 Rebound Sectors (Table 5) + C28 Contrast
+      const allSecs = [
+        ...SECTORS,
+        { id: `C28`, code: `C28`, name: `機械設備 (對照)`, en: `Machinery n.e.c.`, v2020: 0, v2022: 0, abs: 0, pct: 0, top6: false, isContrast: true, note: `資本密集型產業，受投資週期影響反彈較緩 (Sec. 4.5)` }
+      ];
+
+      allSecs.forEach((sec, idx) => {
+        const ang = (idx / allSecs.length) * Math.PI * 2 + 0.3;
+        const r = sec.top6 ? 78 : 132;
+        nodes.push({
+          id: sec.id,
+          label: sec.code,
+          fullName: `${sec.code} ${sec.name}`,
+          kind: `sector`,
+          top6: sec.top6,
+          isContrast: Boolean(sec.isContrast),
+          x: Math.cos(ang) * r,
+          y: Math.sin(ang) * r,
+          anchorX: Math.cos(ang) * r,
+          anchorY: Math.sin(ang) * r,
+          vx: 0,
+          vy: 0,
+          radius: 10,
+          targetRadius: 10,
+          data: sec
+        });
+      });
+
+      // Deterministic empirical backbone links linking economies & provisioning sectors
+      const edges = [];
+      const coreBindings = [
+        [`CHN`, `F`, `core`], [`CHN`, `G`, `core`], [`CHN`, `C20`, `core`], [`CHN`, `C24A`, `core`], [`CHN`, `D`, `core`], [`CHN`, `C19`, `rewired`],
+        [`USA`, `G`, `core`], [`USA`, `F`, `core`], [`USA`, `M`, `core`], [`USA`, `C10T12`, `core`], [`USA`, `C19`, `core`], [`USA`, `D`, `rewired`],
+        [`DEU`, `C20`, `core`], [`DEU`, `C28`, `core`], [`DEU`, `G`, `core`], [`DEU`, `D`, `rewired`], [`DEU`, `F`, `core`],
+        [`JPN`, `C28`, `core`], [`JPN`, `C24A`, `core`], [`JPN`, `G`, `core`], [`JPN`, `C19`, `rewired`],
+        [`IND`, `C19`, `rewired`], [`IND`, `A01`, `core`], [`IND`, `C10T12`, `core`], [`IND`, `F`, `rewired`], [`IND`, `C20`, `rewired`],
+        [`ROW`, `A01`, `core`], [`ROW`, `C19`, `core`], [`ROW`, `C10T12`, `core`], [`ROW`, `D`, `rewired`],
+        [`GBR`, `M`, `core`], [`GBR`, `G`, `core`], [`GBR`, `I`, `rewired`], [`GBR`, `D`, `core`],
+        [`FRA`, `A01`, `core`], [`FRA`, `C10T12`, `core`], [`FRA`, `I`, `core`], [`FRA`, `D`, `rewired`],
+        [`KOR`, `C19`, `core`], [`KOR`, `C24A`, `core`], [`KOR`, `C20`, `core`], [`KOR`, `C28`, `core`],
+        [`ITA`, `F`, `core`], [`ITA`, `I`, `rewired`], [`ITA`, `C10T12`, `core`], [`ITA`, `C28`, `core`],
+        // Cross-border economy backbone bridges
+        [`CHN`, `USA`, `core`], [`CHN`, `JPN`, `core`], [`CHN`, `KOR`, `core`], [`CHN`, `DEU`, `core`],
+        [`USA`, `GBR`, `core`], [`USA`, `DEU`, `core`], [`USA`, `IND`, `rewired`], [`DEU`, `FRA`, `core`], [`DEU`, `ITA`, `core`], [`IND`, `ROW`, `rewired`]
+      ];
+
+      coreBindings.forEach(([sId, tId, status]) => {
+        const s = nodes.find(n => n.id === sId);
+        const t = nodes.find(n => n.id === tId);
+        if (s && t) {
+          edges.push({
+            source: s,
+            target: t,
+            status,
+            isCrossBorder: s.kind === `economy` && t.kind === `economy`,
+            weight: status === `core` ? 1.4 : 0.9
+          });
+        }
+      });
+
+      netEngine.nodes = nodes;
+      netEngine.edges = edges;
+      updateNetworkRadiiForYear(state.year);
+    }
+
+    function updateNetworkRadiiForYear(year) {
+      netEngine.nodes.forEach(n => {
+        if (n.kind === `economy`) {
+          const val = n.data.values[year] || 2.0;
+          n.targetRadius = Math.max(10, Math.min(27, 8 + Math.sqrt(val) * 3.5));
+        } else if (n.isContrast) {
+          n.targetRadius = 9;
+        } else {
+          // Interpolate between 2020 and 2022 for display scaling
+          const vBase = year <= 2020 ? n.data.v2020 : (year === 2021 ? (n.data.v2020 + n.data.v2022) / 2 : n.data.v2022);
+          n.targetRadius = Math.max(8, Math.min(22, 6 + Math.sqrt(vBase / 1000000) * 4.4));
+        }
+      });
+    }
+
+    function screenToWorld(sx, sy) {
+      const cx = netEngine.width / 2;
+      const cy = netEngine.height / 2;
+      return {
+        x: (sx - cx - netEngine.cam.x) / netEngine.cam.zoom,
+        y: (sy - cy - netEngine.cam.y) / netEngine.cam.zoom
+      };
+    }
+
+    function findNodeAt(wx, wy) {
+      for (let i = netEngine.nodes.length - 1; i >= 0; i--) {
+        const n = netEngine.nodes[i];
+        const dx = wx - n.x;
+        const dy = wy - n.y;
+        if (dx * dx + dy * dy <= (n.radius + 6) * (n.radius + 6)) {
+          return n;
+        }
+      }
+      return null;
+    }
+
+    function initNetworkCanvas() {
+      const canvas = document.getElementById(`network-canvas`);
+      const stage = document.getElementById(`canvas-stage`);
+      if (!canvas || !stage) return;
+
+      netEngine.canvas = canvas;
+      netEngine.ctx = canvas.getContext(`2d`);
+
+      function resize() {
+        const rect = stage.getBoundingClientRect();
+        netEngine.dpr = Math.min(window.devicePixelRatio || 1, 2);
+        netEngine.width = Math.max(300, rect.width);
+        netEngine.height = Math.max(360, rect.height);
+        canvas.width = netEngine.width * netEngine.dpr;
+        canvas.height = netEngine.height * netEngine.dpr;
+      }
+
+      resize();
+      window.addEventListener(`resize`, resize);
+
+      // Pointer & Wheel Interactions
+      canvas.addEventListener(`pointerdown`, e => {
+        const rect = canvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left;
+        const sy = e.clientY - rect.top;
+        const w = screenToWorld(sx, sy);
+        const hit = findNodeAt(w.x, w.y);
+        netEngine.lastMouse = { x: sx, y: sy };
+        netEngine.pointerDownPos = { x: sx, y: sy };
+
+        if (hit) {
+          netEngine.dragNode = hit;
+          canvas.setPointerCapture(e.pointerId);
+        } else {
+          netEngine.panning = true;
+          canvas.setPointerCapture(e.pointerId);
+        }
+      });
+
+      canvas.addEventListener(`pointermove`, e => {
+        const rect = canvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left;
+        const sy = e.clientY - rect.top;
+        const w = screenToWorld(sx, sy);
+
+        if (netEngine.dragNode) {
+          netEngine.dragNode.x = w.x;
+          netEngine.dragNode.y = w.y;
+          netEngine.dragNode.vx = 0;
+          netEngine.dragNode.vy = 0;
+          hideNetTooltip();
+          return;
+        }
+
+        if (netEngine.panning) {
+          netEngine.cam.targetX += sx - netEngine.lastMouse.x;
+          netEngine.cam.targetY += sy - netEngine.lastMouse.y;
+          netEngine.lastMouse = { x: sx, y: sy };
+          hideNetTooltip();
+          return;
+        }
+
+        const hit = findNodeAt(w.x, w.y);
+        netEngine.hoverNode = hit;
+        canvas.style.cursor = hit ? `pointer` : `grab`;
+        if (hit) {
+          showNetTooltip(hit, sx, sy);
+        } else {
+          hideNetTooltip();
+        }
+      });
+
+      canvas.addEventListener(`pointerup`, e => {
+        const rect = canvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left;
+        const sy = e.clientY - rect.top;
+        const moved = Math.hypot(sx - (netEngine.pointerDownPos ? netEngine.pointerDownPos.x : sx), sy - (netEngine.pointerDownPos ? netEngine.pointerDownPos.y : sy));
+
+        if (netEngine.dragNode && moved < 5) {
+          const clickedId = netEngine.dragNode.id;
+          selectNode(state.selectedNodeId === clickedId ? null : clickedId);
+        } else if (netEngine.panning && moved < 5) {
+          const w = screenToWorld(sx, sy);
+          if (!findNodeAt(w.x, w.y) && state.selectedNodeId) {
+            selectNode(null);
+          }
+        }
+
+        netEngine.dragNode = null;
+        netEngine.panning = false;
+      });
+
+      canvas.addEventListener(`pointerleave`, () => {
+        netEngine.hoverNode = null;
+        hideNetTooltip();
+      });
+
+      canvas.addEventListener(`wheel`, e => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.12 : 0.89;
+        adjustZoom(factor);
+      }, { passive: false });
+
+      if (netEngine.rafId) cancelAnimationFrame(netEngine.rafId);
+      renderNetworkLoop();
+    }
+
+    function showNetTooltip(node, sx, sy) {
+      const tip = document.getElementById(`net-tooltip`);
+      if (!tip) return;
+      let html = `<div class="mono-label" style="color: var(--primary);">${node.kind === `economy` ? `ECONOMY NODE` : `SECTOR NODE`}</div>`;
+      html += `<div style="font-weight: 600; color: var(--on-surface); margin: 2px 0;">${node.fullName}</div>`;
+
+      if (node.kind === `economy`) {
+        const v = node.data.values[state.year];
+        const v20 = node.data.values[2020];
+        const v22 = node.data.values[2022];
+        const reb = (((v22 - v20) / v20) * 100).toFixed(1);
+        html += `<div class="mono-num" style="font-size: 0.82rem; color: var(--on-surface-variant);">${state.year} 入流：<strong>${v.toFixed(2)}M</strong></div>`;
+        html += `<div class="mono-num" style="font-size: 0.75rem; color: var(--positive);">2020→2022 反彈：+${reb}%</div>`;
+      } else if (node.isContrast) {
+        html += `<div style="font-size: 0.78rem; color: var(--on-surface-variant);">資本密集型對照產業，反彈顯著緩於 Top 6 核心維生部門。</div>`;
+      } else {
+        html += `<div class="mono-num" style="font-size: 0.82rem; color: var(--on-surface-variant);">2022 入流：<strong>${(node.data.v2022 / 1e6).toFixed(2)}M</strong></div>`;
+        html += `<div class="mono-num" style="font-size: 0.75rem; color: var(--positive);">2020→2022：+${node.data.pct.toFixed(2)}%</div>`;
+      }
+
+      tip.innerHTML = html;
+      const left = Math.min(netEngine.width - 230, Math.max(12, sx + 14));
+      const top = Math.min(netEngine.height - 100, Math.max(12, sy - 10));
+      tip.style.left = `${left}px`;
+      tip.style.top = `${top}px`;
+      tip.classList.add(`is-visible`);
+    }
+
+    function hideNetTooltip() {
+      const tip = document.getElementById(`net-tooltip`);
+      if (tip) tip.classList.remove(`is-visible`);
+    }
+
+    function stepNetworkPhysics() {
+      const nodes = netEngine.nodes;
+      const edges = netEngine.edges;
+      const damping = 0.84;
+
+      // Smooth radius & camera lerp
+      netEngine.cam.zoom += (netEngine.cam.targetZoom - netEngine.cam.zoom) * 0.16;
+      netEngine.cam.x += (netEngine.cam.targetX - netEngine.cam.x) * 0.16;
+      netEngine.cam.y += (netEngine.cam.targetY - netEngine.cam.y) * 0.16;
+
+      for (let i = 0; i < nodes.length; i++) {
+        const n = nodes[i];
+        n.radius += (n.targetRadius - n.radius) * 0.14;
+        if (n === netEngine.dragNode) continue;
+
+        // Soft spring back toward structural anchor
+        const kAnchor = 0.024;
+        n.vx += (n.anchorX - n.x) * kAnchor;
+        n.vy += (n.anchorY - n.y) * kAnchor;
+      }
+
+      // Gentle pairwise repulsion
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i];
+          const b = nodes[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const d2 = dx * dx + dy * dy + 0.1;
+          if (d2 < 3200) {
+            const f = 14 / d2;
+            if (a !== netEngine.dragNode) { a.vx -= dx * f; a.vy -= dy * f; }
+            if (b !== netEngine.dragNode) { b.vx += dx * f; b.vy += dy * f; }
+          }
+        }
+      }
+
+      // Edge spring coupling
+      for (let i = 0; i < edges.length; i++) {
+        const e = edges[i];
+        const dx = e.target.x - e.source.x;
+        const dy = e.target.y - e.source.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const targetDist = e.isCrossBorder ? 260 : 185;
+        const force = (dist - targetDist) * 0.0018;
+        const fx = (dx / dist) * force;
+        const fy = (dy / dist) * force;
+        if (e.source !== netEngine.dragNode) { e.source.vx += fx; e.source.vy += fy; }
+        if (e.target !== netEngine.dragNode) { e.target.vx -= fx; e.target.vy -= fy; }
+      }
+
+      for (let i = 0; i < nodes.length; i++) {
+        const n = nodes[i];
+        if (n === netEngine.dragNode) continue;
+        n.vx *= damping;
+        n.vy *= damping;
+        n.x += n.vx;
+        n.y += n.vy;
+      }
+    }
+
+    function renderNetworkLoop() {
+      stepNetworkPhysics();
+      const ctx = netEngine.ctx;
+      if (!ctx) return;
+
+      const w = netEngine.width;
+      const h = netEngine.height;
+      ctx.save();
+      ctx.scale(netEngine.dpr, netEngine.dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.translate(w / 2 + netEngine.cam.x, h / 2 + netEngine.cam.y);
+      ctx.scale(netEngine.cam.zoom, netEngine.cam.zoom);
+
+      const focalId = state.selectedNodeId || (netEngine.hoverNode ? netEngine.hoverNode.id : null);
+      const colSurface = getToken(`--background`);
+      const colInk = getToken(`--on-surface`);
+      const colMuted = getToken(`--on-surface-muted`);
+      const colPrimary = getToken(`--primary`);
+      const colContext = getToken(`--data-context`);
+      const colAmber = getToken(`--data-3`);
+      const colTeal = getToken(`--data-2`);
+
+      if (!netEngine.reducedMotion) {
+        netEngine.pulsePhase = (netEngine.pulsePhase + 0.0065) % 1;
+      }
+
+      // Draw edges
+      const connectedSet = new Set();
+      if (focalId) connectedSet.add(focalId);
+
+      netEngine.edges.forEach((e, idx) => {
+        if (state.networkMode === `persistent` && e.status !== `core`) return;
+
+        const touchesFocal = focalId && (e.source.id === focalId || e.target.id === focalId);
+        if (touchesFocal) {
+          connectedSet.add(e.source.id);
+          connectedSet.add(e.target.id);
+        }
+
+        let alpha = 1;
+        if (focalId && !touchesFocal) alpha = 0.12;
+        else if (state.networkMode === `rewiring` && e.status === `core` && !touchesFocal) alpha = 0.25;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        // Slight quadratic curve for visual separation
+        const mx = (e.source.x + e.target.x) / 2;
+        const my = (e.source.y + e.target.y) / 2;
+        const curveOffset = (idx % 2 === 0 ? 1 : -1) * 14;
+        const nx = -(e.target.y - e.source.y) * 0.05;
+        const ny = (e.target.x - e.source.x) * 0.05;
+        const cx = mx + nx + curveOffset * 0.2;
+        const cy = my + ny + curveOffset * 0.2;
+
+        ctx.moveTo(e.source.x, e.source.y);
+        ctx.quadraticCurveTo(cx, cy, e.target.x, e.target.y);
+
+        if (e.status === `rewired` && (state.networkMode === `rewiring` || state.year === 2021)) {
+          ctx.strokeStyle = colAmber;
+          ctx.lineWidth = touchesFocal ? 2.2 : 1.5;
+          ctx.setLineDash([4, 3]);
+        } else if (touchesFocal) {
+          ctx.strokeStyle = colPrimary;
+          ctx.lineWidth = 2.0;
+          ctx.setLineDash([]);
+        } else {
+          ctx.strokeStyle = e.isCrossBorder ? colTeal : colContext;
+          ctx.lineWidth = e.status === `core` ? 1.15 : 0.85;
+          ctx.globalAlpha = alpha * (e.status === `core` ? 0.35 : 0.2);
+          ctx.setLineDash([]);
+        }
+        ctx.stroke();
+
+        // Flow pulse along focal or rewiring edges
+        if (!netEngine.reducedMotion && (touchesFocal || (state.networkMode === `rewiring` && e.status === `rewired`))) {
+          const t = (netEngine.pulsePhase + idx * 0.13) % 1;
+          const px = (1 - t) * (1 - t) * e.source.x + 2 * (1 - t) * t * cx + t * t * e.target.x;
+          const py = (1 - t) * (1 - t) * e.source.y + 2 * (1 - t) * t * cy + t * t * e.target.y;
+          ctx.beginPath();
+          ctx.arc(px, py, 2.4, 0, Math.PI * 2);
+          ctx.fillStyle = e.status === `rewired` ? colAmber : colPrimary;
+          ctx.globalAlpha = 0.85;
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+
+      // Draw nodes
+      netEngine.nodes.forEach(n => {
+        const isSelected = state.selectedNodeId === n.id;
+        const isHovered = netEngine.hoverNode && netEngine.hoverNode.id === n.id;
+        const isDimmed = focalId && !connectedSet.has(n.id);
+
+        ctx.save();
+        ctx.globalAlpha = isDimmed ? 0.22 : 1;
+
+        if (n.kind === `economy`) {
+          // Outer subtle halo if selected
+          if (isSelected || isHovered) {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, n.radius + 5, 0, Math.PI * 2);
+            ctx.strokeStyle = colPrimary;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+          ctx.fillStyle = isSelected ? colPrimary : colInk;
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = colSurface;
+          ctx.stroke();
+        } else {
+          // Sector square / crisp rounded-2px node
+          const s = n.radius * 1.65;
+          const x0 = n.x - s / 2;
+          const y0 = n.y - s / 2;
+
+          if (isSelected || isHovered) {
+            ctx.strokeStyle = colPrimary;
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(x0 - 4, y0 - 4, s + 8, s + 8);
+          }
+
+          ctx.fillStyle = n.top6 ? (isSelected ? colInk : colPrimary) : colContext;
+          ctx.fillRect(x0, y0, s, s);
+          ctx.strokeStyle = colSurface;
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(x0, y0, s, s);
+        }
+
+        // Crisp node label
+        ctx.font = `600 11px "IBM Plex Mono", "Noto Sans TC", sans-serif`;
+        ctx.textAlign = `center`;
+        ctx.textBaseline = `top`;
+        ctx.fillStyle = isDimmed ? colMuted : colInk;
+        ctx.fillText(n.label, n.x, n.y + n.radius + 5);
+        ctx.restore();
+      });
+
+      ctx.restore();
+      netEngine.rafId = requestAnimationFrame(renderNetworkLoop);
+    }
+
+    /* =========================================================================
+       5. INTERACTIVE CONTROLS & RENDERERS
+       ========================================================================= */
+    function setActiveYear(year) {
+      state.year = year;
+      document.querySelectorAll(`#year-switcher .seg-btn-year`).forEach(btn => {
+        btn.classList.toggle(`is-active`, Number(btn.dataset.year) === year);
+      });
+      const yearPill = document.getElementById(`net-year-pill`);
+      if (yearPill) yearPill.textContent = `YEAR: ${year}`;
+      updateNetworkRadiiForYear(year);
+      renderKPIs();
+      renderInspector();
+      renderSystemChart();
+      renderRefTab();
+    }
+
+    function toggleTimelinePlay() {
+      const btn = document.getElementById(`btn-play-timeline`);
+      const textEl = document.getElementById(`play-btn-text`);
+      if (state.playing) {
+        clearInterval(state.playTimer);
+        state.playing = false;
+        if (btn) btn.classList.remove(`is-playing`);
+        if (textEl) textEl.textContent = `播放演變`;
+        return;
+      }
+      state.playing = true;
+      if (btn) btn.classList.add(`is-playing`);
+      if (textEl) textEl.textContent = `暫停播放`;
+      const years = [2018, 2019, 2020, 2021, 2022];
+      let idx = years.indexOf(state.year);
+      state.playTimer = setInterval(() => {
+        idx = (idx + 1) % years.length;
+        setActiveYear(years[idx]);
+      }, 1500);
+    }
+
+    function setThreshold(thresh) {
+      state.threshold = thresh;
+      document.querySelectorAll(`#threshold-switcher .seg-btn`).forEach(btn => {
+        btn.classList.toggle(`is-active`, btn.dataset.thresh === thresh);
+      });
+      renderKPIs();
+      if (state.refTab === `sensitivity`) renderRefTab();
+    }
+
+    function setNetworkMode(mode) {
+      state.networkMode = mode;
+      document.querySelectorAll(`.mode-pills .mode-btn`).forEach(btn => {
+        btn.classList.toggle(`is-active`, btn.dataset.mode === mode);
+      });
+    }
+
+    function adjustZoom(factor) {
+      netEngine.cam.targetZoom = Math.max(0.55, Math.min(2.4, netEngine.cam.targetZoom * factor));
+    }
+
+    function resetNetworkView() {
+      netEngine.cam.targetZoom = 1;
+      netEngine.cam.targetX = 0;
+      netEngine.cam.targetY = 0;
+      netEngine.nodes.forEach(n => {
+        n.x = n.anchorX;
+        n.y = n.anchorY;
+        n.vx = 0;
+        n.vy = 0;
+      });
+      selectNode(null);
+    }
+
+    function selectNode(nodeId) {
+      state.selectedNodeId = nodeId;
+      document.querySelectorAll(`#quick-node-chips .node-chip`).forEach(ch => {
+        ch.classList.toggle(`is-selected`, ch.dataset.node === nodeId);
+      });
+      const clearBtn = document.getElementById(`btn-clear-node`);
+      if (clearBtn) clearBtn.style.display = nodeId ? `inline-flex` : `none`;
+      renderInspector();
+      if (state.refTab === `economies`) renderRefTab();
+    }
+
+    function setSystemMetric(metric) {
+      state.systemMetric = metric;
+      document.querySelectorAll(`[data-sysmetric]`).forEach(btn => {
+        btn.classList.toggle(`is-active`, btn.dataset.sysmetric === metric);
+      });
+      renderSystemChart();
+    }
+
+    function setTransitionInterval(intv) {
+      state.transitionInterval = intv;
+      document.querySelectorAll(`#interval-switcher .mode-btn`).forEach(btn => {
+        btn.classList.toggle(`is-active`, btn.dataset.intv === intv);
+      });
+      renderTransitionCards();
+    }
+
+    function setSectorChartMode(mode) {
+      state.sectorChartMode = mode;
+      document.querySelectorAll(`[data-secmode]`).forEach(btn => {
+        btn.classList.toggle(`is-active`, btn.dataset.secmode === mode);
+      });
+      renderSectorChart();
+    }
+
+    function setRefTab(tab) {
+      state.refTab = tab;
+      document.querySelectorAll(`[data-reftab]`).forEach(btn => {
+        btn.classList.toggle(`is-active`, btn.dataset.reftab === tab);
+      });
+      renderRefTab();
+    }
+
+    /* =========================================================================
+       6. RENDER FUNCTIONS (KPIs, Inspector, Charts, Tables)
+       ========================================================================= */
+    function renderKPIs() {
+      const ym = YEAR_METRICS[state.year];
+      const th = THRESHOLD_SENSITIVITY[state.threshold];
+
+      const flowLabel = document.getElementById(`kpi-flow-label`);
+      const flowVal = document.getElementById(`kpi-flow-val`);
+      const flowDelta = document.getElementById(`kpi-flow-delta`);
+      const flowSub = document.getElementById(`kpi-flow-sub`);
+
+      if (flowLabel) flowLabel.textContent = `${state.year} 骨幹總流量`;
+      if (flowVal) flowVal.textContent = ym.weightM >= 100 ? `1.02 × 10⁸` : `${(ym.weightM / 10).toFixed(2)} × 10⁷`;
+      if (flowDelta) {
+        flowDelta.textContent = ym.deltaLabel;
+        flowDelta.className = `kpi-delta ${ym.deltaClass}`;
+      }
+      if (flowSub) {
+        const edgeDisplay = state.year === 2022 ? th.edges2022.toLocaleString() : ym.edges.toLocaleString();
+        flowSub.textContent = `骨幹邊數：${edgeDisplay} 條 · 涵蓋 ${ym.flowShare}% 總中間流量`;
+      }
+
+      const pVal = document.getElementById(`kpi-persist-val`);
+      const pSub = document.getElementById(`kpi-persist-sub`);
+      if (pVal) pVal.textContent = state.threshold === `top10` ? `55.5%` : `${th.persistentShare2022}%`;
+      if (pSub) {
+        pSub.textContent = state.threshold === `top10`
+          ? `唯一骨幹邊 5 年持續；佔 2022 骨幹 ${th.persistentShare2022}% (${th.persistentEdges.toLocaleString()} 條)`
+          : `${th.label} 規格下佔 2022 骨幹比例 (${th.persistentEdges.toLocaleString()} 條持續邊)`;
+      }
+
+      const rVal = document.getElementById(`kpi-rewire-val`);
+      const rSub = document.getElementById(`kpi-rewire-sub`);
+      if (rVal) rVal.textContent = th.peakRewiring.toFixed(4);
+      if (rSub) rSub.textContent = `${th.label} · 峰值於 ${th.peakInterval}；>98.9% 源自邊緣層`;
+
+      const cLabel = document.getElementById(`kpi-cross-label`);
+      const cVal = document.getElementById(`kpi-cross-val`);
+      const cDelta = document.getElementById(`kpi-cross-delta`);
+      const cSub = document.getElementById(`kpi-cross-sub`);
+      if (cLabel) cLabel.textContent = `${state.year} 跨國骨幹比例`;
+      if (cVal) cVal.textContent = `${ym.crossBorder.toFixed(2)}%`;
+      if (cDelta) {
+        cDelta.textContent = state.year === 2020 ? `暫時性收縮` : (state.year >= 2021 ? `自適應再全球化` : `全球化基準`);
+        cDelta.className = `kpi-delta ${state.year === 2020 ? `delta-warn` : `delta-pos`}`;
+      }
+      if (cSub) {
+        cSub.textContent = state.threshold === `top10`
+          ? `2019 (13.46%) → 2020 (12.83%) → 2022 (14.81%)`
+          : `${th.label} 下 2022 跨國權重比例為 ${th.crossBorder2022}%`;
+      }
+    }
+
+    function renderQuickChips() {
+      const wrap = document.getElementById(`quick-node-chips`);
+      if (!wrap) return;
+      const items = [
+        { id: `CHN`, label: `CHN 中國` },
+        { id: `USA`, label: `USA 美國` },
+        { id: `DEU`, label: `DEU 德國` },
+        { id: `IND`, label: `IND 印度` },
+        { id: `F`, label: `F 營建` },
+        { id: `G`, label: `G 批發` },
+        { id: `C19`, label: `C19 石化` },
+        { id: `D`, label: `D 電力` },
+        { id: `C10T12`, label: `C10T12 食品` },
+        { id: `C20`, label: `C20 化學` }
+      ];
+      wrap.innerHTML = items.map(it => `<button type="button" class="node-chip" data-node="${it.id}" onclick="selectNode('${it.id}')">${it.label}</button>`).join(``);
+    }
+
+    function renderInspector() {
+      const box = document.getElementById(`inspector-detail-box`);
+      const title = document.getElementById(`inspector-title`);
+      const sub = document.getElementById(`inspector-subtitle`);
+      if (!box) return;
+
+      if (!state.selectedNodeId) {
+        const ym = YEAR_METRICS[state.year];
+        if (title) title.textContent = `${state.year} 全局拓撲結構剖面`;
+        if (sub) sub.textContent = `Table 3 年度指標 (${ym.tag}) · 點選左側節點檢視個體`;
+        box.innerHTML = `
+          <div class="inspector-metric-row"><span>網絡密度 (Density)</span><strong class="mono-num">${ym.density.toFixed(4)}</strong></div>
+          <div class="inspector-metric-row"><span>雙向互惠性 (Reciprocity)</span><strong class="mono-num">${ym.reciprocity.toFixed(4)}</strong></div>
+          <div class="inspector-metric-row"><span>強連通分量 (SCC Size)</span><strong class="mono-num">${ym.scc.toLocaleString()} / ${ym.nodes.toLocaleString()}</strong></div>
+          <div class="inspector-metric-row"><span>跨國連結權重佔比</span><strong class="mono-num">${ym.crossBorder.toFixed(2)}%</strong></div>
+          <div class="inspector-metric-row"><span>國別入流集中度 (HHI)</span><strong class="mono-num">${ym.hhi.toFixed(4)}</strong></div>
+          <div class="inspector-metric-row"><span>骨幹佔總正向流量</span><strong class="mono-num" style="color: var(--positive);">${ym.flowShare.toFixed(2)}%</strong></div>
+        `;
+        return;
+      }
+
+      const ec = ECONOMIES.find(e => e.id === state.selectedNodeId);
+      if (ec) {
+        if (title) title.textContent = ec.name;
+        if (sub) sub.textContent = ec.role;
+        const years = [2018, 2019, 2020, 2021, 2022];
+        const maxV = Math.max(...years.map(y => ec.values[y]));
+        const chg20 = (((ec.values[2020] - ec.values[2019]) / ec.values[2019]) * 100).toFixed(1);
+        const chg22 = (((ec.values[2022] - ec.values[2020]) / ec.values[2020]) * 100).toFixed(1);
+
+        const barsSvg = years.map((y, idx) => {
+          const h = Math.max(8, (ec.values[y] / maxV) * 44);
+          const x = idx * 54 + 10;
+          const isAct = y === state.year;
+          const fill = isAct ? `var(--primary)` : (y === 2020 ? `var(--data-3)` : `var(--data-context)`);
+          return `
+            <rect x="${x}" y="${50 - h}" width="32" height="${h}" fill="${fill}"></rect>
+            <text x="${x + 16}" y="66" text-anchor="middle" font-size="10" font-family="IBM Plex Mono, monospace" fill="var(--on-surface-muted)">${y}</text>
+            <text x="${x + 16}" y="${46 - h}" text-anchor="middle" font-size="9.5" font-family="IBM Plex Mono, monospace" fill="var(--on-surface)">${ec.values[y].toFixed(1)}</text>
+          `;
+        }).join(``);
+
+        box.innerHTML = `
+          <div class="inspector-metric-row"><span>${state.year} 入流總權重</span><strong class="mono-num">${ec.values[state.year].toFixed(2)} M</strong></div>
+          <div class="inspector-metric-row"><span>衝擊暴露 (2019→2020)</span><strong class="mono-num" style="color: ${Number(chg20) >= 0 ? `var(--positive)` : `var(--error)`};">${Number(chg20) >= 0 ? `+` : ``}${chg20}%</strong></div>
+          <div class="inspector-metric-row"><span>反彈幅度 (2020→2022)</span><strong class="mono-num" style="color: var(--positive);">+${chg22}%</strong></div>
+          <div class="sparkline-wrap">
+            <svg viewBox="0 0 280 74" width="100%" height="74" aria-label="${ec.name} 2018-2022 趨勢圖">${barsSvg}</svg>
+          </div>
+        `;
+        return;
+      }
+
+      const sec = SECTORS.find(s => s.id === state.selectedNodeId);
+      if (sec) {
+        if (title) title.textContent = `${sec.code} · ${sec.name}`;
+        if (sub) sub.textContent = `${sec.en} · ${sec.top6 ? `Top 6 核心城市維生產業` : `Top 10 反彈產業`}`;
+        box.innerHTML = `
+          <div class="inspector-metric-row"><span>2020 骨幹入流</span><strong class="mono-num">${sec.v2020.toLocaleString()}</strong></div>
+          <div class="inspector-metric-row"><span>2022 骨幹入流</span><strong class="mono-num">${sec.v2022.toLocaleString()}</strong></div>
+          <div class="inspector-metric-row"><span>2020→2022 絕對反彈</span><strong class="mono-num" style="color: var(--primary);">+${sec.abs.toLocaleString()}</strong></div>
+          <div class="inspector-metric-row"><span>2020→2022 相對成長</span><strong class="mono-num" style="color: var(--positive);">+${sec.pct.toFixed(2)}%</strong></div>
+          <p style="margin: var(--space-xs) 0 0 0; font-size: 0.8125rem; color: var(--on-surface-variant);">${sec.note}</p>
+        `;
+        return;
+      }
+
+      if (state.selectedNodeId === `C28`) {
+        if (title) title.textContent = `C28 · 機械與設備製造 (對照組)`;
+        if (sub) sub.textContent = `資本密集型部門對照組 (Section 4.5)`;
+        box.innerHTML = `
+          <p style="margin: 0; font-size: 0.84rem; color: var(--on-surface-variant);">
+            相較於前六大城市維生產業，資本密集型的 <strong>C28 機械與設備</strong> 受限於企業長期投資週期與設備調整時滯，在 2020–2022 年呈現較緩慢且不均的反彈軌跡，印證反彈遵循「供給功能層級」。
+          </p>
+        `;
+      }
+    }
+
+    function renderTransitionCards() {
+      const wrap = document.getElementById(`transition-cards`);
+      if (!wrap) return;
+      const d = TRANSITION_DATA[state.transitionInterval];
+      if (!d) return;
+      wrap.innerHTML = `
+        <div class="trans-stat">
+          <div class="mono-label">骨幹保留率 (Retention)</div>
+          <div class="trans-stat-val">${d.retention.toFixed(2)}%</div>
+          <div style="font-size: 0.78rem; color: var(--on-surface-variant);">Jaccard 重組距離：<strong>${d.jaccard.toFixed(4)}</strong></div>
+        </div>
+        <div class="trans-stat">
+          <div class="mono-label">新晉骨幹邊 (Entrants)</div>
+          <div class="trans-stat-val" style="color: var(--primary);">${d.entrants.toLocaleString()}</div>
+          <div style="font-size: 0.78rem; color: var(--positive);"><strong>${d.fromPeriphery.toFixed(2)}%</strong> 來自前一年邊緣層</div>
+        </div>
+        <div class="trans-stat">
+          <div class="mono-label">離席骨幹邊 (Departures)</div>
+          <div class="trans-stat-val" style="color: var(--warning);">${d.departures.toLocaleString()}</div>
+          <div style="font-size: 0.78rem; color: var(--on-surface-variant);"><strong>${d.toPeriphery.toFixed(2)}%</strong> 降級回邊緣儲備層</div>
+        </div>
+        <div class="trans-stat">
+          <div class="mono-label">區間機制判讀 (${d.label})</div>
+          <div style="font-size: 0.8125rem; color: var(--on-surface); margin-top: 4px; line-height: 1.4;">${d.note}</div>
+        </div>
+      `;
+    }
+
+    function renderSystemChart() {
+      if (typeof Chart === `undefined`) return;
+      const canvas = document.getElementById(`chart-system`);
+      if (!canvas) return;
+
+      const years = [2018, 2019, 2020, 2021, 2022];
+      const col1 = getToken(`--data-1`);
+      const col2 = getToken(`--data-2`);
+      const col3 = getToken(`--data-3`);
+      const colGrid = getToken(`--outline-variant`);
+      const colText = getToken(`--on-surface-muted`);
+      const noteEl = document.getElementById(`system-insight-note`);
+
+      let datasets = [];
+      let yTitle = ``;
+      let labels = years.map(String);
+
+      if (state.systemMetric === `crossBorder`) {
+        yTitle = `跨國骨幹權重佔比 (%)`;
+        datasets = [{
+          label: `跨國連結佔比 (%)`,
+          data: years.map(y => YEAR_METRICS[y].crossBorder),
+          borderColor: col1,
+          backgroundColor: col1,
+          borderWidth: 2.5,
+          pointRadius: years.map(y => y === state.year ? 7 : 4.5),
+          tension: 0.25
+        }];
+        if (noteEl) noteEl.innerHTML = `<strong>自適應再全球化 (Adaptive Re-globalization)：</strong>跨國骨幹權重佔比於 2020 年暫時收縮至 12.83%，隨後於 2021–2022 年強勁再擴張至 14.81%，反駁長期去全球化假說。`;
+      } else if (state.systemMetric === `totalWeight`) {
+        yTitle = `骨幹總權重 (百萬 / 10⁶)`;
+        datasets = [{
+          label: `骨幹總流量權重 (× 10⁶)`,
+          data: years.map(y => YEAR_METRICS[y].weightM),
+          borderColor: col2,
+          backgroundColor: col2,
+          borderWidth: 2.5,
+          pointRadius: years.map(y => y === state.year ? 7 : 4.5),
+          tension: 0.25
+        }];
+        if (noteEl) noteEl.innerHTML = `<strong>收縮未伴隨系統瓦解：</strong>總權重於 2020 年短暫下修至 81.2M (-3.4%)，但強連通分量仍維持 3,842 個節點，2022 年躍升至 102.0M。`;
+      } else if (state.systemMetric === `topology`) {
+        yTitle = `指標數值`;
+        datasets = [
+          {
+            label: `網絡密度 (Density)`,
+            data: years.map(y => YEAR_METRICS[y].density),
+            borderColor: col1,
+            backgroundColor: col1,
+            borderWidth: 2.2,
+            yAxisID: `y`,
+            tension: 0.2
+          },
+          {
+            label: `雙向互惠性 (Reciprocity)`,
+            data: years.map(y => YEAR_METRICS[y].reciprocity),
+            borderColor: col2,
+            backgroundColor: col2,
+            borderWidth: 2.2,
+            yAxisID: `y1`,
+            tension: 0.2
+          }
+        ];
+        if (noteEl) noteEl.innerHTML = `<strong>核心連接高度穩固：</strong>密度僅於 2020 年微幅壓縮 (0.0634→0.0628) 即迅速回升至 0.0659，雙向互惠性維持在 0.285–0.291 高水準。`;
+      } else {
+        labels = [`2018–19`, `2019–20`, `2020–21`, `2021–22`];
+        yTitle = `Jaccard 重組距離`;
+        datasets = [
+          {
+            label: `Jaccard 重組距離`,
+            data: [0.1472, 0.1840, 0.1973, 0.1715],
+            borderColor: col3,
+            backgroundColor: col3,
+            borderWidth: 2.5,
+            yAxisID: `y`,
+            tension: 0.25
+          },
+          {
+            label: `骨幹保留率 (%)`,
+            data: [92.23, 89.45, 90.21, 91.67],
+            borderColor: col1,
+            backgroundColor: col1,
+            borderWidth: 2.0,
+            borderDash: [5, 4],
+            yAxisID: `y1`,
+            tension: 0.25
+          }
+        ];
+        if (noteEl) noteEl.innerHTML = `<strong>兩階段滯後調適：</strong>2020 年優先以流量壓縮吸收衝擊，實質結構重組滯後於 2020–2021 年達到峰值 (0.1973)，同時核心保留率仍高達 90.21%。`;
+      }
+
+      if (sysChart) sysChart.destroy();
+      const scalesConfig = {
+        x: {
+          grid: { display: false },
+          ticks: { color: colText, font: { family: `IBM Plex Mono, monospace`, size: 11 } }
+        },
+        y: {
+          position: `left`,
+          grid: { color: colGrid },
+          ticks: { color: colText, font: { family: `IBM Plex Mono, monospace`, size: 11 } },
+          title: { display: true, text: yTitle, color: colText, font: { size: 11 } }
+        }
+      };
+      if (state.systemMetric === `topology` || state.systemMetric === `rewiring`) {
+        scalesConfig.y1 = {
+          position: `right`,
+          grid: { drawOnChartArea: false },
+          ticks: { color: colText, font: { family: `IBM Plex Mono, monospace`, size: 11 } }
+        };
+      }
+
+      sysChart = new Chart(canvas, {
+        type: `line`,
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: `index`, intersect: false },
+          plugins: {
+            legend: {
+              position: `top`,
+              align: `start`,
+              labels: { boxWidth: 12, boxHeight: 12, font: { family: `Noto Sans TC, IBM Plex Sans, sans-serif`, size: 12 } }
+            }
+          },
+          scales: scalesConfig
+        }
+      });
+    }
+
+    function renderSectorChart() {
+      if (typeof Chart === `undefined`) return;
+      const canvas = document.getElementById(`chart-sectors`);
+      if (!canvas) return;
+
+      const isAbs = state.sectorChartMode === `abs`;
+      const sorted = [...SECTORS].sort((a, b) => isAbs ? b.abs - a.abs : b.pct - a.pct);
+      const colFocal = getToken(`--data-1`);
+      const colOther = getToken(`--data-context`);
+      const colGrid = getToken(`--outline-variant`);
+      const colText = getToken(`--on-surface-muted`);
+
+      if (secChart) secChart.destroy();
+      secChart = new Chart(canvas, {
+        type: `bar`,
+        data: {
+          labels: sorted.map(s => `${s.code} ${s.name}`),
+          datasets: [{
+            label: isAbs ? `2020→2022 絕對反彈增量` : `2020→2022 相對成長率 (%)`,
+            data: sorted.map(s => isAbs ? s.abs : s.pct),
+            backgroundColor: sorted.map(s => s.top6 ? colFocal : colOther),
+            borderRadius: 0,
+            barPercentage: 0.72
+          }]
+        },
+        options: {
+          indexAxis: `y`,
+          responsive: true,
+          maintainAspectRatio: false,
+          onClick: (evt, elems) => {
+            if (elems && elems.length > 0) {
+              const sec = sorted[elems[0].index];
+              if (sec) selectNode(sec.id);
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const s = sorted[ctx.dataIndex];
+                  return isAbs
+                    ? ` +${s.abs.toLocaleString()} (+${s.pct.toFixed(2)}%)`
+                    : ` +${s.pct.toFixed(2)}% (+${s.abs.toLocaleString()})`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: colGrid },
+              ticks: {
+                color: colText,
+                font: { family: `IBM Plex Mono, monospace`, size: 11 },
+                callback: v => isAbs ? `${(v / 1e6).toFixed(1)}M` : `${v}%`
+              }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: getToken(`--on-surface`), font: { family: `Noto Sans TC, IBM Plex Sans, sans-serif`, size: 11 } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderRefTab() {
+      const wrap = document.getElementById(`ref-tab-content`);
+      if (!wrap) return;
+
+      if (state.refTab === `economies`) {
+        const sorted = [...ECONOMIES].sort((a, b) => b.values[state.year] - a.values[state.year]);
+        const rows = sorted.map((ec, i) => {
+          const vAct = ec.values[state.year];
+          const reb = (((ec.values[2022] - ec.values[2020]) / ec.values[2020]) * 100).toFixed(1);
+          const selCls = state.selectedNodeId === ec.id ? `is-selected` : ``;
+          return `
+            <tr class="is-clickable ${selCls}" onclick="selectNode('${ec.id}')">
+              <td class="mono-num">${i + 1}</td>
+              <td><strong>${ec.name}</strong></td>
+              <td class="num">${ec.values[2019].toFixed(2)}</td>
+              <td class="num">${ec.values[2020].toFixed(2)}</td>
+              <td class="num"><strong>${vAct.toFixed(2)}</strong></td>
+              <td class="num" style="color: var(--positive);">+${reb}%</td>
+            </tr>
+          `;
+        }).join(``);
+
+        wrap.innerHTML = `
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>經濟體 (點選連動)</th>
+                  <th class="num">2019</th>
+                  <th class="num">2020</th>
+                  <th class="num">${state.year} (M)</th>
+                  <th class="num">20→22 反彈</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <div class="callout-strip" style="margin-top: var(--space-sm);">
+            <strong>層級反彈錨點：</strong>中國 (27.78M) 與美國 (20.08M) 穩居前二，德國於 2022 年超越日本，印度則於 2021–2022 年躍升至第 5 位。
+          </div>
+        `;
+      } else if (state.refTab === `sensitivity`) {
+        const rows = Object.entries(THRESHOLD_SENSITIVITY).map(([k, t]) => {
+          const isCur = state.threshold === k;
+          return `
+            <tr class="is-clickable ${isCur ? `is-selected` : ``}" onclick="setThreshold('${k}')">
+              <td><strong>${t.label}</strong></td>
+              <td class="num">${t.edges2022.toLocaleString()}</td>
+              <td class="num">${t.persistentEdges.toLocaleString()}</td>
+              <td class="num">${t.persistentShare2022.toFixed(2)}%</td>
+              <td class="num">${t.peakRewiring.toFixed(4)}</td>
+              <td class="num">${t.crossBorder2022.toFixed(2)}%</td>
+            </tr>
+          `;
+        }).join(``);
+
+        wrap.innerHTML = `
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>門檻規格 (點選切換)</th>
+                  <th class="num">2022 邊數</th>
+                  <th class="num">5年持續邊</th>
+                  <th class="num">持續佔比</th>
+                  <th class="num">重組峰值</th>
+                  <th class="num">2022 跨國</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <div class="callout-strip" style="margin-top: var(--space-sm);">
+            <strong>結構穩健性驗證 (Table A2)：</strong>在 Top 5%、10% 與 15% 三種截斷門檻下，高持續核心、2020–2021 重組峰值、跨國再擴張與前六大反彈產業排序皆完全一致。
+          </div>
+        `;
+      } else {
+        const rows = REGRESSION_ROWS.map(r => `
+          <tr>
+            <td><strong>${r.varName}</strong></td>
+            <td class="num">${r.coef}</td>
+            <td class="num">${r.se}</td>
+            <td class="num">${r.t}</td>
+            <td class="num" style="color: ${r.sig ? `var(--primary)` : `var(--on-surface-muted)`}; font-weight: ${r.sig ? 600 : 400};">${r.p} ${r.sig}</td>
+          </tr>
+        `).join(``);
+
+        wrap.innerHTML = `
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>解釋變數 (N = 81, R² = 0.2666)</th>
+                  <th class="num">係數</th>
+                  <th class="num">穩健 SE</th>
+                  <th class="num">t 統計量</th>
+                  <th class="num">p 值</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <div class="callout-strip" style="margin-top: var(--space-sm);">
+            <strong>宏微觀張力 (Macro–Micro Tension, Table 6)：</strong>僅「2020 衝擊暴露」具統計顯著性 (p = 0.0090)，多樣性與中心性未達顯著；顯示骨幹韌性屬於網絡互賴的湧現屬性，無法化約為單一國家特徵。
+          </div>
+        `;
+      }
+    }
+
+    /* =========================================================================
+       7. INITIALIZATION
+       ========================================================================= */
+    document.addEventListener(`DOMContentLoaded`, () => {
+      if (typeof lucide !== `undefined`) {
+        lucide.createIcons();
+      }
+      initWorldMapBackground();
+      buildNetworkGraph();
+      initNetworkCanvas();
+      renderQuickChips();
+      renderKPIs();
+      renderInspector();
+      renderTransitionCards();
+      renderSystemChart();
+      renderSectorChart();
+      renderRefTab();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="day">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="haven">
+  <title>AI 與專利情報驅動之技術商品化與責任 AI 治理 — 3D 星際智權航行系統</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --background: #eef3f7;
+      --bg-gradient-1: #f5f8fb;
+      --bg-gradient-2: #dce6ef;
+      --surface-container-low: rgba(255, 255, 255, 0.78);
+      --surface-container: rgba(226, 235, 242, 0.85);
+      --surface-container-high: rgba(210, 224, 235, 0.92);
+      --surface-glass-strong: rgba(255, 255, 255, 0.9);
+      --on-surface: #1e2d3b;
+      --on-surface-variant: #52677a;
+      --outline: #9db2c4;
+      --outline-variant: rgba(112, 141, 165, 0.28);
+      --primary: #466d88;
+      --on-primary: #ffffff;
+      --primary-container: #dde8f0;
+      --on-primary-container: #274459;
+      --secondary: #4c7065;
+      --tertiary: #6d8c9e;
+      --error: #a64b4b;
+      --on-error: #ffffff;
+      --positive: #3e7a66;
+      --warning: #a8753e;
+      --focus: #466d88;
+      --data-1: #466d88;
+      --data-2: #5f8778;
+      --data-3: #9e7356;
+      --data-4: #7b6f94;
+      --data-context: #b8c6d1;
+      --globe-ocean: #dce8f2;
+      --globe-land: #6f90a8;
+      --amoeba-body: #6fa3c7;
+      --amoeba-glow: rgba(111, 163, 199, 0.35);
+      --shadow-glass: 0 10px 32px rgba(45, 70, 92, 0.08);
+      --font-headline: 'Outfit', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+      --font-body: 'Hanken Grotesk', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+      --font-label: 'Geist Mono', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans JP', monospace;
+      --display-size: clamp(1.45rem, 1.15rem + 1.3vw, 2.15rem);
+      --headline-size: clamp(1.15rem, 1rem + 0.55vw, 1.45rem);
+      --subhead-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.1rem);
+      --body-size: clamp(0.875rem, 0.85rem + 0.15vw, 0.95rem);
+      --label-size: 0.75rem;
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.25rem;
+      --rounded: 0.625rem;
+      --rounded-lg: 1rem;
+      --rounded-full: 9999px;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 140ms;
+      --dur-short: 240ms;
+      --dur-long: 480ms;
+    }
+
+    html[data-theme="night"] {
+      color-scheme: dark;
+      --background: #0f1924;
+      --bg-gradient-1: #0c141d;
+      --bg-gradient-2: #172738;
+      --surface-container-low: rgba(20, 34, 49, 0.8);
+      --surface-container: rgba(29, 48, 68, 0.85);
+      --surface-container-high: rgba(41, 66, 92, 0.92);
+      --surface-glass-strong: rgba(18, 30, 44, 0.92);
+      --on-surface: #e6eff6;
+      --on-surface-variant: #9db4c7;
+      --outline: #52738f;
+      --outline-variant: rgba(130, 168, 198, 0.25);
+      --primary: #7ca8c9;
+      --on-primary: #0d1822;
+      --primary-container: rgba(70, 109, 136, 0.32);
+      --on-primary-container: #cde2f2;
+      --secondary: #7eb5a4;
+      --tertiary: #89b2cc;
+      --error: #df7b7b;
+      --positive: #6bc4a6;
+      --warning: #dfb06c;
+      --focus: #8bb9db;
+      --data-1: #7ca8c9;
+      --data-2: #7eb5a4;
+      --data-3: #d69c76;
+      --data-4: #a899c7;
+      --data-context: #3b5369;
+      --globe-ocean: #122130;
+      --globe-land: #6d9bbf;
+      --amoeba-body: #84bae0;
+      --amoeba-glow: rgba(132, 186, 224, 0.4);
+      --shadow-glass: 0 12px 36px rgba(0, 0, 0, 0.45);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: clip;
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.55;
+      color: var(--on-surface);
+      background: linear-gradient(145deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+      transition: background var(--dur-long) var(--ease-in-out), color var(--dur-short) var(--ease-in-out);
+    }
+
+    button, input, select, textarea { font-family: inherit; }
+    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+    #cosmos-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: auto;
+    }
+
+    .hud-shell {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+    }
+    .hud-shell > * { pointer-events: auto; }
+
+    /* Header & Author Strip */
+    .top-header {
+      position: static !important;
+      padding: var(--space-md) var(--space-lg) var(--space-sm);
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      background: var(--surface-container-low);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md) var(--space-lg);
+      box-shadow: var(--shadow-glass);
+    }
+
+    .brand-block { min-width: 0; flex: 1 1 360px; }
+    .kicker {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--primary);
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .main-title {
+      margin: var(--space-xs) 0 0;
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 400;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--on-surface);
+    }
+    .main-title strong { font-weight: 700; color: var(--primary); }
+
+    /* Required Author Strip directly under top header & main title */
+    .author-strip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
+      padding: var(--space-xs) var(--space-md);
+      background: var(--primary-container);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--outline);
+      border-radius: var(--rounded-full);
+      color: var(--on-primary-container);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: 0 2px 10px rgba(70, 109, 136, 0.12);
+    }
+    .author-strip i, .author-strip svg {
+      width: 16px;
+      height: 16px;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .toolbar-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: var(--space-sm);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .control-label {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+    }
+
+    .btn, .select-control {
+      min-height: 40px;
+      padding: 0 var(--space-md);
+      border-radius: var(--rounded);
+      border: 1px solid var(--outline);
+      background: var(--surface-glass-strong);
+      color: var(--on-surface);
+      font-size: 0.84rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+    }
+    .select-control { padding-right: 1.75rem; }
+    .btn:hover, .select-control:hover { background: var(--surface-container-high); }
+    .btn.active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+    .btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* Navigation Planet Bar */
+    .planet-nav {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 var(--space-lg) var(--space-sm);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+    .nav-pill {
+      flex: 1 1 180px;
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded);
+      border: 1px solid var(--outline-variant);
+      background: var(--surface-container-low);
+      backdrop-filter: blur(12px);
+      color: var(--on-surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      cursor: pointer;
+      text-align: left;
+      transition: background-color var(--dur-micro) var(--ease-out), transform var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
+    }
+    .nav-pill:hover {
+      background: var(--surface-container-high);
+      transform: translateY(-1px);
+    }
+    .nav-pill.active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+      box-shadow: 0 6px 20px rgba(70, 109, 136, 0.25);
+    }
+    .nav-pill .pill-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .nav-pill .pill-code {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      opacity: 0.78;
+    }
+    .nav-pill .pill-name {
+      font-family: var(--font-headline);
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Main Workspace Grid */
+    .workspace {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: var(--space-xs) var(--space-lg) var(--space-xl);
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+      gap: var(--space-lg);
+      align-items: start;
+      flex: 1;
+    }
+    .workspace * { min-width: 0; }
+
+    .glass-panel {
+      background: var(--surface-container-low);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow-glass);
+      transition: opacity var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out);
+    }
+
+    .panel-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      border-bottom: 1px solid var(--outline-variant);
+      padding-bottom: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+    .panel-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+    .panel-subtitle {
+      margin: var(--space-xs) 0 0;
+      font-size: var(--body-size);
+      color: var(--on-surface-variant);
+    }
+
+    .badge {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      padding: 3px 10px;
+      border-radius: var(--rounded-full);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .badge.warn { background: rgba(168, 117, 62, 0.16); color: var(--warning); }
+    .badge.good { background: rgba(62, 122, 102, 0.16); color: var(--positive); }
+    .badge.danger { background: rgba(166, 75, 75, 0.16); color: var(--error); }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+    .kpi-card {
+      background: var(--surface-glass-strong);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+    }
+    .kpi-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+    }
+    .kpi-value {
+      font-family: var(--font-headline);
+      font-size: 1.55rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+      margin: 4px 0 2px;
+    }
+    .kpi-caption {
+      font-size: 0.78rem;
+      color: var(--secondary);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+
+    .sub-card {
+      background: var(--surface-glass-strong);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+    }
+    .sub-card h3 {
+      margin: 0 0 var(--space-sm);
+      font-family: var(--font-headline);
+      font-size: var(--subhead-size);
+      font-weight: 600;
+    }
+
+    .chart-box {
+      position: relative;
+      min-height: 250px;
+      height: 260px;
+      width: 100%;
+    }
+
+    /* Interactive Tabs inside Modules */
+    .seg-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-md);
+    }
+    .seg-btn {
+      min-height: 36px;
+      padding: 4px 12px;
+      border-radius: var(--rounded-full);
+      border: 1px solid var(--outline);
+      background: transparent;
+      color: var(--on-surface);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .seg-btn.active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+
+    /* Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+    .data-table th, .data-table td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--outline-variant);
+    }
+    .data-table th {
+      font-family: var(--font-label);
+      font-size: 0.75rem;
+      color: var(--on-surface-variant);
+      font-weight: 500;
+    }
+    .data-table td { font-variant-numeric: tabular-nums; }
+
+    /* Gantt Bars */
+    .gantt-row {
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr);
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+    .gantt-track {
+      height: 18px;
+      background: var(--surface-container);
+      border-radius: var(--rounded-full);
+      position: relative;
+      overflow: hidden;
+    }
+    .gantt-bar {
+      position: absolute;
+      top: 2px;
+      bottom: 2px;
+      border-radius: var(--rounded-full);
+      background: var(--primary);
+      transition: left var(--dur-short) var(--ease-out), width var(--dur-short) var(--ease-out);
+    }
+
+    /* Sliders */
+    .slider-field { margin-bottom: var(--space-sm); }
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* Globe Right Column */
+    .globe-aside {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .globe-stage {
+      position: relative;
+      min-height: 290px;
+      height: 300px;
+      border-radius: var(--rounded);
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 45%, var(--primary-container) 0%, transparent 72%);
+      border: 1px solid var(--outline-variant);
+    }
+    #globe-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+    #globe-canvas:active { cursor: grabbing; }
+
+    .globe-floating-card {
+      position: absolute;
+      left: var(--space-sm);
+      right: var(--space-sm);
+      bottom: var(--space-sm);
+      background: var(--surface-glass-strong);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--outline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      box-shadow: var(--shadow-glass);
+      transition: transform var(--dur-short) var(--ease-out), opacity var(--dur-short) var(--ease-out);
+    }
+    .globe-floating-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      font-family: var(--font-headline);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .globe-floating-desc {
+      margin: 4px 0 0;
+      font-size: 0.8rem;
+      color: var(--on-surface-variant);
+    }
+
+    /* Legal Precedent & Design-Around Comparison */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-md);
+    }
+    .compare-box {
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+      border: 1px solid var(--outline-variant);
+      background: var(--surface-glass-strong);
+    }
+    .compare-box.safe { border-left: 4px solid var(--positive); }
+    .compare-box.risk { border-left: 4px solid var(--error); }
+
+    /* Cute Floating 3D Amoeba Pet */
+    .amoeba-dock {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--space-xs);
+    }
+    .amoeba-bubble {
+      max-width: 245px;
+      background: var(--surface-glass-strong);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--outline);
+      border-radius: var(--rounded-lg);
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      color: var(--on-surface);
+      box-shadow: var(--shadow-glass);
+    }
+    .amoeba-btn {
+      width: 74px;
+      height: 74px;
+      border-radius: var(--rounded-full);
+      border: 2px solid var(--outline);
+      background: var(--surface-container-low);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px var(--amoeba-glow);
+      cursor: pointer;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      animation: amoebaFloat 3.4s ease-in-out infinite;
+      transition: transform var(--dur-micro) var(--ease-out);
+    }
+    .amoeba-btn:hover { transform: scale(1.06); }
+
+    @keyframes amoebaFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-7px) rotate(2deg); }
+    }
+
+    .source-footer {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 var(--space-lg) var(--space-lg);
+      font-size: 0.75rem;
+      color: var(--on-surface-variant);
+    }
+
+    @media (max-width: 920px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .top-header, .planet-nav, .workspace { padding-left: var(--space-sm); padding-right: var(--space-sm); }
+      .amoeba-dock { right: 10px; bottom: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="cosmos-canvas" aria-hidden="true"></canvas>
+
+  <div class="hud-shell">
+    <header class="top-header">
+      <div class="header-bar">
+        <div class="brand-block">
+          <div class="kicker">
+            <i data-lucide="orbit" class="btn-icon"></i>
+            <span id="txt-kicker">MORANDI COSMOS IP NAVIGATION v4.2</span>
+          </div>
+          <h1 class="main-title" id="txt-main-title">
+            AI 與專利情報驅動之<strong>技術商品化</strong>與責任 AI 治理 — 3D 星際智權航行系統
+          </h1>
+          <div class="author-strip">
+            <i data-lucide="award" aria-hidden="true"></i>
+            <span id="txt-author">國立中興大學 科技管理研究所｜鄭凱文 (Hoiman Cheng)</span>
+          </div>
+        </div>
+
+        <div class="toolbar-controls">
+          <div class="control-group">
+            <label for="lang-select" class="control-label" id="lbl-lang">語系 / Language</label>
+            <select id="lang-select" class="select-control" onchange="setLanguage(this.value)">
+              <option value="zh-TW">繁體中文</option>
+              <option value="en">English</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="ja">日本語</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+            </select>
+          </div>
+          <button type="button" id="btn-autoplay" class="btn" onclick="toggleAutoPlay()">
+            <i data-lucide="play" class="btn-icon"></i>
+            <span id="txt-autoplay">自動巡航</span>
+          </button>
+          <button type="button" id="btn-tts" class="btn" onclick="toggleTTS()">
+            <i data-lucide="volume-2" class="btn-icon"></i>
+            <span id="txt-tts">語音朗讀</span>
+          </button>
+          <button type="button" id="btn-theme" class="btn" onclick="toggleTheme()">
+            <i data-lucide="sun" class="btn-icon"></i>
+            <span id="txt-theme">白天模式</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <nav class="planet-nav" aria-label="研究核心模組星體導航">
+      <button type="button" class="nav-pill active" id="nav-0" onclick="selectModule(0)">
+        <span class="pill-meta">
+          <span class="pill-code">PLANET 01 · MINING</span>
+          <span class="pill-name" id="nav-label-0">專利情報與技術探勘</span>
+        </span>
+        <i data-lucide="cpu" class="btn-icon"></i>
+      </button>
+      <button type="button" class="nav-pill" id="nav-1" onclick="selectModule(1)">
+        <span class="pill-meta">
+          <span class="pill-code">PLANET 02 · VALUATION</span>
+          <span class="pill-name" id="nav-label-1">技術商品化潛力評估</span>
+        </span>
+        <i data-lucide="compass" class="btn-icon"></i>
+      </button>
+      <button type="button" class="nav-pill" id="nav-2" onclick="selectModule(2)">
+        <span class="pill-meta">
+          <span class="pill-code">PLANET 03 · OPTIMIZATION</span>
+          <span class="pill-name" id="nav-label-2">產品開發與資源最佳化</span>
+        </span>
+        <i data-lucide="sliders" class="btn-icon"></i>
+      </button>
+      <button type="button" class="nav-pill" id="nav-3" onclick="selectModule(3)">
+        <span class="pill-meta">
+          <span class="pill-code">PLANET 04 · GOVERNANCE</span>
+          <span class="pill-name" id="nav-label-3">責任 AI 治理與防侵權框架</span>
+        </span>
+        <i data-lucide="shield-check" class="btn-icon"></i>
+      </button>
+    </nav>
+
+    <main class="workspace">
+      <section class="glass-panel" id="module-stage" aria-live="polite"></section>
+
+      <aside class="globe-aside">
+        <div class="glass-panel">
+          <div class="panel-header" style="margin-bottom: var(--space-sm); padding-bottom: var(--space-sm);">
+            <div>
+              <h2 class="panel-title" style="font-size: 1.05rem;" id="txt-globe-title">3D 全球智權軌跡地球儀</h2>
+              <p class="panel-subtitle" style="font-size: 0.78rem;" id="txt-globe-sub">節點轉至正面時自動觸發即時智權解析</p>
+            </div>
+            <span class="badge" id="globe-active-code">USPTO</span>
+          </div>
+
+          <div class="globe-stage">
+            <canvas id="globe-canvas"></canvas>
+            <div class="globe-floating-card" id="globe-floating-card">
+              <div class="globe-floating-head">
+                <span id="globe-node-name">美國專利商標局 (USPTO)</span>
+                <span class="badge good" id="globe-node-metric">56.5% CAGR</span>
+              </div>
+              <p class="globe-floating-desc" id="globe-node-desc"></p>
+            </div>
+          </div>
+
+          <div class="seg-bar" style="margin-top: var(--space-sm); margin-bottom: 0;">
+            <button type="button" class="seg-btn active" onclick="focusJurisdiction(0)">USPTO</button>
+            <button type="button" class="seg-btn" onclick="focusJurisdiction(1)">EPO</button>
+            <button type="button" class="seg-btn" onclick="focusJurisdiction(2)">CNIPA</button>
+            <button type="button" class="seg-btn" onclick="focusJurisdiction(3)">TIPO</button>
+            <button type="button" class="seg-btn" onclick="focusJurisdiction(4)">JPO</button>
+          </div>
+        </div>
+
+        <div class="glass-panel" style="padding: var(--space-md);">
+          <div class="kpi-label" id="txt-telemetry-label">星際航行遙測 TELEMETRY</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem;">
+            <span id="txt-warp-status">軌道穩定 · 準備躍遷</span>
+            <span class="badge" id="txt-planet-coords">SECTOR α-01</span>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="source-footer" id="txt-sources">
+      資料來源整合：Cypris 專利情報基準研究（2026 LLZO 固態電池與生物基聚醯胺測試）、Ocean Tomo / J.S. Held AI as IP™ 框架與 AI Disputes Monitor、Lumenci 逆向工程專利法理、EMI Group v. Cypress Semiconductor (104 F. Supp. 2d 370)、Festo Corp.、Graver Tank、TiVo v. EchoStar 及後發技術專利範圍研究。
+    </footer>
+  </div>
+
+  <!-- Floating 3D-inspired Cute Amoeba Desktop Pet (MS Office Assistant retro feel) -->
+  <div class="amoeba-dock">
+    <div class="amoeba-bubble" id="amoeba-speech">
+      嗨！我是智權阿米巴助手 🫧 點擊我可以切換「白天 / 黑夜」星際色彩模式喔！
+    </div>
+    <button type="button" class="amoeba-btn" id="amoeba-pet" onclick="toggleTheme()" aria-label="點擊切換白天與黑夜模式">
+      <svg viewBox="0 0 100 100" width="60" height="60" aria-hidden="true">
+        <defs>
+          <radialGradient id="amoebaGrad" cx="38%" cy="32%" r="65%">
+            <stop offset="0%" stop-color="#b7dbf2"/>
+            <stop offset="55%" stop-color="#6fa3c7"/>
+            <stop offset="100%" stop-color="#3f6987"/>
+          </radialGradient>
+        </defs>
+        <path d="M52,12 C69,11 84,21 86,37 C88,49 91,62 82,74 C73,86 58,89 44,86 C29,83 14,76 13,59 C12,44 19,35 26,24 C32,14 40,13 52,12 Z" fill="url(#amoebaGrad)"/>
+        <ellipse cx="38" cy="28" rx="9" ry="5" fill="#ffffff" opacity="0.45" transform="rotate(-20 38 28)"/>
+        <circle cx="40" cy="48" r="5.5" fill="#1b2b38"/>
+        <circle cx="62" cy="48" r="5.5" fill="#1b2b38"/>
+        <circle cx="41.5" cy="46.2" r="2" fill="#ffffff"/>
+        <circle cx="63.5" cy="46.2" r="2" fill="#ffffff"/>
+        <ellipse cx="32" cy="56" rx="4.5" ry="2.5" fill="#e5989b" opacity="0.7"/>
+        <ellipse cx="69" cy="56" rx="4.5" ry="2.5" fill="#e5989b" opacity="0.7"/>
+        <path d="M44,58 Q51,65 58,58" fill="none" stroke="#1b2b38" stroke-width="2.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <api-shim></api-shim>
+  <script>
+    // ============== STATE & I18N DICTIONARY ==============
+    const STATE = {
+      moduleIdx: 0,
+      lang: `zh-TW`,
+      theme: `day`,
+      autoPlay: false,
+      ttsActive: false,
+      jurisdictionIdx: 0,
+      precedentIdx: 0,
+      trlInput: 6,
+      budgetWeight: 55,
+      riskWeight: 70
+    };
+
+    const I18N = {
+      'zh-TW': {
+        mainTitle: `AI 與專利情報驅動之<strong>技術商品化</strong>與責任 AI 治理 — 3D 星際智權航行系統`,
+        author: `國立中興大學 科技管理研究所｜鄭凱文 (Hoiman Cheng)`,
+        kicker: `MORANDI COSMOS IP NAVIGATION v4.2`,
+        lblLang: `語系 / Language`,
+        autoPlay: `自動巡航`,
+        autoStop: `停止巡航`,
+        tts: `語音朗讀`,
+        ttsStop: `停止朗讀`,
+        dayMode: `白天模式`,
+        nightMode: `黑夜模式`,
+        globeTitle: `3D 全球智權軌跡地球儀`,
+        globeSub: `節點轉至正面時自動觸發即時智權解析`,
+        telemetry: `星際航行遙測 TELEMETRY`,
+        warpStable: `軌道穩定 · 星體掃描中`,
+        warpJump: `超空間躍遷中…`,
+        amoebaDay: `嗨！我是智權阿米巴助手，點擊我可以切換「白天 / 黑夜」星際色彩模式喔！`,
+        amoebaNight: `已切換至深空護眼模式！再點一下可回到莫蘭迪亮藍日光視界。`,
+        nav: [
+          `專利情報與技術探勘`,
+          `技術商品化潛力評估`,
+          `產品開發與資源最佳化`,
+          `責任 AI 治理與防侵權框架`
+        ],
+        sources: `資料來源整合：Cypris 專利情報基準研究（2026 LLZO 固態電池與生物基聚醯胺測試）、Ocean Tomo / J.S. Held AI as IP™ 框架與 AI Disputes Monitor、Lumenci 逆向工程專利法理、EMI Group v. Cypress Semiconductor (104 F. Supp. 2d 370)、Festo Corp.、Graver Tank、TiVo v. EchoStar 及後發技術專利範圍研究。`,
+        m0Title: `模組一：專利情報與技術探勘 (PatentBERT / LLM Claims 解析與 TRL 評估)`,
+        m0Sub: `對比垂直化專利情報引擎 (Cypris) 與通用型語言模型於固態電解質與生質材料探勘的結構性落差`,
+        m0Kpis: [
+          [`Cypris 檢出專利`, `40+ 件`, `Test 1 涵蓋全維度 LLZO FTO`],
+          [`通用模型平均檢出`, `7.7 件`, `Claude 12 / ChatGPT 7 / Co-Pilot 4`],
+          [`Test 2 實證引證`, `100+ 筆`, `通用模型引證數為 0 筆`],
+          [`目前技術成熟度`, `TRL `, `互動式 Claims 依賴度評估`]
+        ],
+        m0ChartTitle: `Test 1 (LLZO 固態電解質) vs Test 2 (生物基聚醯胺) 檢出與引證數`,
+        m0ChartLabels: [`Cypris 垂直平台`, `Claude`, `ChatGPT`, `MS Co-Pilot`],
+        m0ChartDs1: `Test 1 檢出主動專利數`,
+        m0ChartDs2: `Test 2 具名專利引證數`,
+        m0TrlLabel: `技術成熟度 (TRL) 動態探勘模擬`,
+        m0ClaimBoxTitle: `PatentBERT 權利要求書 (Claims) 結構化拆解範例`,
+        m0ClaimText: `Solid Energies 專利圍籬 (US-12463245-B2 / US-11967678)：同時鎖定「LLZO-聚合物複合組成」、「梯度結構 (US-12283655-B2)」、「電極整合 (US-12463249-B2)」與「製程 (US-20230035720-A1)」，單一迴避設計無法解除組合 FTO 風險。`,
+        m1Title: `模組二：技術商品化潛力評估 (FTO 風險分級與 AI as IP™ 適配度)`,
+        m1Sub: `依據 Ocean Tomo AI as IP™ 價值構面與實證企業案例，衡量自由實施 (FTO) 風險與商業技術適配度`,
+        m1Kpis: [
+          [`AI 訴訟年複合成長`, `56.5%`, `近五年逾 350 件（2025 年達 84 件）`],
+          [`美國專利陪審團判賠`, `$4.19B`, `2024 年 72 案（單案最高 $857M）`],
+          [`Talking Rain 加速倍率`, `6X 提升`, `客製化 AI 研究代理加速專案推進`],
+          [`Market-Tech Fit 評分`, `88 / 100`, `高價值資料＋可防禦智慧財產`]
+        ],
+        m1ChartTitle: `AI as IP™ 商品化風險與價值雷達 (Data · Compute · Algorithms · FTO · Market Fit)`,
+        m1RadarLabels: [`專有資料價值`, `算力架構門檻`, `演算法可專利性`, `FTO 安全裕度`, `市場技術適配度`],
+        m1RadarDs1: `AI 治理強韌企業 (如 SEH / LANL)`,
+        m1RadarDs2: `AI Washing 裸奔風險專案`,
+        m1CaseTitle: `商品化實證案例庫 (Cypris 企業導入成果)`,
+        m2Title: `模組三：產品開發與資源最佳化 (OR 最佳化、Gantt 排程與 NSGA-III 帕累托前緣)`,
+        m2Sub: `結合運籌學 (OR) 與多目標演化演算法 NSGA-III，在研發預算、FTO 風險與上市時間間尋找最佳平衡`,
+        m2Kpis: [
+          [`最佳化目標維度`, `3 維前緣`, `Cost / FTO Risk / Time-to-Market`],
+          [`平均檢索週期縮減`, `數週 → 數日`, `NOV 力乘效應協作環境實證`],
+          [`Clean Room 隔離度`, `100% 獨立`, `雙團隊規格書隔離防止著作權污染`],
+          [`帕累托非支配解`, `18 組`, `依據下方權重即時高亮建議方案`]
+        ],
+        m2ChartTitle: `NSGA-III 多目標最佳化帕累托前緣 (研發成本 vs FTO 剩餘風險)`,
+        m2ChartX: `研發總成本指數 (Cost Index)`,
+        m2ChartY: `FTO 侵權殘餘風險 (%)`,
+        m2GanttTitle: `動態研發排程 Gantt（隨權重即時調度）`,
+        m2BudgetLbl: `研發資源與時間壓縮權重`,
+        m2RiskLbl: `FTO 零容忍與潔淨室合規權重`,
+        m3Title: `模組四：責任 AI 治理與防侵權框架 (真實判例、合法迴避 vs 偷換概念)`,
+        m3Sub: `從 Graver Tank、Festo、EMI v. Cypress 到 TiVo v. EchoStar：建立防止不法技術轉移與 AI 漂綠的專利局新管治邏輯`,
+        m3Kpis: [
+          [`均等論三步測試`, `F-W-R`, `Function / Way / Result 實質相同檢驗`],
+          [`合法迴避基準`, `實質差異`, `非僅表面替換或名稱更改 (Graver Tank)`],
+          [`禁反言例外門檻`, `不可預見`, `Festo 後發技術需證明申請時無法預見`],
+          [`AI 資產登錄機制`, `AI Register`, `Ocean Tomo 合理保密措施核心要求`]
+        ],
+        m3SafeTitle: `合法迴避設計 (Legitimate Design-Around)`,
+        m3SafeItems: [
+          `滿足「全要件原則」缺失或達成實質性結構差異，未能通過 Function-Way-Result 均等論測試。`,
+          `以合法購得之市售品進行耗盡原則下之拆解分析 (Quanta v. LG)，並檢查 EULA 合約條款 (Bowers v. Baystate)。`,
+          `採行雙團隊「潔淨室設計 (Clean Room)」，規格文件與程式碼實作完全物理隔離。`,
+          `依 Ocean Tomo 框架建立「AI 資產登記冊 (AI Asset Register)」，完整留存資料血統與存取權限證據。`
+        ],
+        m3RiskTitle: `偷換概念侵權 (Concept Swapping / 均等論陷阱)`,
+        m3RiskItems: [
+          `僅替換元件名稱、重排步驟順序或改用「鈦鎢合金 (Ti-W)」等表面等效材料，卻仍執行相同功能、方式與結果。`,
+          `忽略「後發技術 (After-Arising Tech)」在累積創新產業（半導體／軟體）仍可能落入原專利均等範圍 (Hughes Aircraft)。`,
+          `在 TiVo v. EchoStar 案中，迴避設計僅做微幅修改未達「非顯著不同 (not more than colorably different)」標準，遭判藐視法庭與鉅額罰款。`,
+          `未經審查將競爭者受保護訓練資料或未授權模型權重納入產品，觸發營業秘密侵害與雙重侵權責任。`
+        ],
+        m3GovTitle: `防範不法技術轉移與 AI 漂綠之專利局新管治邏輯`,
+        m3GovDesc: `針對 AI 輔助研發與跨國技術移轉，現代專利與智權治理應結合：(1)「時間凍結與揭露對價稽核」— 嚴格檢驗後發技術是否於申請日已可合理預見 (Festo) 與具備充分可實施性 (35 U.S.C. §112，如 EMI 案中氣化爆炸機制之物理可行性驗證)；(2)「董事會 AI 誠信監督 (AIQ Score™)」— 杜絕企業誇大 AI 技術能力之 AI Washing 風險；(3)「跨制度邊界聯防」— 同步核對專利耗盡、營業秘密合理保密措施與契約禁反言條款。`
+      },
+      'en': {
+        mainTitle: `AI & Patent Intelligence for <strong>Tech Commercialization</strong> & Responsible AI Governance — 3D Interstellar IP System`,
+        author: `Graduate Institute of Tech Management, NCHU｜Hoiman Cheng`,
+        kicker: `MORANDI COSMOS IP NAVIGATION v4.2`,
+        lblLang: `Language`,
+        autoPlay: `Auto-Play`,
+        autoStop: `Stop Cruise`,
+        tts: `Read Aloud`,
+        ttsStop: `Stop Audio`,
+        dayMode: `Day Mode`,
+        nightMode: `Night Mode`,
+        globeTitle: `3D Global IP Orbit Globe`,
+        globeSub: `Live IP intelligence triggers when a node faces you`,
+        telemetry: `INTERSTELLAR TELEMETRY`,
+        warpStable: `Orbit Locked · Scanning Node`,
+        warpJump: `Hyperspace Warp…`,
+        amoebaDay: `Hi! I am your IP Amoeba assistant. Click me to toggle Day / Night mode!`,
+        amoebaNight: `Switched to Deep-Space Night mode! Click again for bright Morandi Day mode.`,
+        nav: [
+          `Patent Mining & Tech Scouting`,
+          `Commercialization Potential`,
+          `R&D & Resource Optimization`,
+          `Responsible AI & Anti-Infringement`
+        ],
+        sources: `Sources: Cypris Patent Intelligence Benchmark (2026 LLZO & Bio-Polyamide studies), Ocean Tomo / J.S. Held AI as IP™ & AI Disputes Monitor, Lumenci Reverse Engineering Law, EMI Group v. Cypress (104 F. Supp. 2d 370), Festo Corp., Graver Tank, TiVo v. EchoStar, and After-Arising Technology scope analysis.`,
+        m0Title: `Module 1: Patent Intelligence & Tech Mining (PatentBERT / LLM Claims & TRL)`,
+        m0Sub: `Benchmarking purpose-built patent AI (Cypris) vs general-purpose LLMs on solid-state LLZO & bio-polyamide landscapes`,
+        m0Kpis: [
+          [`Cypris Patents Found`, `40+`, `Test 1 full LLZO FTO coverage`],
+          [`General LLM Avg.`, `7.7`, `Claude 12 / ChatGPT 7 / Co-Pilot 4`],
+          [`Test 2 Verified Citations`, `100+`, `General LLMs cited 0 patent IDs`],
+          [`Active Tech Readiness`, `TRL `, `Interactive claims dependency gauge`]
+        ],
+        m0ChartTitle: `Test 1 (LLZO Electrolytes) vs Test 2 (Bio-Polyamide) Coverage`,
+        m0ChartLabels: [`Cypris Vertical`, `Claude`, `ChatGPT`, `MS Co-Pilot`],
+        m0ChartDs1: `Test 1 Active Patents Found`,
+        m0ChartDs2: `Test 2 Cited Patent Numbers`,
+        m0TrlLabel: `Technology Readiness Level (TRL) Simulation`,
+        m0ClaimBoxTitle: `PatentBERT Structured Claim Decomposition`,
+        m0ClaimText: `Solid Energies Patent Fencing (US-12463245-B2 / US-11967678): Locks composition, gradient architecture (US-12283655-B2), electrode integration (US-12463249-B2), and manufacturing (US-20230035720-A1). A single design-around fails to clear portfolio FTO exposure.`,
+        m1Title: `Module 2: Commercialization Potential (FTO Risk & AI as IP™ Fit)`,
+        m1Sub: `Evaluating Freedom-to-Operate risk and Market-Tech Fit using Ocean Tomo AI as IP™ and enterprise case studies`,
+        m1Kpis: [
+          [`AI Litigation CAGR`, `56.5%`, `350+ cases in 5 yrs (84 in 2025)`],
+          [`2024 US Jury Verdicts`, `$4.19B`, `Across 72 cases (peak $857M)`],
+          [`Talking Rain Velocity`, `6X Gain`, `Bespoke AI agents scaled R&D`],
+          [`Market-Tech Fit Score`, `88 / 100`, `High data integrity + IP defensibility`]
+        ],
+        m1ChartTitle: `AI as IP™ Value & Risk Radar (Data · Compute · Algorithms · FTO · Fit)`,
+        m1RadarLabels: [`Proprietary Data`, `Compute Moat`, `Algorithm Patentability`, `FTO Margin`, `Market-Tech Fit`],
+        m1RadarDs1: `AI-Governed Leader (SEH / LANL)`,
+        m1RadarDs2: `AI-Washing Unprotected Venture`,
+        m1CaseTitle: `Verified Enterprise Commercialization Cases`,
+        m2Title: `Module 3: Product Dev & Resource Optimization (OR, Gantt & NSGA-III Pareto)`,
+        m2Sub: `Balancing R&D budget, FTO residual risk, and time-to-market via Operations Research and NSGA-III Pareto fronts`,
+        m2Kpis: [
+          [`Optimization Axes`, `3D Front`, `Cost / FTO Risk / Time-to-Market`],
+          [`Scouting Cycle Cut`, `Wks → Days`, `Proven in NOV force-multiplier workflow`],
+          [`Clean Room Isolation`, `100%`, `Two-team spec firewall blocks copyright taint`],
+          [`Pareto Optimal Solutions`, `18 Sets`, `Highlighted dynamically by sliders below`]
+        ],
+        m2ChartTitle: `NSGA-III Multi-Objective Pareto Frontier (Cost vs Residual FTO Risk)`,
+        m2ChartX: `R&D Cost Index`,
+        m2ChartY: `Residual FTO Risk (%)`,
+        m2GanttTitle: `Dynamic R&D Gantt Schedule`,
+        m2BudgetLbl: `Budget & Speed Compression Weight`,
+        m2RiskLbl: `Zero-Tolerance FTO & Clean-Room Weight`,
+        m3Title: `Module 4: Responsible AI Governance & Anti-Infringement Framework`,
+        m3Sub: `Precedent jurisprudence (Festo, Graver Tank, EMI v. Cypress, TiVo v. EchoStar): Design-around vs Concept Swapping`,
+        m3Kpis: [
+          [`Equivalents Test`, `F-W-R`, `Function / Way / Result substantial test`],
+          [`Design-Around Rule`, `Substantive`, `Not mere surface swaps (Graver Tank)`],
+          [`Estoppel Exception`, `Unforeseeable`, `Festo burden for after-arising tech`],
+          [`AI Governance Core`, `AI Register`, `Ocean Tomo reasonable measures standard`]
+        ],
+        m3SafeTitle: `Legitimate Design-Around`,
+        m3SafeItems: [
+          `Omits a claim element under the All-Elements Rule or achieves substantive architectural differences failing the F-W-R test.`,
+          `Lawful teardown under Patent Exhaustion (Quanta v. LG) after verifying EULA terms (Bowers v. Baystate).`,
+          `Two-team Clean Room engineering separating functional specification from independent implementation.`,
+          `Maintains an Ocean Tomo AI Asset Register documenting training data provenance and trade-secret controls.`
+        ],
+        m3RiskTitle: `Concept Swapping Infringement (DOE Trap)`,
+        m3RiskItems: [
+          `Renaming steps or swapping surface materials (e.g., Ti-W alloy disputes) while performing the same function, way, and result.`,
+          `Ignoring after-arising technology capture in fast-moving cumulative sectors (Hughes Aircraft).`,
+          `Cosmetic modifications in TiVo v. EchoStar deemed not more than colorably different, triggering contempt sanctions.`,
+          `Ingesting proprietary third-party data or unlicensed weights, compounding patent, copyright, and trade-secret liability.`
+        ],
+        m3GovTitle: `New Patent Office Governance Against Illicit Tech Transfer & AI Washing`,
+        m3GovDesc: `Combines (1) Temporal Claim Freezing & Enablement Audits (35 U.S.C. §112 physical operability, as tested in EMI v. Cypress), (2) Board AI Integrity Oversight (AIQ Score™) against AI Washing, and (3) Cross-Regime IP Screening across exhaustion, contracts, and trade secrets.`
+      },
+      'zh-CN': {
+        mainTitle: `AI 与专利情报驱动之<strong>技术商业化</strong>与责任 AI 治理 — 3D 星际智权航行系统`,
+        author: `国立中兴大学 科技管理研究所｜郑凯文 (Hoiman Cheng)`,
+        kicker: `MORANDI COSMOS IP NAVIGATION v4.2`,
+        lblLang: `语系 / Language`,
+        autoPlay: `自动巡航`,
+        autoStop: `停止巡航`,
+        tts: `语音朗读`,
+        ttsStop: `停止朗读`,
+        dayMode: `白天模式`,
+        nightMode: `黑夜模式`,
+        globeTitle: `3D 全球智权轨迹地球仪`,
+        globeSub: `节点转至正面时自动触发即时智权解析`,
+        telemetry: `星际航行遥测 TELEMETRY`,
+        warpStable: `轨道稳定 · 星体扫描中`,
+        warpJump: `超空间跃迁中…`,
+        amoebaDay: `嗨！我是智权阿米巴助手，点击我可以切换「白天 / 黑夜」星际色彩模式哦！`,
+        amoebaNight: `已切换至深空护眼模式！再点一下可回到莫兰迪亮蓝日光视界。`,
+        nav: [`专利情报与技术勘探`, `技术商业化潜力评估`, `产品开发与资源最优化`, `责任 AI 治理与防侵权框架`],
+        sources: `资料来源整合：Cypris 专利情报基准研究（2026 LLZO 与生物基聚酰胺测试）、Ocean Tomo / J.S. Held AI as IP™ 与 AI Disputes Monitor、Lumenci 逆向工程法理、EMI Group v. Cypress、Festo、Graver Tank、TiVo v. EchoStar。`,
+        m0Title: `模块一：专利情报与技术勘探 (PatentBERT / LLM Claims 解析与 TRL 评估)`,
+        m0Sub: `对比垂直专利情报引擎 (Cypris) 与通用大模型在固态电解质与生物基材料领域的结构性差距`,
+        m0Kpis: [
+          [`Cypris 检出专利`, `40+ 件`, `Test 1 覆盖全维度 LLZO FTO`],
+          [`通用模型平均检出`, `7.7 件`, `Claude 12 / ChatGPT 7 / Co-Pilot 4`],
+          [`Test 2 实证引证`, `100+ 笔`, `通用模型引证数为 0 笔`],
+          [`当前技术成熟度`, `TRL `, `交互式 Claims 依赖度评估`]
+        ],
+        m0ChartTitle: `Test 1 (LLZO 固态电解质) vs Test 2 (生物基聚酰胺) 检出与引证数`,
+        m0ChartLabels: [`Cypris 垂直平台`, `Claude`, `ChatGPT`, `MS Co-Pilot`],
+        m0ChartDs1: `Test 1 检出主动专利数`,
+        m0ChartDs2: `Test 2 具名专利引证数`,
+        m0TrlLabel: `技术成熟度 (TRL) 动态勘探模拟`,
+        m0ClaimBoxTitle: `PatentBERT 权利要求书 (Claims) 结构化拆解范例`,
+        m0ClaimText: `Solid Energies 专利围栏 (US-12463245-B2 / US-11967678)：同时锁定组成、梯度结构、电极整合与制造工艺，单一规避设计无法解除组合 FTO 风险。`,
+        m1Title: `模块二：技术商业化潜力评估 (FTO 风险分级与 AI as IP™ 适配度)`,
+        m1Sub: `依据 Ocean Tomo AI as IP™ 价值维度与实证企业案例，衡量自由实施 (FTO) 风险与商业技术适配度`,
+        m1Kpis: [
+          [`AI 诉讼年复合增长`, `56.5%`, `近五年逾 350 件（2025 年 84 件）`],
+          [`美国专利陪审团判赔`, `$4.19B`, `2024 年 72 案（单案最高 $857M）`],
+          [`Talking Rain 加速倍率`, `6X 提升`, `定制化 AI 研究代理加速项目推进`],
+          [`Market-Tech Fit 评分`, `88 / 100`, `高价值数据＋可防御知识产权`]
+        ],
+        m1ChartTitle: `AI as IP™ 商业化风险与价值雷达`,
+        m1RadarLabels: [`专有数据价值`, `算力架构门槛`, `算法可专利性`, `FTO 安全裕度`, `市场技术适配度`],
+        m1RadarDs1: `AI 治理强韧企业 (SEH / LANL)`,
+        m1RadarDs2: `AI Washing 裸奔风险项目`,
+        m1CaseTitle: `商业化实证案例库`,
+        m2Title: `模块三：产品开发与资源最优化 (OR 最优化、Gantt 排程与 NSGA-III 帕累托前沿)`,
+        m2Sub: `结合运筹学 (OR) 与 NSGA-III 多目标算法，平衡研发预算、FTO 风险与上市时间`,
+        m2Kpis: [
+          [`最优化目标维度`, `3 维前沿`, `成本 / FTO 风险 / 上市时间`],
+          [`平均检索周期缩减`, `数周 → 数日`, `NOV 协作环境实证`],
+          [`Clean Room 隔离度`, `100% 独立`, `双团队规格书隔离防止版权污染`],
+          [`帕累托非支配解`, `18 组`, `依据下方权重即时高亮推荐方案`]
+        ],
+        m2ChartTitle: `NSGA-III 多目标最优化帕累托前沿 (研发成本 vs FTO 残余风险)`,
+        m2ChartX: `研发总成本指数`,
+        m2ChartY: `FTO 侵权残余风险 (%)`,
+        m2GanttTitle: `动态研发排程 Gantt`,
+        m2BudgetLbl: `研发资源与时间压缩权重`,
+        m2RiskLbl: `FTO 零容忍与洁净室合规权重`,
+        m3Title: `模块四：责任 AI 治理与防侵权框架 (真实判例、合法规避 vs 偷换概念)`,
+        m3Sub: `从 Graver Tank、Festo、EMI v. Cypress 到 TiVo v. EchoStar：建立防范非法技术转移的新管治逻辑`,
+        m3Kpis: [
+          [`等同原则三步测试`, `F-W-R`, `功能 / 方式 / 结果实质相同检验`],
+          [`合法规避基准`, `实质差异`, `非仅表面替换或更名 (Graver Tank)`],
+          [`禁止反悔例外`, `不可预见`, `Festo 后发技术需证明申请时不可预见`],
+          [`AI 资产登记机制`, `AI Register`, `Ocean Tomo 合理保密措施核心要求`]
+        ],
+        m3SafeTitle: `合法规避设计 (Legitimate Design-Around)`,
+        m3SafeItems: [
+          `满足全要件原则缺失或达成实质性结构差异，未通过 F-W-R 等同原则测试。`,
+          `基于专利权用尽原则拆解合法市售品 (Quanta v. LG)，并核查 EULA 约束 (Bowers v. Baystate)。`,
+          `实施双团队洁净室设计 (Clean Room)，完全隔离规格分析与代码实现。`,
+          `建立 AI 资产登记册 (AI Asset Register)，留存数据血统与保密措施证据。`
+        ],
+        m3RiskTitle: `偷换概念侵权 (Concept Swapping)`,
+        m3RiskItems: [
+          `仅更换零件名称或表面材料，仍以实质相同方式执行相同功能与结果。`,
+          `忽视后发技术在半导体/软件等累积创新行业中仍可能落入等同范围 (Hughes Aircraft)。`,
+          `TiVo v. EchoStar 案中微幅修改未达实质差异标准，导致藐视法庭重罚。`,
+          `非法使用受保护训练数据或模型权重，引发商业秘密与专利双重责任。`
+        ],
+        m3GovTitle: `防范非法技术转移与 AI 漂绿之专利局新管治逻辑`,
+        m3GovDesc: `整合时间冻结与可实施性审查（35 U.S.C. §112，如 EMI 案）、董事会 AIQ Score™ 治理，以及跨专利权用尽、契约与商业秘密的联动审查。`
+      },
+      'ja': {
+        mainTitle: `AI・特許インテリジェンス駆動の<strong>技術事業化</strong>と責任ある AI ガバナンス — 3D 星間知財航行システム`,
+        author: `国立中興大学 技術管理研究所｜鄭凱文 (Hoiman Cheng)`,
+        kicker: `MORANDI COSMOS IP NAVIGATION v4.2`,
+        lblLang: `言語 / Language`,
+        autoPlay: `自動巡航`,
+        autoStop: `巡航停止`,
+        tts: `音声読み上げ`,
+        ttsStop: `読み上げ停止`,
+        dayMode: `デイモード`,
+        nightMode: `ナイトモード`,
+        globeTitle: `3D 世界知財軌道グローブ`,
+        globeSub: `ノードが正面を向くとリアルタイム知財解析を表示`,
+        telemetry: `星間航行テレメトリ`,
+        warpStable: `軌道安定・スキャン中`,
+        warpJump: `ワープ遷移中…`,
+        amoebaDay: `こんにちは！知財アメーバ助手です。クリックで昼・夜モードを切り替えられます！`,
+        amoebaNight: `ディープスペース夜モードに切替済み！再度クリックで明るい昼モードに戻ります。`,
+        nav: [`特許情報・技術マイニング`, `技術事業化ポテンシャル`, `製品開発・資源最適化`, `責任 AI・侵害防止枠組み`],
+        sources: `出典：Cypris 特許インテリジェンス比較研究 (2026)、Ocean Tomo / J.S. Held AI as IP™ & AI Disputes Monitor、Lumenci リバースエンジニアリング法理、EMI v. Cypress、Festo、Graver Tank、TiVo v. EchoStar。`,
+        m0Title: `モジュール 1：特許情報・技術マイニング (PatentBERT / Claims 解析・TRL 評価)`,
+        m0Sub: `特化型特許 AI (Cypris) と汎用 LLM の LLZO 固体電解質・バイオポリアミド検索網羅性の構造比較`,
+        m0Kpis: [
+          [`Cypris 検出特許`, `40+ 件`, `Test 1 全方位 LLZO FTO 網羅`],
+          [`汎用 LLM 平均検出`, `7.7 件`, `Claude 12 / ChatGPT 7 / Co-Pilot 4`],
+          [`Test 2 特許引用数`, `100+ 件`, `汎用 LLM の特許番号引用は 0 件`],
+          [`技術成熟度`, `TRL `, `Claims 依存度シミュレーション`]
+        ],
+        m0ChartTitle: `Test 1 (LLZO 電解質) vs Test 2 (バイオポリアミド) 検出・引用比較`,
+        m0ChartLabels: [`Cypris 特化型`, `Claude`, `ChatGPT`, `MS Co-Pilot`],
+        m0ChartDs1: `Test 1 有効特許検出数`,
+        m0ChartDs2: `Test 2 個別特許引用数`,
+        m0TrlLabel: `技術成熟度 (TRL) シミュレーション`,
+        m0ClaimBoxTitle: `PatentBERT クレーム構造分解例`,
+        m0ClaimText: `Solid Energies の特許フェンシング (US-12463245-B2 等)：組成・勾配構造・電極統合・製法を多層防御。単一の回避設計では FTO リスクを解消不可。`,
+        m1Title: `モジュール 2：技術事業化ポテンシャル評価 (FTO リスク・AI as IP™ 適合度)`,
+        m1Sub: `Ocean Tomo AI as IP™ 指標と企業導入事例による FTO リスクおよび市場技術適合度評価`,
+        m1Kpis: [
+          [`AI 訴訟年平均成長率`, `56.5%`, `過去 5 年 350 件超 (2025 年 84 件)`],
+          [`2024 米国陪審評決額`, `$4.19B`, `72 件合計 (最高単件 $857M)`],
+          [`Talking Rain 開発速度`, `6 倍向上`, `専用 AI エージェントによる研究加速`],
+          [`Market-Tech Fit`, `88 / 100`, `独自データ資産＋高い知財防御力`]
+        ],
+        m1ChartTitle: `AI as IP™ 事業化価値・リスクレーダー`,
+        m1RadarLabels: [`独自データ価値`, `計算基盤障壁`, `アルゴリズム特許性`, `FTO 安全余裕`, `市場技術適合度`],
+        m1RadarDs1: `ガバナンス先進企業 (SEH / LANL)`,
+        m1RadarDs2: `AI Washing 無防備リスク案件`,
+        m1CaseTitle: `事業化実証ケーススタディ`,
+        m2Title: `モジュール 3：製品開発・資源最適化 (OR・Gantt・NSGA-III パレート最適)`,
+        m2Sub: `OR 最適化と NSGA-III 多目的アルゴリズムによるコスト・FTO リスク・市場投入時間の均衡`,
+        m2Kpis: [
+          [`最適化目的軸`, `3 次元`, `コスト / FTO リスク / 市場投入時間`],
+          [`調査期間短縮`, `数週間→数日`, `NOV 協働環境での実証効果`],
+          [`Clean Room 分離`, `100% 独立`, `仕様書と実装の二段階隔離`],
+          [`パレート最適解`, `18 パターン`, `下の重みスライダーで即時強調`]
+        ],
+        m2ChartTitle: `NSGA-III パレートフロンティア (開発コスト vs 残余 FTO リスク)`,
+        m2ChartX: `開発総コスト指数`,
+        m2ChartY: `残余 FTO リスク (%)`,
+        m2GanttTitle: `動的 R&D Gantt スケジュール`,
+        m2BudgetLbl: `予算・期間圧縮ウェイト`,
+        m2RiskLbl: `FTO ゼロトレランス・クリーンルーム重視度`,
+        m3Title: `モジュール 4：責任ある AI ガバナンス・侵害防止枠組み`,
+        m3Sub: `重要判例 (Festo, Graver Tank, EMI v. Cypress, TiVo v. EchoStar) に基づく合法回避設計 vs 概念すり替え`,
+        m3Kpis: [
+          [`均等論 3 要素テスト`, `F-W-R`, `機能・方法・結果の実質同一性`],
+          [`合法回避の基準`, `実質的差異`, `表層的置換の否定 (Graver Tank)`],
+          [`禁反言の例外`, `予見不能性`, `Festo 後発技術の立証責任`],
+          [`AI 資産管理`, `AI Register`, `Ocean Tomo 合理的秘密管理措置`]
+        ],
+        m3SafeTitle: `合法的回避設計 (Legitimate Design-Around)`,
+        m3SafeItems: [
+          `オールエレメンツ・ルールを満たさず、F-W-R テストに該当しない実質的構造変更を実現。`,
+          `特許消尽 (Quanta) と EULA 制約 (Bowers) を事前確認した適法リバースエンジニアリング。`,
+          `クリーンルーム設計により著作権および営業秘密の混入を遮断。`,
+          `AI 資産台帳 (AI Asset Register) による学習データ来歴とアクセス制御の記録。`
+        ],
+        m3RiskTitle: `概念すり替え侵害 (Concept Swapping)`,
+        m3RiskItems: [
+          `名称変更や表層的素材置換 (Ti-W 合金等の均等論争点) のみで同一機能・結果を得る行為。`,
+          `累積的技術革新分野での後発技術による均等論捕捉の見落とし (Hughes Aircraft)。`,
+          `TiVo v. EchoStar における軽微変更による法廷侮辱罪および巨額制裁金。`,
+          `無断学習データ流用による特許・著作権・営業秘密の複合侵害。`
+        ],
+        m3GovTitle: `不正技術移転と AI ウォッシングを防ぐ特許庁新ガバナンス論理`,
+        m3GovDesc: `出願時基準のクレーム解釈・実施可能性監査 (EMI 判例)、取締役会 AIQ Score™ 監督、および特許・契約・営業秘密の横断的ガバナンスを統合。`
+      },
+      'de': {
+        mainTitle: `KI- & Patentintelligenz für <strong>Tech-Kommerzialisierung</strong> & Responsible AI Governance — 3D IP-Navigation`,
+        author: `Graduate Institute of Tech Management, NCHU｜Hoiman Cheng`,
+        kicker: `MORANDI COSMOS IP NAVIGATION v4.2`,
+        lblLang: `Sprache`,
+        autoPlay: `Auto-Cruise`,
+        autoStop: `Stopp`,
+        tts: `Vorlesen`,
+        ttsStop: `Audio Stopp`,
+        dayMode: `Tagmodus`,
+        nightMode: `Nachtmodus`,
+        globeTitle: `3D Globaler IP-Orbit-Globus`,
+        globeSub: `Automatische Analyse bei Ausrichtung auf den Nutzer`,
+        telemetry: `INTERSTELLARE TELEMETRIE`,
+        warpStable: `Orbit stabil · Knoten-Scan`,
+        warpJump: `Hyperraum-Sprung…`,
+        amoebaDay: `Hallo! Ich bin der IP-Amöben-Assistent. Klick mich für den Tag-/Nachtmodus!`,
+        amoebaNight: `Nachtmodus aktiv! Erneut klicken für den hellen Morandi-Tagmodus.`,
+        nav: [`Patent-Mining & Scouting`, `Kommerzialisierung & FTO`, `F&E & NSGA-III Optimierung`, `Responsible AI & Recht`],
+        sources: `Quellen: Cypris Patent-Benchmark (2026), Ocean Tomo AI as IP™ & AI Disputes Monitor, Lumenci IP-Recht, EMI v. Cypress, Festo, Graver Tank, TiVo v. EchoStar.`,
+        m0Title: `Modul 1: Patentintelligenz & Tech-Mining (PatentBERT / Claims & TRL)`,
+        m0Sub: `Vergleich spezialisierter Patent-KI (Cypris) vs. allgemeine LLMs bei LLZO-Festkörperelektrolyten & Bio-Polyamiden`,
+        m0Kpis: [
+          [`Cypris Patente`, `40+`, `Test 1 vollständige LLZO-FTO-Abdeckung`],
+          [`Allg. LLM Schnitt`, `7,7`, `Claude 12 / ChatGPT 7 / Co-Pilot 4`],
+          [`Test 2 Zitate`, `100+`, `Allgemeine LLMs: 0 Patentnummern`],
+          [`Reifegrad`, `TRL `, `Interaktive Claims-Abhängigkeit`]
+        ],
+        m0ChartTitle: `Test 1 (LLZO) vs. Test 2 (Bio-Polyamid) Abdeckung`,
+        m0ChartLabels: [`Cypris Vertikal`, `Claude`, `ChatGPT`, `MS Co-Pilot`],
+        m0ChartDs1: `Test 1 Aktive Patente`,
+        m0ChartDs2: `Test 2 Zitierte Patente`,
+        m0TrlLabel: `Technology Readiness Level (TRL) Simulation`,
+        m0ClaimBoxTitle: `PatentBERT Claim-Strukturanalyse`,
+        m0ClaimText: `Solid Energies Patent-Fencing (US-12463245-B2 u.a.): Schützt Zusammensetzung, Gradientenarchitektur, Elektrodenintegration und Fertigung gleichzeitig.`,
+        m1Title: `Modul 2: Kommerzialisierungspotenzial (FTO-Risiko & AI as IP™ Fit)`,
+        m1Sub: `Bewertung von FTO-Risiken und Market-Tech-Fit anhand des Ocean Tomo AI as IP™ Frameworks`,
+        m1Kpis: [
+          [`KI-Klagen CAGR`, `56,5%`, `350+ Fälle in 5 Jahren (84 in 2025)`],
+          [`US-Jury-Urteile 2024`, `$4,19 Mrd.`, `Über 72 Verfahren (Spitze $857M)`],
+          [`Talking Rain Tempo`, `6X`, `Spezialisierte KI-Agenten im F&E-Einsatz`],
+          [`Market-Tech Fit`, `88 / 100`, `Starke Datenbasis + IP-Schutz`]
+        ],
+        m1ChartTitle: `AI as IP™ Wert- & Risiko-Radar`,
+        m1RadarLabels: [`Eigene Daten`, `Compute-Schutz`, `Algorithmus-Patente`, `FTO-Marge`, `Market-Tech Fit`],
+        m1RadarDs1: `KI-Governance-Vorreiter`,
+        m1RadarDs2: `AI-Washing-Risikoprojekt`,
+        m1CaseTitle: `Verifizierte Unternehmensbeispiele`,
+        m2Title: `Modul 3: Produktentwicklung & Ressourcenoptimierung (OR, Gantt & NSGA-III)`,
+        m2Sub: `Ausgleich von Budget, FTO-Restrisiko und Time-to-Market via Operations Research & NSGA-III Pareto-Front`,
+        m2Kpis: [
+          [`Optimierungsachsen`, `3D-Front`, `Kosten / FTO-Risiko / Time-to-Market`],
+          [`Scouting-Zyklus`, `Wo. → Tage`, `Nachgewiesen bei NOV`],
+          [`Clean-Room-Trennung`, `100%`, `Zwei-Team-Firewall gegen Kopiervorwürfe`],
+          [`Pareto-Lösungen`, `18 Sets`, `Dynamisch hervorgehoben durch Regler`]
+        ],
+        m2ChartTitle: `NSGA-III Pareto-Front (F&E-Kosten vs. FTO-Restrisiko)`,
+        m2ChartX: `F&E-Kostenindex`,
+        m2ChartY: `FTO-Restrisiko (%)`,
+        m2GanttTitle: `Dynamischer F&E-Gantt-Zeitplan`,
+        m2BudgetLbl: `Budget- & Zeitdruck-Gewichtung`,
+        m2RiskLbl: `FTO-Nulltoleranz & Clean-Room-Gewicht`,
+        m3Title: `Modul 4: Responsible AI Governance & Anti-Infringement`,
+        m3Sub: `Leitentscheidungen (Festo, Graver Tank, EMI v. Cypress, TiVo v. EchoStar): Design-Around vs. Concept Swapping`,
+        m3Kpis: [
+          [`Äquivalenztest`, `F-W-R`, `Function / Way / Result Prüfung`],
+          [`Design-Around-Regel`, `Substanziell`, `Keine oberflächlichen Tausche (Graver Tank)`],
+          [`Estoppel-Ausnahme`, `Unvorhersehbar`, `Festo-Last für spätere Technologien`],
+          [`KI-Governance`, `AI Register`, `Ocean Tomo Angemessene Schutzmaßnahmen`]
+        ],
+        m3SafeTitle: `Legitimes Design-Around`,
+        m3SafeItems: [
+          `Lässt ein Anspruchsmerkmal weg oder erzielt substanzielle strukturelle Unterschiede außerhalb der F-W-R-Äquivalenz.`,
+          `Rechtmäßiges Teardown nach Patenterschöpfung (Quanta) und Prüfung der EULA (Bowers).`,
+          `Clean-Room-Verfahren trennt Spezifikation strikt von der Implementierung.`,
+          `Führt ein AI Asset Register für Trainingsdaten-Herkunft und Geschäftsgeheimnisse.`
+        ],
+        m3RiskTitle: `Concept Swapping Verletzung`,
+        m3RiskItems: [
+          `Umbenennen von Schritten oder oberflächlicher Materialtausch bei gleicher Funktion, Art und Wirkung.`,
+          `Missachtung von After-Arising-Technologien in kumulativen Branchen (Hughes Aircraft).`,
+          `Unwesentliche Änderungen wie in TiVo v. EchoStar führen zu Missachtungsstrafen.`,
+          `Unautorisierte Übernahme geschützter Daten/Gewichte erzeugt mehrfache Haftung.`
+        ],
+        m3GovTitle: `Neue Patentamt-Governance gegen unrechtmäßigen Technologietransfer`,
+        m3GovDesc: `Verbindet zeitliche Anspruchsbindung & Ausführbarkeitsprüfung (EMI v. Cypress), Board-Überwachung (AIQ Score™) gegen AI Washing sowie IP-Compliance über Patente, Verträge und Geschäftsgeheimnisse hinweg.`
+      },
+      'fr': {
+        mainTitle: `IA & Veille Brevets pour la <strong>Commercialisation</strong> & Gouvernance IA Responsable — Système Spatial 3D`,
+        author: `Graduate Institute of Tech Management, NCHU｜Hoiman Cheng`,
+        kicker: `MORANDI COSMOS IP NAVIGATION v4.2`,
+        lblLang: `Langue`,
+        autoPlay: `Croisière Auto`,
+        autoStop: `Arrêter`,
+        tts: `Lecture Vocale`,
+        ttsStop: `Arrêter Audio`,
+        dayMode: `Mode Jour`,
+        nightMode: `Mode Nuit`,
+        globeTitle: `Globe Orbital PI 3D`,
+        globeSub: `Analyse automatique lorsque le nœud fait face à vous`,
+        telemetry: `TÉLÉMÉTRIE INTERSTELLAIRE`,
+        warpStable: `Orbite stable · Analyse`,
+        warpJump: `Saut hyperspatial…`,
+        amoebaDay: `Salut ! Je suis l'assistant Amibe PI. Cliquez-moi pour basculer Jour / Nuit !`,
+        amoebaNight: `Mode Nuit activé ! Cliquez encore pour revenir au mode Jour Morandi.`,
+        nav: [`Veille Brevets & Mining`, `Potentiel Commercial & FTO`, `R&D & Optimisation NSGA-III`, `Gouvernance IA & Droit`],
+        sources: `Sources : Étude Cypris (2026), Ocean Tomo AI as IP™ & AI Disputes Monitor, Lumenci, EMI v. Cypress, Festo, Graver Tank, TiVo v. EchoStar.`,
+        m0Title: `Module 1 : Veille Brevets & Exploration (PatentBERT / Claims & TRL)`,
+        m0Sub: `Comparaison entre l'IA dédiée aux brevets (Cypris) et les LLM généralistes sur les électrolytes LLZO et polyamides biosourcés`,
+        m0Kpis: [
+          [`Brevets Cypris`, `40+`, `Test 1 couverture FTO LLZO complète`],
+          [`Moyenne LLM`, `7,7`, `Claude 12 / ChatGPT 7 / Co-Pilot 4`],
+          [`Citations Test 2`, `100+`, `0 numéro de brevet cité par les LLM`],
+          [`Maturité Tech`, `TRL `, `Évaluation interactive des revendications`]
+        ],
+        m0ChartTitle: `Test 1 (LLZO) vs Test 2 (Polyamide biosourcé)`,
+        m0ChartLabels: [`Cypris Vertical`, `Claude`, `ChatGPT`, `MS Co-Pilot`],
+        m0ChartDs1: `Test 1 Brevets actifs trouvés`,
+        m0ChartDs2: `Test 2 Brevets cités`,
+        m0TrlLabel: `Simulation du niveau TRL`,
+        m0ClaimBoxTitle: `Décomposition structurée PatentBERT`,
+        m0ClaimText: `Stratégie de clôture Solid Energies (US-12463245-B2, etc.) : verrouille composition, architecture gradient, intégration électrode et procédé.`,
+        m1Title: `Module 2 : Potentiel de Commercialisation (Risque FTO & AI as IP™)`,
+        m1Sub: `Évaluation de la liberté d'exploitation (FTO) et de l'adéquation marché-technologie selon Ocean Tomo AI as IP™`,
+        m1Kpis: [
+          [`TCAC Litiges IA`, `56,5%`, `350+ affaires en 5 ans (84 en 2025)`],
+          [`Verdicts US 2024`, `$4,19 Md`, `72 procès (record $857M)`],
+          [`Vélocité Talking Rain`, `6X`, `Agents IA sur mesure pour la R&D`],
+          [`Score Market-Tech Fit`, `88 / 100`, `Données exclusives + défendabilité PI`]
+        ],
+        m1ChartTitle: `Radar Valeur & Risque AI as IP™`,
+        m1RadarLabels: [`Données propres`, `Barrière Compute`, `Brevetabilité Algo`, `Marge FTO`, `Adéquation Marché`],
+        m1RadarDs1: `Leader Gouvernance IA`,
+        m1RadarDs2: `Projet exposé à l'AI Washing`,
+        m1CaseTitle: `Études de cas d'entreprises`,
+        m2Title: `Module 3 : Développement Produit & Optimisation (RO, Gantt & NSGA-III)`,
+        m2Sub: `Équilibre coût R&D, risque FTO résiduel et délai de mise sur le marché par recherche opérationnelle et NSGA-III`,
+        m2Kpis: [
+          [`Axes d'optimisation`, `Front 3D`, `Coût / Risque FTO / Délai`],
+          [`Cycle de veille`, `Sem. → Jours`, `Validé chez NOV`],
+          [`Isolation Clean Room`, `100%`, `Pare-feu à deux équipes`],
+          [`Solutions Pareto`, `18 Jeux`, `Mise en avant dynamique ci-dessous`]
+        ],
+        m2ChartTitle: `Frontière de Pareto NSGA-III (Coût R&D vs Risque FTO résiduel)`,
+        m2ChartX: `Indice de coût R&D`,
+        m2ChartY: `Risque FTO résiduel (%)`,
+        m2GanttTitle: `Planning Gantt R&D Dynamique`,
+        m2BudgetLbl: `Poids Budget & Compression Délai`,
+        m2RiskLbl: `Poids Tolérance Zéro FTO & Clean Room`,
+        m3Title: `Module 4 : Gouvernance IA Responsable & Anti-Contrefaçon`,
+        m3Sub: `Jurisprudence (Festo, Graver Tank, EMI v. Cypress, TiVo v. EchoStar) : Contournement légitime vs substitution conceptuelle`,
+        m3Kpis: [
+          [`Test d'équivalence`, `F-W-R`, `Fonction / Moyen / Résultat`],
+          [`Règle Design-Around`, `Substantiel`, `Pas de changement de surface (Graver Tank)`],
+          [`Exception Estoppel`, `Imprévisible`, `Preuve Festo pour tech ultérieure`],
+          [`Registre IA`, `AI Register`, `Mesures raisonnables Ocean Tomo`]
+        ],
+        m3SafeTitle: `Contournement Légitime (Design-Around)`,
+        m3SafeItems: [
+          `Omet un élément de revendication ou diffère substantiellement hors du test F-W-R.`,
+          `Rétro-ingénierie licite après épuisement (Quanta) et audit de licence EULA (Bowers).`,
+          `Conception en salle blanche (Clean Room) séparant spécification et implémentation.`,
+          `Registre d'actifs IA (AI Asset Register) traçant l'origine des données.`
+        ],
+        m3RiskTitle: `Substitution Conceptuelle (Contrefaçon)`,
+        m3RiskItems: [
+          `Renommer des étapes ou substituer des matériaux en gardant même fonction, moyen et résultat.`,
+          `Ignorer la capture des technologies ultérieures dans les industries cumulatives (Hughes).`,
+          `Modifications cosmétiques sanctionnées pour outrage dans TiVo v. EchoStar.`,
+          `Ingestion non autorisée de données ou poids protégés cumulant les responsabilités.`
+        ],
+        m3GovTitle: `Nouvelle Gouvernance des Offices contre le Transfert Illicite`,
+        m3GovDesc: `Allie gel temporel des revendications et audit de faisabilité (EMI v. Cypress), supervision AIQ Score™ contre l'AI Washing, et contrôle croisé brevets-contrats-secrets d'affaires.`
+      }
+    };
+
+    const JURISDICTIONS = [
+      {
+        code: `USPTO`, lat: 38.8, lon: -77.0,
+        badge: `$4.19B / 2024`,
+        names: { 'zh-TW': `美國專利商標局 (USPTO)`, 'en': `USPTO (United States)`, 'zh-CN': `美国专利商标局 (USPTO)`, 'ja': `米国特許商標庁 (USPTO)`, 'de': `USPTO (USA)`, 'fr': `USPTO (États-Unis)` },
+        descs: {
+          'zh-TW': `2024 年 72 件專利陪審團判賠總額達 $4.19B；AI 訴訟近五年 CAGR 56.5% (350+ 案)。適用 Festo、Graver Tank 與 35 U.S.C. §112 嚴格可實施性標準。`,
+          'en': `2024 US jury verdicts hit $4.19B across 72 cases; AI litigation 56.5% CAGR (350+ cases). Governed by Festo, Graver Tank & §112 enablement.`,
+          'zh-CN': `2024 年 72 件专利陪审团判赔总额达 $4.19B；AI 诉讼 CAGR 56.5%。适用 Festo、Graver Tank 与 §112 可实施性标准。`,
+          'ja': `2024 年米国陪審評決は 72 件で $4.19B、AI 訴訟 CAGR 56.5%。Festo・Graver Tank・§112 実施可能要件が中核。`,
+          'de': `2024 US-Jury-Urteile $4,19 Mrd. (72 Fälle); KI-Klagen 56,5% CAGR. Festo, Graver Tank & §112 maßgeblich.`,
+          'fr': `Verdicts US 2024 : $4,19 Md sur 72 procès ; litiges IA TCAC 56,5%. Régis par Festo, Graver Tank et §112.`
+        }
+      },
+      {
+        code: `EPO`, lat: 48.1, lon: 11.6,
+        badge: `EU Interop`,
+        names: { 'zh-TW': `歐洲專利局 (EPO)`, 'en': `EPO (Europe)`, 'zh-CN': `欧洲专利局 (EPO)`, 'ja': `欧州特許庁 (EPO)`, 'de': `EPA / EPO (Europa)`, 'fr': `OEB / EPO (Europe)` },
+        descs: {
+          'zh-TW': `強調歐盟法定軟體互通逆向工程權（部分超越 EULA 限制），且生質聚醯胺領域面臨 Arkema / Evonik 與亞洲新進者之化學路徑競爭。`,
+          'en': `Statutory EU software interoperability rights can override restrictive EULAs; bio-polyamide incumbents (Arkema, Evonik) face alternative routes.`,
+          'zh-CN': `欧盟法定软件互通逆向权可限制 EULA 禁止条款；生物基聚酰胺领域面临传统热解与发酵新路线的竞争。`,
+          'ja': `EU 法定の相互運用性リバースエンジニアリング権が EULA 制限に優先し得る。バイオポリアミドでは Arkema 等が先行。`,
+          'de': `Gesetzliche EU-Interoperabilitätsrechte können restriktive EULAs überstimmen; Bio-Polyamid-Wettbewerb (Arkema, Evonik).`,
+          'fr': `Les droits légaux d'interopérabilité UE peuvent primer sur les CLUF restrictifs ; concurrence dans les polyamides biosourcés.`
+        }
+      },
+      {
+        code: `CNIPA`, lat: 39.9, lon: 116.4,
+        badge: `Emerging IP`,
+        names: { 'zh-TW': `中國國家知識產權局 (CNIPA)`, 'en': `CNIPA (China)`, 'zh-CN': `中国国家知识产权局 (CNIPA)`, 'ja': `中国国家知識産権局 (CNIPA)`, 'de': `CNIPA (China)`, 'fr': `CNIPA (Chine)` },
+        descs: {
+          'zh-TW': `Cypris Test 2 揭露金發科技 (Kingfa 8–10 件) 與浙江新和成 (4–6 件) 藉發酵與呋喃二甲酸新路線顛覆傳統蓖麻油供應鏈。`,
+          'en': `Cypris Test 2 uncovered Kingfa (8–10 filings) & Zhejiang NHU (4–6) pioneering fermentation/FDCA routes absent from general LLM outputs.`,
+          'zh-CN': `Cypris Test 2 揭示金发科技 (8–10 件) 与浙江新和成 (4–6 件) 借发酵与呋喃二甲酸新路线颠覆蓖麻油供应链。`,
+          'ja': `Cypris Test 2 で汎用 LLM が見落とした Kingfa (8–10 件) や Zhejiang NHU (4–6 件) の新化学ルートを特定。`,
+          'de': `Cypris Test 2 deckte Kingfa (8–10) & Zhejiang NHU (4–6) mit neuen Fermentationsrouten auf, die LLMs übersahen.`,
+          'fr': `Cypris Test 2 a révélé Kingfa (8–10) et Zhejiang NHU (4–6) sur de nouvelles voies fermentaires absentes des LLM.`
+        }
+      },
+      {
+        code: `TIPO`, lat: 25.0, lon: 121.5,
+        badge: `Semiconductor`,
+        names: { 'zh-TW': `台灣智慧財產局 (TIPO)`, 'en': `TIPO (Taiwan)`, 'zh-CN': `台湾智慧财产局 (TIPO)`, 'ja': `台湾知的財産局 (TIPO)`, 'de': `TIPO (Taiwan)`, 'fr': `TIPO (Taïwan)` },
+        descs: {
+          'zh-TW': `全球半導體與電池材料關鍵節點；鴻海/SolidEdge Li-S 與累積創新產業高度仰賴 Clean Room 設計與 FTO 預警防禦。`,
+          'en': `Critical semiconductor & Li-S battery hub (Hon Hai/SolidEdge filings); cumulative R&D relies on Clean Room & early FTO defense.`,
+          'zh-CN': `全球半导体与电池材料关键节点；累计创新产业高度依赖洁净室设计与 FTO 预警防御。`,
+          'ja': `半導体・蓄電池の重要拠点。累積的イノベーション分野ではクリーンルーム設計と早期 FTO 防御が不可欠。`,
+          'de': `Zentraler Halbleiter- & Batterie-Hub; kumulative F&E erfordert Clean-Room-Compliance und frühe FTO-Abwehr.`,
+          'fr': `Pôle clé semi-conducteurs et batteries ; la R&D cumulative exige des salles blanches et une défense FTO précoce.`
+        }
+      },
+      {
+        code: `JPO`, lat: 35.7, lon: 139.7,
+        badge: `Materials R&D`,
+        names: { 'zh-TW': `日本特許廳 (JPO)`, 'en': `JPO (Japan)`, 'zh-CN': `日本特许厅 (JPO)`, 'ja': `日本国特許庁 (JPO)`, 'de': `JPO (Japan)`, 'fr': `JPO (Japon)` },
+        descs: {
+          'zh-TW': `SEH 半導體材料與 Toray 聚醯胺重鎮；透過每週自動化情報監測與專屬研究簡報強化跨國母子公司 R&D 決策。`,
+          'en': `Semiconductor materials (SEH) & polyamide hub (Toray); weekly automated patent monitoring aligns cross-border parent R&D.`,
+          'zh-CN': `SEH 半导体材料与东丽聚酰胺重镇；通过自动化情报周报强化跨国研发决策。`,
+          'ja': `SEH 半導体材料・東レ等のポリアミド拠点。週次自動監視とカスタム調査報告で日米 R&D 連携を強化。`,
+          'de': `Halbleitermaterialien (SEH) & Polyamid-Zentrum (Toray); wöchentliches Patent-Monitoring stärkt globale F&E.`,
+          'fr': `Pôle matériaux semi-conducteurs (SEH) et polyamides (Toray) ; veille automatisée hebdomadaire pour la R&D.`
+        }
+      }
+    ];
+
+    const PRECEDENTS = [
+      {
+        name: `EMI Group v. Cypress (104 F. Supp. 2d 370)`,
+        tag: `字面不侵權 / 均等論 / §112 無效`,
+        summary: `EMI 專利請求項限定「光學吸收難熔過渡金屬」(純金屬)，Cypress 改採鈦鎢合金 (Ti-W alloy) 被認定不構成字面與均等侵權；同時法院認定請求項所載「氣化誘發爆炸」物理機制不具實用性 (§101) 與可實施性 (§112) 而無效。`,
+        lesson: `對策：專利審查與 FTO 需檢驗「申請時技術凍結」與物理可行性，避免浮誇技術描述導致無效。`
+      },
+      {
+        name: `Graver Tank v. Linde Air (339 U.S. 605)`,
+        tag: `均等論 F-W-R 基礎判例`,
+        summary: `確立「實質相同功能 (Function)、實質相同方式 (Way)、實質相同結果 (Result)」三步檢驗；僅將鹼土金屬矽酸鹽表面替換為錳矽酸鹽之偷換概念行為，仍構成均等侵權。`,
+        lesson: `對策：合法迴避設計必須改變運作原理或省略核心元件，不可僅替換表面參數。`
+      },
+      {
+        name: `Festo Corp. v. Shoketsu (535 U.S. 722)`,
+        tag: `申請歷史禁反言 / 後發技術`,
+        summary: `專利權人於審查期間為克服先前技術所作之限縮修正，原則上放棄中間範圍；但針對修正當時「客觀不可預見 (unforeseeable)」之後發技術 (After-Arising Tech)，仍保留均等論主張空間。`,
+        lesson: `對策：追蹤審查歷程修正紀錄，是識別對手專利圍籬缺口與後發技術風險的核心關鍵。`
+      },
+      {
+        name: `TiVo Inc. v. EchoStar Corp. (646 F.3d 869)`,
+        tag: `迴避設計合法性 / 藐視法庭`,
+        summary: `被告在禁制令後宣稱完成軟體迴避設計，但聯邦巡迴上訴法院認定修改後產品與原侵權版本僅具「微幅表面差異 (not more than colorably different)」，維持藐視法庭裁定與數億美元賠償。`,
+        lesson: `對策：迴避設計應導入 Clean Room 與專家模擬檢驗，確保新架構遠離原請求項實質邊界。`
+      }
+    ];
+
+    const CASES = [
+      { org: `Talking Rain`, metric: `6X 專案推進速度`, detail: `部署客製化 AI 研究代理執行專利檢索與技術勘探，大幅替代 $600/hr 外部檢索成本。` },
+      { org: `PDI International`, metric: `早期攔截衝突專利`, detail: `建立每週競品專利代理監測，避免研發投入 1–2 年後才發現專利已被佔據。` },
+      { org: `Los Alamos (LANL)`, metric: `Innovation Scorecards`, detail: `於設計衝刺啟動前整合專利、文獻與市場訊號，加速技術授權與衍生新創。` },
+      { org: `NOV & Glen Raven`, metric: `數週縮減至數日`, detail: `建立防火牆保護的共享知識空間與力乘效應 (Force Multiplication) 協作工作流。` }
+    ];
+
+    let activeChart = null;
+    let autoPlayTimer = null;
+
+    // ============== THREE.JS INTERSTELLAR COSMOS SCENE ==============
+    let cosmosRenderer, cosmosScene, cosmosCamera, starField;
+    const planets = [];
+    const planetTargets = [
+      { pos: new THREE.Vector3(-14, 2, -18), cam: new THREE.Vector3(-7, 2.5, -2), color: 0x5c8aa8, ring: true },
+      { pos: new THREE.Vector3(15, -3, -32), cam: new THREE.Vector3(8, -1.5, -16), color: 0x5f8f82, ring: false },
+      { pos: new THREE.Vector3(-12, -5, -48), cam: new THREE.Vector3(-5, -3.5, -31), color: 0x9c7b63, ring: true },
+      { pos: new THREE.Vector3(14, 4, -64), cam: new THREE.Vector3(7, 3.5, -47), color: 0x7c749c, ring: true }
+    ];
+    const camGoal = new THREE.Vector3(-7, 2.5, -2);
+    const lookGoal = new THREE.Vector3(-14, 2, -18);
+    const currentLook = new THREE.Vector3(-14, 2, -18);
+
+    function initCosmos() {
+      const canvas = document.getElementById(`cosmos-canvas`);
+      if (!canvas || typeof THREE === `undefined`) return;
+
+      cosmosRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      cosmosRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      cosmosRenderer.setSize(window.innerWidth, window.innerHeight);
+
+      cosmosScene = new THREE.Scene();
+      cosmosCamera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 220);
+      cosmosCamera.position.copy(camGoal);
+
+      const amb = new THREE.AmbientLight(0xffffff, 0.85);
+      cosmosScene.add(amb);
+      const dir = new THREE.DirectionalLight(0xdceeff, 1.35);
+      dir.position.set(18, 22, 16);
+      cosmosScene.add(dir);
+
+      // Morandi soft starfield
+      const starGeo = new THREE.BufferGeometry();
+      const count = 900;
+      const posArr = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        posArr[i * 3] = (Math.random() - 0.5) * 140;
+        posArr[i * 3 + 1] = (Math.random() - 0.5) * 90;
+        posArr[i * 3 + 2] = -Math.random() * 110 + 15;
+      }
+      starGeo.setAttribute(`position`, new THREE.BufferAttribute(posArr, 3));
+      const starMat = new THREE.PointsMaterial({ color: 0x7ca2bd, size: 0.28, transparent: true, opacity: 0.65 });
+      starField = new THREE.Points(starGeo, starMat);
+      cosmosScene.add(starField);
+
+      // Giant Planets for the 4 modules
+      planetTargets.forEach((cfg, idx) => {
+        const grp = new THREE.Group();
+        grp.position.copy(cfg.pos);
+
+        const sphere = new THREE.Mesh(
+          new THREE.SphereGeometry(4.8 + idx * 0.35, 36, 36),
+          new THREE.MeshStandardMaterial({
+            color: cfg.color,
+            roughness: 0.52,
+            metalness: 0.12
+          })
+        );
+        grp.add(sphere);
+
+        const wire = new THREE.Mesh(
+          new THREE.SphereGeometry(5.1 + idx * 0.35, 18, 14),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.14 })
+        );
+        grp.add(wire);
+
+        if (cfg.ring) {
+          const ring = new THREE.Mesh(
+            new THREE.RingGeometry(6.8, 9.2, 48),
+            new THREE.MeshBasicMaterial({ color: cfg.color, side: THREE.DoubleSide, transparent: true, opacity: 0.28 })
+          );
+          ring.rotation.x = Math.PI * 0.38;
+          ring.rotation.y = 0.25;
+          grp.add(ring);
+        }
+        cosmosScene.add(grp);
+        planets.push(grp);
+      });
+
+      window.addEventListener(`resize`, () => {
+        if (!cosmosRenderer || !cosmosCamera) return;
+        cosmosCamera.aspect = window.innerWidth / window.innerHeight;
+        cosmosCamera.updateProjectionMatrix();
+        cosmosRenderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      function animateCosmos() {
+        requestAnimationFrame(animateCosmos);
+        planets.forEach((p, i) => {
+          p.rotation.y += 0.0022 + i * 0.0005;
+        });
+        if (starField) starField.rotation.z += 0.00025;
+        cosmosCamera.position.lerp(camGoal, 0.055);
+        currentLook.lerp(lookGoal, 0.055);
+        cosmosCamera.lookAt(currentLook);
+        cosmosRenderer.render(cosmosScene, cosmosCamera);
+      }
+      animateCosmos();
+    }
+
+    // ============== THREE.JS 3D GLOBAL IP GLOBE ==============
+    let globeRenderer, globeScene, globeCamera, globeGroup;
+    let globeAutoSpin = true;
+    let isDraggingGlobe = false;
+    let prevPointerX = 0;
+    const nodeMeshes = [];
+
+    function latLonToVec3(lat, lon, r) {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lon + 180) * (Math.PI / 180);
+      return new THREE.Vector3(
+        -r * Math.sin(phi) * Math.cos(theta),
+        r * Math.cos(phi),
+        r * Math.sin(phi) * Math.sin(theta)
+      );
+    }
+
+    function initGlobe() {
+      const canvas = document.getElementById(`globe-canvas`);
+      if (!canvas || typeof THREE === `undefined`) return;
+      const w = canvas.parentElement ? canvas.parentElement.clientWidth : 320;
+      const h = canvas.parentElement ? canvas.parentElement.clientHeight : 300;
+
+      globeRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      globeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      globeRenderer.setSize(w, h);
+
+      globeScene = new THREE.Scene();
+      globeCamera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
+      globeCamera.position.set(0, 0.4, 4.1);
+      globeCamera.lookAt(0, 0, 0);
+
+      globeScene.add(new THREE.AmbientLight(0xffffff, 0.95));
+      const gDir = new THREE.DirectionalLight(0xeef6ff, 0.9);
+      gDir.position.set(3, 4, 5);
+      globeScene.add(gDir);
+
+      globeGroup = new THREE.Group();
+      globeScene.add(globeGroup);
+
+      const sphereMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(1.18, 36, 36),
+        new THREE.MeshStandardMaterial({ color: 0xdce8f2, roughness: 0.72, metalness: 0.05 })
+      );
+      globeGroup.add(sphereMesh);
+
+      const graticule = new THREE.Mesh(
+        new THREE.SphereGeometry(1.186, 18, 12),
+        new THREE.MeshBasicMaterial({ color: 0x5c7f99, wireframe: true, transparent: true, opacity: 0.22 })
+      );
+      globeGroup.add(graticule);
+
+      // Plot IP Jurisdiction Nodes
+      JURISDICTIONS.forEach((j, idx) => {
+        const marker = new THREE.Mesh(
+          new THREE.SphereGeometry(0.055, 16, 16),
+          new THREE.MeshBasicMaterial({ color: idx === 0 ? 0xa64b4b : 0x3c5a6e })
+        );
+        marker.position.copy(latLonToVec3(j.lat, j.lon, 1.22));
+        marker.userData = { idx };
+        globeGroup.add(marker);
+        nodeMeshes.push(marker);
+      });
+
+      // Load real Natural Earth vector coastlines via allowed CDN TopoJSON
+      fetch(`https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json`)
+        .then(r => r.json())
+        .then(topo => {
+          if (typeof topojson === `undefined`) return;
+          const geo = topojson.feature(topo, topo.objects.countries);
+          const lineMat = new THREE.LineBasicMaterial({ color: 0x466d88, transparent: true, opacity: 0.65 });
+          geo.features.forEach(feat => {
+            const coords = feat.geometry.type === `Polygon` ? [feat.geometry.coordinates] : feat.geometry.coordinates;
+            coords.forEach(poly => {
+              poly.forEach(ring => {
+                const pts = [];
+                for (let i = 0; i < ring.length; i += 2) {
+                  pts.push(latLonToVec3(ring[i][1], ring[i][0], 1.192));
+                }
+                if (pts.length > 2) {
+                  globeGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat));
+                }
+              });
+            });
+          });
+        })
+        .catch(() => { /* fallback graticule already active */ });
+
+      canvas.addEventListener(`pointerdown`, (e) => {
+        isDraggingGlobe = true;
+        globeAutoSpin = false;
+        prevPointerX = e.clientX;
+      });
+      window.addEventListener(`pointermove`, (e) => {
+        if (!isDraggingGlobe || !globeGroup) return;
+        const dx = e.clientX - prevPointerX;
+        prevPointerX = e.clientX;
+        globeGroup.rotation.y += dx * 0.008;
+      });
+      window.addEventListener(`pointerup`, () => { isDraggingGlobe = false; });
+
+      function animateGlobe() {
+        requestAnimationFrame(animateGlobe);
+        if (globeAutoSpin && globeGroup) {
+          globeGroup.rotation.y += 0.0045;
+        }
+        // Detect which jurisdiction node faces the camera (+Z)
+        let bestIdx = STATE.jurisdictionIdx;
+        let maxZ = -99;
+        const wp = new THREE.Vector3();
+        nodeMeshes.forEach((m, i) => {
+          m.getWorldPosition(wp);
+          if (wp.z > maxZ) {
+            maxZ = wp.z;
+            bestIdx = i;
+          }
+        });
+        if (globeAutoSpin && bestIdx !== STATE.jurisdictionIdx) {
+          updateJurisdictionCard(bestIdx);
+        }
+        globeRenderer.render(globeScene, globeCamera);
+      }
+      animateGlobe();
+      updateJurisdictionCard(0);
+    }
+
+    function updateJurisdictionCard(idx) {
+      STATE.jurisdictionIdx = idx;
+      const j = JURISDICTIONS[idx] || JURISDICTIONS[0];
+      const lang = STATE.lang;
+      const codeEl = document.getElementById(`globe-active-code`);
+      const nameEl = document.getElementById(`globe-node-name`);
+      const metEl = document.getElementById(`globe-node-metric`);
+      const descEl = document.getElementById(`globe-node-desc`);
+      if (codeEl) codeEl.textContent = j.code;
+      if (nameEl) nameEl.textContent = j.names[lang] || j.names[`zh-TW`];
+      if (metEl) metEl.textContent = j.badge;
+      if (descEl) descEl.textContent = j.descs[lang] || j.descs[`zh-TW`];
+
+      nodeMeshes.forEach((m, i) => {
+        m.material.color.setHex(i === idx ? 0xa64b4b : 0x466d88);
+        m.scale.setScalar(i === idx ? 1.45 : 1);
+      });
+      document.querySelectorAll(`.globe-aside .seg-btn`).forEach((b, i) => {
+        b.classList.toggle(`active`, i === idx);
+      });
+    }
+
+    function focusJurisdiction(idx) {
+      globeAutoSpin = false;
+      const j = JURISDICTIONS[idx];
+      if (globeGroup && j) {
+        const targetLonRad = -(j.lon + 90) * (Math.PI / 180);
+        globeGroup.rotation.y = targetLonRad;
+      }
+      updateJurisdictionCard(idx);
+      setTimeout(() => { globeAutoSpin = true; }, 4500);
+    }
+
+    // ============== MODULE RENDERING ==============
+    function selectModule(idx) {
+      STATE.moduleIdx = idx;
+      document.querySelectorAll(`.nav-pill`).forEach((el, i) => el.classList.toggle(`active`, i === idx));
+
+      const tgt = planetTargets[idx] || planetTargets[0];
+      camGoal.copy(tgt.cam);
+      lookGoal.copy(tgt.pos);
+
+      const warpEl = document.getElementById(`txt-warp-status`);
+      const coordEl = document.getElementById(`txt-planet-coords`);
+      const t = I18N[STATE.lang];
+      if (warpEl) warpEl.textContent = t.warpJump;
+      if (coordEl) coordEl.textContent = `SECTOR α-0${idx + 1}`;
+      setTimeout(() => {
+        if (warpEl) warpEl.textContent = I18N[STATE.lang].warpStable;
+      }, 650);
+
+      renderActiveModule();
+      persistState();
+    }
+
+    function renderActiveModule() {
+      const stage = document.getElementById(`module-stage`);
+      if (!stage) return;
+      const t = I18N[STATE.lang];
+      if (activeChart) { activeChart.destroy(); activeChart = null; }
+
+      if (STATE.moduleIdx === 0) {
+        stage.innerHTML = `
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">${t.m0Title}</h2>
+              <p class="panel-subtitle">${t.m0Sub}</p>
+            </div>
+            <span class="badge good">PatentBERT + LLM</span>
+          </div>
+          <div class="kpi-grid">
+            ${t.m0Kpis.map((k, i) => `
+              <div class="kpi-card">
+                <div class="kpi-label">${k[0]}</div>
+                <div class="kpi-value">${i === 3 ? k[1] + STATE.trlInput : k[1]}</div>
+                <div class="kpi-caption">${k[2]}</div>
+              </div>
+            `).join(``)}
+          </div>
+          <div class="two-col">
+            <div class="sub-card">
+              <h3>${t.m0ChartTitle}</h3>
+              <div class="chart-box"><canvas id="mod-chart"></canvas></div>
+            </div>
+            <div class="sub-card">
+              <h3>${t.m0ClaimBoxTitle}</h3>
+              <p style="font-size:0.86rem; color:var(--on-surface-variant); margin-top:0;">${t.m0ClaimText}</p>
+              <div class="slider-field" style="margin-top:var(--space-md);">
+                <div class="slider-head">
+                  <label for="trl-slider">${t.m0TrlLabel}</label>
+                  <strong id="trl-readout">TRL ${STATE.trlInput}</strong>
+                </div>
+                <input type="range" id="trl-slider" min="1" max="9" value="${STATE.trlInput}" oninput="onTrlChange(this.value)">
+              </div>
+              <div style="font-size:0.8rem; color:var(--secondary);" id="trl-advice">
+                ${STATE.trlInput >= 6 ? `TRL 6–9：進入試產與商轉前夕，必須執行完整專利圍籬與 40+ 筆 FTO 檢核。` : `TRL 1–5：早期材料與製程探索，應運用垂直專利代理識別空白領域 (Whitespace)。`}
+              </div>
+            </div>
+          </div>`;
+        buildChartM0(t);
+      } else if (STATE.moduleIdx === 1) {
+        stage.innerHTML = `
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">${t.m1Title}</h2>
+              <p class="panel-subtitle">${t.m1Sub}</p>
+            </div>
+            <span class="badge warn">AI as IP™</span>
+          </div>
+          <div class="kpi-grid">
+            ${t.m1Kpis.map(k => `
+              <div class="kpi-card">
+                <div class="kpi-label">${k[0]}</div>
+                <div class="kpi-value">${k[1]}</div>
+                <div class="kpi-caption">${k[2]}</div>
+              </div>
+            `).join(``)}
+          </div>
+          <div class="two-col">
+            <div class="sub-card">
+              <h3>${t.m1ChartTitle}</h3>
+              <div class="chart-box"><canvas id="mod-chart"></canvas></div>
+            </div>
+            <div class="sub-card">
+              <h3>${t.m1CaseTitle}</h3>
+              <table class="data-table">
+                <thead><tr><th>Enterprise</th><th>Impact</th><th>Outcome</th></tr></thead>
+                <tbody>
+                  ${CASES.map(c => `<tr><td><strong>${c.org}</strong></td><td><span class="badge good">${c.metric}</span></td><td>${c.detail}</td></tr>`).join(``)}
+                </tbody>
+              </table>
+            </div>
+          </div>`;
+        buildChartM1(t);
+      } else if (STATE.moduleIdx === 2) {
+        const fastShift = Math.round((100 - STATE.budgetWeight) * 0.15);
+        const safeWidth = Math.round(28 + STATE.riskWeight * 0.25);
+        stage.innerHTML = `
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">${t.m2Title}</h2>
+              <p class="panel-subtitle">${t.m2Sub}</p>
+            </div>
+            <span class="badge">OR + NSGA-III</span>
+          </div>
+          <div class="kpi-grid">
+            ${t.m2Kpis.map(k => `
+              <div class="kpi-card">
+                <div class="kpi-label">${k[0]}</div>
+                <div class="kpi-value">${k[1]}</div>
+                <div class="kpi-caption">${k[2]}</div>
+              </div>
+            `).join(``)}
+          </div>
+          <div class="two-col">
+            <div class="sub-card">
+              <h3>${t.m2ChartTitle}</h3>
+              <div class="chart-box"><canvas id="mod-chart"></canvas></div>
+            </div>
+            <div class="sub-card">
+              <h3>${t.m2GanttTitle}</h3>
+              <div class="slider-field">
+                <div class="slider-head"><label for="budget-slider">${t.m2BudgetLbl}</label><span id="budget-val">${STATE.budgetWeight}%</span></div>
+                <input type="range" id="budget-slider" min="20" max="90" value="${STATE.budgetWeight}" oninput="onOptChange('budget', this.value)">
+              </div>
+              <div class="slider-field">
+                <div class="slider-head"><label for="risk-slider">${t.m2RiskLbl}</label><span id="risk-val">${STATE.riskWeight}%</span></div>
+                <input type="range" id="risk-slider" min="20" max="95" value="${STATE.riskWeight}" oninput="onOptChange('risk', this.value)">
+              </div>
+              <div style="margin-top:var(--space-md);">
+                <div class="gantt-row"><span>1. AI FTO 掃描</span><div class="gantt-track"><div class="gantt-bar" style="left:0%; width:26%;"></div></div></div>
+                <div class="gantt-row"><span>2. Clean Room</span><div class="gantt-track"><div class="gantt-bar" style="left:22%; width:${safeWidth}%; background:var(--secondary);"></div></div></div>
+                <div class="gantt-row"><span>3. 原型驗證</span><div class="gantt-track"><div class="gantt-bar" style="left:${38 + fastShift}%; width:32%; background:var(--data-3);"></div></div></div>
+                <div class="gantt-row"><span>4. 專利佈局上市</span><div class="gantt-track"><div class="gantt-bar" style="left:${66 + fastShift}%; width:28%; background:var(--data-4);"></div></div></div>
+              </div>
+            </div>
+          </div>`;
+        buildChartM2(t);
+      } else {
+        const p = PRECEDENTS[STATE.precedentIdx] || PRECEDENTS[0];
+        stage.innerHTML = `
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">${t.m3Title}</h2>
+              <p class="panel-subtitle">${t.m3Sub}</p>
+            </div>
+            <span class="badge danger">Anti-Infringement</span>
+          </div>
+          <div class="kpi-grid">
+            ${t.m3Kpis.map(k => `
+              <div class="kpi-card">
+                <div class="kpi-label">${k[0]}</div>
+                <div class="kpi-value">${k[1]}</div>
+                <div class="kpi-caption">${k[2]}</div>
+              </div>
+            `).join(``)}
+          </div>
+          <div class="sub-card" style="margin-bottom:var(--space-md);">
+            <div class="seg-bar">
+              ${PRECEDENTS.map((item, idx) => `<button type="button" class="seg-btn ${idx === STATE.precedentIdx ? `active` : ``}" onclick="selectPrecedent(${idx})">${item.name.split(` (`)[0]}</button>`).join(``)}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+              <strong>${p.name}</strong>
+              <span class="badge">${p.tag}</span>
+            </div>
+            <p style="margin:0 0 6px; font-size:0.86rem;">${p.summary}</p>
+            <div style="font-size:0.82rem; color:var(--primary); font-weight:500;">${p.lesson}</div>
+          </div>
+          <div class="compare-grid" style="margin-bottom:var(--space-md);">
+            <div class="compare-box safe">
+              <h3 style="margin:0 0 8px; font-size:0.95rem; color:var(--positive);">${t.m3SafeTitle}</h3>
+              <ul style="margin:0; padding-left:18px; font-size:0.82rem; color:var(--on-surface-variant);">
+                ${t.m3SafeItems.map(li => `<li style="margin-bottom:4px;">${li}</li>`).join(``)}
+              </ul>
+            </div>
+            <div class="compare-box risk">
+              <h3 style="margin:0 0 8px; font-size:0.95rem; color:var(--error);">${t.m3RiskTitle}</h3>
+              <ul style="margin:0; padding-left:18px; font-size:0.82rem; color:var(--on-surface-variant);">
+                ${t.m3RiskItems.map(li => `<li style="margin-bottom:4px;">${li}</li>`).join(``)}
+              </ul>
+            </div>
+          </div>
+          <div class="sub-card" style="border-left:4px solid var(--primary);">
+            <h3 style="margin:0 0 6px; font-size:0.95rem;">${t.m3GovTitle}</h3>
+            <p style="margin:0; font-size:0.84rem; color:var(--on-surface-variant);">${t.m3GovDesc}</p>
+          </div>`;
+      }
+      if (typeof lucide !== `undefined`) lucide.createIcons();
+    }
+
+    function buildChartM0(t) {
+      const ctx = document.getElementById(`mod-chart`);
+      if (!ctx || typeof Chart === `undefined`) return;
+      const cs = getComputedStyle(document.documentElement);
+      activeChart = new Chart(ctx, {
+        type: `bar`,
+        data: {
+          labels: t.m0ChartLabels,
+          datasets: [
+            { label: t.m0ChartDs1, data: [42, 12, 7, 4], backgroundColor: cs.getPropertyValue(`--data-1`).trim(), borderRadius: 4 },
+            { label: t.m0ChartDs2, data: [104, 0, 0, 0], backgroundColor: cs.getPropertyValue(`--data-2`).trim(), borderRadius: 4 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: `bottom` } } }
+      });
+    }
+
+    function buildChartM1(t) {
+      const ctx = document.getElementById(`mod-chart`);
+      if (!ctx || typeof Chart === `undefined`) return;
+      const cs = getComputedStyle(document.documentElement);
+      activeChart = new Chart(ctx, {
+        type: `radar`,
+        data: {
+          labels: t.m1RadarLabels,
+          datasets: [
+            { label: t.m1RadarDs1, data: [92, 84, 86, 89, 88], borderColor: cs.getPropertyValue(`--data-1`).trim(), backgroundColor: `rgba(70,109,136,0.22)` },
+            { label: t.m1RadarDs2, data: [38, 45, 29, 25, 42], borderColor: cs.getPropertyValue(`--error`).trim(), backgroundColor: `rgba(166,75,75,0.16)` }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100 } }, plugins: { legend: { position: `bottom` } } }
+      });
+    }
+
+    function buildChartM2(t) {
+      const ctx = document.getElementById(`mod-chart`);
+      if (!ctx || typeof Chart === `undefined`) return;
+      const cs = getComputedStyle(document.documentElement);
+      const pts = [];
+      for (let i = 0; i < 18; i++) {
+        const cost = 30 + i * 4;
+        const risk = Math.max(4, Math.round(78 * Math.exp(-0.045 * (cost - 28))));
+        pts.push({ x: cost, y: risk });
+      }
+      const targetCost = Math.round(30 + (100 - STATE.budgetWeight) * 0.55 + STATE.riskWeight * 0.25);
+      let bestIdx = 0;
+      let minDist = 999;
+      pts.forEach((p, idx) => {
+        const d = Math.abs(p.x - targetCost);
+        if (d < minDist) { minDist = d; bestIdx = idx; }
+      });
+
+      activeChart = new Chart(ctx, {
+        type: `scatter`,
+        data: {
+          datasets: [
+            { label: `NSGA-III Pareto Front`, data: pts, showLine: true, borderColor: cs.getPropertyValue(`--data-1`).trim(), backgroundColor: cs.getPropertyValue(`--data-2`).trim(), pointRadius: pts.map((_, i) => i === bestIdx ? 9 : 4) }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { title: { display: true, text: t.m2ChartX } },
+            y: { title: { display: true, text: t.m2ChartY }, min: 0, max: 85 }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    // ============== INTERACTIVE HANDLERS ==============
+    function onTrlChange(val) {
+      STATE.trlInput = Number(val);
+      renderActiveModule();
+      persistState();
+    }
+
+    function onOptChange(kind, val) {
+      if (kind === `budget`) STATE.budgetWeight = Number(val);
+      if (kind === `risk`) STATE.riskWeight = Number(val);
+      renderActiveModule();
+      persistState();
+    }
+
+    function selectPrecedent(idx) {
+      STATE.precedentIdx = idx;
+      renderActiveModule();
+      persistState();
+    }
+
+    function toggleTheme() {
+      STATE.theme = STATE.theme === `day` ? `night` : `day`;
+      applyTheme();
+      persistState();
+    }
+
+    function applyTheme() {
+      document.documentElement.setAttribute(`data-theme`, STATE.theme);
+      const t = I18N[STATE.lang];
+      const btnTxt = document.getElementById(`txt-theme`);
+      const amoeba = document.getElementById(`amoeba-speech`);
+      if (btnTxt) btnTxt.textContent = STATE.theme === `day` ? t.dayMode : t.nightMode;
+      if (amoeba) amoeba.textContent = STATE.theme === `day` ? t.amoebaDay : t.amoebaNight;
+      if (starField) {
+        starField.material.color.setHex(STATE.theme === `day` ? 0x5c84a1 : 0xa3d1f5);
+      }
+      renderActiveModule();
+    }
+
+    function setLanguage(lang) {
+      STATE.lang = I18N[lang] ? lang : `zh-TW`;
+      const sel = document.getElementById(`lang-select`);
+      if (sel) sel.value = STATE.lang;
+      document.documentElement.setAttribute(`lang`, STATE.lang);
+
+      const t = I18N[STATE.lang];
+      const setHtml = (id, v) => { const el = document.getElementById(id); if (el) el.innerHTML = v; };
+      const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+
+      setHtml(`txt-main-title`, t.mainTitle);
+      setTxt(`txt-author`, t.author);
+      setTxt(`txt-kicker`, t.kicker);
+      setTxt(`lbl-lang`, t.lblLang);
+      setTxt(`txt-autoplay`, STATE.autoPlay ? t.autoStop : t.autoPlay);
+      setTxt(`txt-tts`, STATE.ttsActive ? t.ttsStop : t.tts);
+      setTxt(`txt-theme`, STATE.theme === `day` ? t.dayMode : t.nightMode);
+      setTxt(`txt-globe-title`, t.globeTitle);
+      setTxt(`txt-globe-sub`, t.globeSub);
+      setTxt(`txt-telemetry-label`, t.telemetry);
+      setTxt(`txt-warp-status`, t.warpStable);
+      setTxt(`txt-sources`, t.sources);
+      setTxt(`amoeba-speech`, STATE.theme === `day` ? t.amoebaDay : t.amoebaNight);
+      t.nav.forEach((n, i) => setTxt(`nav-label-${i}`, n));
+
+      updateJurisdictionCard(STATE.jurisdictionIdx);
+      renderActiveModule();
+      persistState();
+    }
+
+    function toggleAutoPlay() {
+      STATE.autoPlay = !STATE.autoPlay;
+      const btn = document.getElementById(`btn-autoplay`);
+      const txt = document.getElementById(`txt-autoplay`);
+      const t = I18N[STATE.lang];
+      if (btn) btn.classList.toggle(`active`, STATE.autoPlay);
+      if (txt) txt.textContent = STATE.autoPlay ? t.autoStop : t.autoPlay;
+
+      if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+      if (STATE.autoPlay) {
+        autoPlayTimer = setInterval(() => {
+          selectModule((STATE.moduleIdx + 1) % 4);
+        }, 5500);
+      }
+      persistState();
+    }
+
+    function toggleTTS() {
+      const btn = document.getElementById(`btn-tts`);
+      const txt = document.getElementById(`txt-tts`);
+      const t = I18N[STATE.lang];
+      if (typeof speechSynthesis === `undefined`) return;
+
+      if (STATE.ttsActive) {
+        speechSynthesis.cancel();
+        STATE.ttsActive = false;
+      } else {
+        speechSynthesis.cancel();
+        const stage = document.getElementById(`module-stage`);
+        const utter = new SpeechSynthesisUtterance(stage ? stage.innerText.slice(0, 420) : t.mainTitle);
+        utter.lang = STATE.lang;
+        utter.onend = () => {
+          STATE.ttsActive = false;
+          if (btn) btn.classList.remove(`active`);
+          if (txt) txt.textContent = I18N[STATE.lang].tts;
+        };
+        STATE.ttsActive = true;
+        speechSynthesis.speak(utter);
+      }
+      if (btn) btn.classList.toggle(`active`, STATE.ttsActive);
+      if (txt) txt.textContent = STATE.ttsActive ? t.ttsStop : t.tts;
+    }
+
+    // ============== STATE PERSISTENCE SHIM ==============
+    async function persistState() {
+      if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === `function`) {
+        await window.notebookAppApi.setAppState({ ...STATE });
+      }
+    }
+
+    async function boot() {
+      if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === `function`) {
+        try {
+          const saved = await window.notebookAppApi.getAppState();
+          if (saved && typeof saved === `object`) {
+            Object.assign(STATE, saved);
+          }
+        } catch (e) { /* ignore */ }
+      }
+      initCosmos();
+      initGlobe();
+      setLanguage(STATE.lang);
+      applyTheme();
+      selectModule(STATE.moduleIdx || 0);
+      if (typeof lucide !== `undefined`) lucide.createIcons();
+      if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === `function`) {
+        window.notebookAppApi.notifyAppReady();
+      }
+    }
+
+    window.addEventListener(`DOMContentLoaded`, boot);
+  </script>
+</body>
+</html>

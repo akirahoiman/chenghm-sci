@@ -1,0 +1,3798 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="carbon">
+  <title>SmartHML-Studio｜基於智慧供應鏈與 AI 之混合製造物流排程優化與干擾管理決策支援系統</title>
+
+  <!-- Approved Google Fonts (Noto Sans TC + IBM Plex Sans + IBM Plex Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Approved KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.2/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.18.2/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.18.2/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Approved Chart.js & Lucide Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* 1. Carbon Base + MBOA Blue-White High-Precision Palette */
+      --background: #ffffff;
+      --surface-container-low: #f0f9ff;     /* Ice pale blue tint */
+      --surface-container: #f8fafc;         /* Crisp alabaster slate */
+      --surface-container-high: #e0f2fe;    /* Layered pale sky */
+      --surface-mint: #e6f4ea;              /* Mint pale green highlight */
+      --surface-amber: #fef3c7;             /* Soft warning surface */
+      --surface-red: #fee2e2;               /* Soft alert surface */
+
+      /* Ink */
+      --on-surface: #0f172a;                /* Deep slate navy ink */
+      --on-surface-variant: #334155;        /* Charcoal secondary ink */
+      --on-surface-muted: #64748b;          /* Muted slate captions */
+
+      /* Rules */
+      --outline: #94a3b8;
+      --outline-variant: #cbd5e1;
+      --outline-subtle: #e2e8f0;
+
+      /* Accents */
+      --primary: #2563eb;                   /* Azure blue signal */
+      --primary-deep: #1e3a8a;              /* Deep royal navy */
+      --on-primary: #ffffff;
+      --primary-container: #dbeafe;
+      --on-primary-container: #1e3a8a;
+      --secondary: #0284c7;                 /* Sky cyan accent */
+      --tertiary: #15803d;                  /* Mint emerald positive */
+      --positive: #15803d;
+      --warning: #b45309;
+      --error: #dc2626;
+      --on-error: #ffffff;
+
+      /* Data Series */
+      --data-1: #2563eb;
+      --data-2: #1e3a8a;
+      --data-3: #15803d;
+      --data-4: #d97706;
+      --data-5: #dc2626;
+      --data-context: #94a3b8;
+
+      /* Fonts */
+      --font-headline: 'Noto Sans TC', 'IBM Plex Sans', sans-serif;
+      --font-body: 'Noto Sans TC', 'IBM Plex Sans', sans-serif;
+      --font-label: 'IBM Plex Mono', 'Noto Sans TC', monospace;
+
+      /* Radii (Carbon crisp geometry with subtle precision corners) */
+      --rounded: 0.25rem;
+      --rounded-lg: 0.375rem;
+      --rounded-full: 9999px;
+
+      /* Effects */
+      --shadow-1: 0 2px 8px rgb(15 23 42 / 0.08);
+      --shadow-2: 0 8px 24px rgb(15 23 42 / 0.12);
+      --rule: 1px solid var(--outline-subtle);
+      --rule-strong: 1px solid var(--outline-variant);
+      --field-rule: 1px solid var(--outline);
+      --indicator: 3px solid var(--primary);
+      --focus: #2563eb;
+
+      /* Type Scale (Dashboard/Tool) */
+      --display-size: clamp(1.125rem, 0.95rem + 0.65vw, 1.45rem);
+      --headline-size: clamp(1.05rem, 0.92rem + 0.45vw, 1.32rem);
+      --subhead-size: clamp(0.92rem, 0.85rem + 0.25vw, 1.05rem);
+      --body-size: clamp(0.8125rem, 0.78rem + 0.15vw, 0.9rem);
+      --label-size: 0.75rem;
+
+      /* Spacing Scale */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 0.875rem;
+      --space-lg: 1.25rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 240ms;
+      --dur-long: 380ms;
+    }
+
+    /* Base Reset */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow-x: clip;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header { position: static !important; }
+    button, input, select, textarea { font-family: inherit; }
+
+    /* Focus Rings */
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* 16:9 Widescreen 100vh Zero-Scroll Cockpit Shell */
+    .studio-shell {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      width: 100vw;
+      height: 100vh;
+      max-width: 100vw;
+      max-height: 100vh;
+      overflow: hidden;
+      background: var(--background);
+    }
+
+    /* Top Command Header */
+    .studio-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--primary-deep);
+      color: var(--on-primary);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      min-width: 0;
+    }
+
+    .brand-title-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 2px var(--space-sm);
+      background: var(--primary);
+      color: var(--on-primary);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      border-radius: var(--rounded);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--on-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .brand-subtitle {
+      margin: 0;
+      font-size: var(--label-size);
+      color: var(--primary-container);
+      opacity: 0.95;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Top-Right Controls */
+    .header-controls {
+      display: flex;
+      align-items: end;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    .ctrl-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ctrl-label {
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      color: var(--primary-container);
+      line-height: 1.1;
+    }
+
+    .ctrl-select, .ctrl-btn {
+      height: 36px;
+      min-height: 36px;
+      padding: 0 var(--space-md);
+      border-radius: var(--rounded);
+      border: 1px solid var(--secondary);
+      background: var(--background);
+      color: var(--on-surface);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+    }
+
+    .ctrl-select {
+      padding-right: var(--space-lg);
+    }
+
+    .ctrl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .ctrl-btn:hover {
+      background: var(--secondary);
+    }
+
+    .ctrl-btn-ghost {
+      background: var(--surface-container-low);
+      color: var(--primary-deep);
+      border-color: var(--primary-container);
+    }
+
+    .ctrl-btn-ghost:hover {
+      background: var(--primary-container);
+    }
+
+    /* Main Workspace Grid: Left 9 Panoramic Side Tags + Right Panoramic Stage */
+    .studio-body {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      min-height: 0;
+      overflow: hidden;
+      background: var(--surface-container);
+    }
+
+    /* Left Sidebar Navigation (9 Side Tags) */
+    .side-nav {
+      display: flex;
+      flex-direction: column;
+      background: var(--background);
+      border-right: var(--rule-strong);
+      padding: var(--space-sm);
+      gap: var(--space-xs);
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    .side-nav-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-xs) var(--space-sm);
+      border-bottom: var(--rule);
+      margin-bottom: var(--space-xs);
+    }
+
+    .side-nav-title {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--primary-deep);
+    }
+
+    .tag-btn {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--space-sm);
+      width: 100%;
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-sm);
+      background: var(--background);
+      color: var(--on-surface-variant);
+      border: 1px solid transparent;
+      border-left: 3px solid transparent;
+      border-radius: var(--rounded);
+      text-align: left;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+
+    .tag-btn:hover {
+      background: var(--surface-container-low);
+      color: var(--primary-deep);
+    }
+
+    .tag-btn.is-active {
+      background: var(--surface-container-low);
+      color: var(--primary-deep);
+      border-color: var(--primary-container);
+      border-left: var(--indicator);
+      font-weight: 600;
+    }
+
+    .tag-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: var(--rounded);
+      background: var(--surface-container);
+      color: var(--primary-deep);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+    }
+
+    .tag-btn.is-active .tag-num {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .tag-label {
+      font-size: var(--body-size);
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tag-chip {
+      font-family: var(--font-label);
+      font-size: 0.68rem;
+      padding: 1px 5px;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container);
+      color: var(--on-surface-muted);
+    }
+
+    .tag-btn.is-active .tag-chip {
+      background: var(--primary-container);
+      color: var(--primary-deep);
+    }
+
+    /* Live System Telemetry Mini-Box at Bottom of Sidebar */
+    .sidebar-telemetry {
+      margin-top: auto;
+      padding: var(--space-sm);
+      background: var(--surface-mint);
+      border: 1px solid var(--tertiary);
+      border-radius: var(--rounded);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: var(--label-size);
+    }
+
+    .telemetry-val {
+      font-family: var(--font-label);
+      font-weight: 700;
+      color: var(--tertiary);
+    }
+
+    /* Right Panoramic Stage with 60FPS Zoom In / Zoom Out Transition */
+    .stage-viewport {
+      position: relative;
+      padding: var(--space-md);
+      overflow: hidden;
+      min-height: 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface-container);
+    }
+
+    .stage-camera {
+      flex: 1;
+      min-height: 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      transform-origin: center center;
+      transition: transform var(--dur-long) var(--ease-out), opacity var(--dur-short) var(--ease-out);
+      will-change: transform, opacity;
+    }
+
+    .stage-camera.is-zooming-out {
+      transform: scale(0.95);
+      opacity: 0.15;
+    }
+
+    .stage-camera.is-zooming-in {
+      transform: scale(1.02);
+      opacity: 0.4;
+    }
+
+    .view-panel {
+      display: none;
+      flex: 1;
+      min-height: 0;
+      min-width: 0;
+      flex-direction: column;
+      gap: var(--space-sm);
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .view-panel.is-active {
+      display: flex;
+    }
+
+    /* Overview Panoramic Grid Mode (Optional Zoom Out All 9 Views) */
+    .overview-grid {
+      display: none;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(3, minmax(0, 1fr));
+      gap: var(--space-sm);
+      flex: 1;
+      min-height: 0;
+    }
+
+    .overview-grid.is-active {
+      display: grid;
+    }
+
+    .overview-card {
+      background: var(--background);
+      border: var(--rule-strong);
+      border-top: 3px solid var(--primary);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+    }
+
+    .overview-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-2);
+    }
+
+    /* View Header Banner */
+    .view-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--background);
+      border: var(--rule);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--rounded);
+      flex-wrap: wrap;
+    }
+
+    .view-head-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .view-eyebrow {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: 0.04em;
+    }
+
+    .view-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 700;
+      color: var(--on-surface);
+      line-height: 1.25;
+    }
+
+    .view-desc {
+      margin: 0;
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+    }
+
+    /* Reusable Carbon-MBOA Grid & Card Primitives */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-sm);
+      min-height: 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-sm);
+      min-height: 0;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-sm);
+      min-height: 0;
+    }
+
+    .grid-asymmetric {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: var(--space-sm);
+      min-height: 0;
+      flex: 1;
+    }
+
+    .grid-asymmetric-rev {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr);
+      gap: var(--space-sm);
+      min-height: 0;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--background);
+      border: var(--rule);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .card-pale {
+      background: var(--surface-container-low);
+      border-color: var(--primary-container);
+    }
+
+    .card-mint {
+      background: var(--surface-mint);
+      border-color: var(--tertiary);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      padding-bottom: var(--space-xs);
+      border-bottom: var(--rule);
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: var(--subhead-size);
+      font-weight: 700;
+      color: var(--primary-deep);
+    }
+
+    .card-tag {
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px var(--space-sm);
+      border-radius: var(--rounded-full);
+      background: var(--primary-container);
+      color: var(--primary-deep);
+      white-space: nowrap;
+    }
+
+    .card-tag-mint {
+      background: var(--surface-mint);
+      color: var(--tertiary);
+    }
+
+    .card-tag-warn {
+      background: var(--surface-amber);
+      color: var(--warning);
+    }
+
+    .card-tag-err {
+      background: var(--surface-red);
+      color: var(--error);
+    }
+
+    /* KPI Tile */
+    .kpi-tile {
+      background: var(--background);
+      border: var(--rule);
+      border-bottom: 2px solid var(--primary);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .kpi-tile.is-mint {
+      background: var(--surface-mint);
+      border-bottom-color: var(--tertiary);
+    }
+
+    .kpi-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      font-weight: 500;
+    }
+
+    .kpi-val {
+      font-family: var(--font-label);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary-deep);
+      line-height: 1.15;
+    }
+
+    .kpi-tile.is-mint .kpi-val {
+      color: var(--tertiary);
+    }
+
+    .kpi-sub {
+      font-size: 0.74rem;
+      color: var(--on-surface-muted);
+    }
+
+    /* Formula Box */
+    .formula-box {
+      background: var(--surface-container-low);
+      border-left: 3px solid var(--primary);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--rounded);
+      font-size: var(--body-size);
+      overflow-x: auto;
+    }
+
+    /* Buttons & Segmented Controls */
+    .seg-bar {
+      display: inline-flex;
+      gap: 4px;
+      background: var(--surface-container);
+      padding: 3px;
+      border-radius: var(--rounded);
+      border: var(--rule);
+      flex-wrap: wrap;
+    }
+
+    .seg-btn {
+      min-height: 32px;
+      padding: 4px var(--space-sm);
+      border: 0;
+      background: transparent;
+      color: var(--on-surface-variant);
+      font-size: var(--label-size);
+      font-weight: 600;
+      border-radius: var(--rounded);
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+
+    .seg-btn.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+      min-height: 36px;
+      padding: 0 var(--space-md);
+      background: var(--primary);
+      color: var(--on-primary);
+      border: 0;
+      border-radius: var(--rounded);
+      font-size: var(--label-size);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .action-btn:hover {
+      background: var(--primary-deep);
+    }
+
+    .action-btn.secondary {
+      background: var(--background);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .action-btn.secondary:hover {
+      background: var(--surface-container-low);
+    }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--label-size);
+    }
+
+    .data-table th {
+      background: var(--surface-container-low);
+      color: var(--primary-deep);
+      font-family: var(--font-label);
+      font-weight: 600;
+      text-align: left;
+      padding: var(--space-xs) var(--space-sm);
+      border-bottom: 2px solid var(--primary);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: var(--space-xs) var(--space-sm);
+      border-bottom: var(--rule);
+      color: var(--on-surface);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .data-table tr:nth-child(even) td {
+      background: var(--surface-container);
+    }
+
+    .data-table td.num, .data-table th.num {
+      text-align: right;
+      font-family: var(--font-label);
+    }
+
+    .data-table td.best-cell {
+      background: var(--surface-mint) !important;
+      color: var(--tertiary);
+      font-weight: 700;
+    }
+
+    /* Tag 2: 4-Layer Top-to-Bottom Architecture Stack */
+    .arch-stack-wrap {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: var(--space-sm);
+      flex: 1;
+      min-height: 0;
+    }
+
+    .arch-layers-col {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      background: var(--background);
+      border: var(--rule);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md);
+      overflow: hidden;
+    }
+
+    .arch-particle-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .arch-layer-box {
+      position: relative;
+      z-index: 2;
+      background: var(--surface-container-low);
+      border: 1px solid var(--primary-container);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+    }
+
+    .arch-layer-box:hover, .arch-layer-box.is-selected {
+      background: var(--background);
+      box-shadow: var(--shadow-1);
+      border-color: var(--primary);
+    }
+
+    .arch-layer-box.layer-4 { border-left-color: var(--tertiary); }
+    .arch-layer-box.layer-3 { border-left-color: var(--secondary); }
+    .arch-layer-box.layer-2 { border-left-color: var(--primary); }
+    .arch-layer-box.layer-1 { border-left-color: var(--primary-deep); }
+
+    .arch-modules-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .arch-pill {
+      font-size: 0.72rem;
+      padding: 2px 6px;
+      background: var(--background);
+      border: 1px solid var(--outline-variant);
+      border-radius: var(--rounded);
+      color: var(--on-surface);
+      font-weight: 500;
+    }
+
+    /* Tag 3: Physical Logistics Canvas & Map */
+    .logistics-stage {
+      position: relative;
+      flex: 1;
+      min-height: 290px;
+      background: var(--surface-container-low);
+      border: var(--rule-strong);
+      border-radius: var(--rounded-lg);
+      overflow: hidden;
+    }
+
+    .logistics-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Tag 4: 9 Constraints Interactive Cards */
+    .constraints-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-xs);
+    }
+
+    .constraint-card {
+      background: var(--background);
+      border: var(--rule);
+      border-left: 3px solid var(--outline);
+      border-radius: var(--rounded);
+      padding: var(--space-xs) var(--space-sm);
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+    }
+
+    .constraint-card:hover, .constraint-card.is-selected {
+      background: var(--surface-container-low);
+      border-left-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* Tag 7: 8 Dynamic Disruption Scenario Cards */
+    .scenario-grid-8 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-xs);
+    }
+
+    .scenario-card {
+      background: var(--background);
+      border: var(--rule);
+      border-top: 3px solid var(--outline-variant);
+      border-radius: var(--rounded);
+      padding: var(--space-sm);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      text-align: left;
+      transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+    }
+
+    .scenario-card:hover {
+      background: var(--surface-container-low);
+    }
+
+    .scenario-card.is-active {
+      background: var(--surface-container-low);
+      border-color: var(--primary);
+      border-top-color: var(--primary);
+      box-shadow: var(--shadow-1);
+    }
+
+    .scenario-card.is-active.is-alert {
+      border-top-color: var(--warning);
+    }
+
+    /* 3.5s Rescheduling Progress Track */
+    .resched-bar-wrap {
+      width: 100%;
+      height: 10px;
+      background: var(--surface-container);
+      border-radius: var(--rounded-full);
+      overflow: hidden;
+      border: var(--rule);
+    }
+
+    .resched-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--tertiary);
+      transition: width 100ms linear, background-color var(--dur-short) var(--ease-out);
+    }
+
+    .resched-bar-fill.is-running {
+      background: var(--primary);
+    }
+
+    /* Sliders & Inputs */
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: var(--label-size);
+    }
+
+    .slider-header label {
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+
+    .slider-val {
+      font-family: var(--font-label);
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* Chart Container Explicit Heights */
+    .chart-box {
+      position: relative;
+      width: 100%;
+      min-height: 210px;
+      flex: 1;
+    }
+
+    .chart-box-tall {
+      position: relative;
+      width: 100%;
+      min-height: 260px;
+      flex: 1;
+    }
+
+    /* Bottom Status Footer */
+    .studio-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: 4px var(--space-lg);
+      background: var(--background);
+      border-top: var(--rule);
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      color: var(--on-surface-muted);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: var(--rounded-full);
+      background: var(--surface-mint);
+      color: var(--tertiary);
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--tertiary);
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1100px) {
+      .studio-body {
+        grid-template-columns: 220px minmax(0, 1fr);
+      }
+      .grid-4, .scenario-grid-8 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .studio-shell {
+        height: auto;
+        min-height: 100vh;
+        max-height: none;
+        overflow: visible;
+      }
+      .studio-header {
+        grid-template-columns: 1fr;
+      }
+      .studio-body {
+        grid-template-columns: 1fr;
+        overflow: visible;
+      }
+      .side-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        border-right: 0;
+        border-bottom: var(--rule-strong);
+      }
+      .tag-btn {
+        min-width: 190px;
+        flex-shrink: 0;
+      }
+      .sidebar-telemetry {
+        display: none;
+      }
+      .grid-2, .grid-3, .grid-4, .grid-asymmetric, .grid-asymmetric-rev, .arch-stack-wrap, .constraints-grid, .scenario-grid-8, .overview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .studio-header { padding: var(--space-sm); }
+      .stage-viewport { padding: var(--space-sm); }
+      .brand-title { white-space: normal; font-size: 1rem; }
+      .brand-subtitle { white-space: normal; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="studio-shell">
+    <!-- TOP HEADER -->
+    <header class="studio-header">
+      <div class="brand-block">
+        <div class="brand-title-row">
+          <span class="brand-badge">SmartHML-Studio</span>
+          <h1 class="brand-title" id="ui-main-title">基於智慧供應鏈與 AI 之混合製造物流排程優化與干擾管理決策支援系統</h1>
+        </div>
+        <p class="brand-subtitle" id="ui-main-subtitle">國立陽明交通大學 科技管理研究所｜鄭凱文、林正旺｜原創多目標適應度函數｜GAC 混沌煙花序列 × DBA 離散蝙蝠演算法 × 動態干擾管理</p>
+      </div>
+
+      <div class="header-controls">
+        <div class="ctrl-group">
+          <label class="ctrl-label" for="global-scenario-select" id="lbl-global-scenario">動態干擾測試場景</label>
+          <select id="global-scenario-select" class="ctrl-select" onchange="selectScenario(this.value, true)">
+            <option value="0">1. 常規滿載穩態 (Baseline)</option>
+            <option value="1">2. 高併發訂單暴增 +200%</option>
+            <option value="2">3. Machine A 故障停機 2h</option>
+            <option value="3">4. S1 晶片供貨延遲 +50%</option>
+            <option value="4">5. 極端低載 50% 非滿載懲罰</option>
+            <option value="5">6. S2-M1 路線超載波動 140%</option>
+            <option value="6">7. VIP 急單動態插入 (FCFM)</option>
+            <option value="7">8. 複合風暴雙重干擾</option>
+          </select>
+        </div>
+
+        <div class="ctrl-group">
+          <label class="ctrl-label" for="lang-select" id="lbl-lang-switch">Google 翻譯 / Language</label>
+          <select id="lang-select" class="ctrl-select" onchange="switchLanguage(this.value)">
+            <option value="zh-TW">繁體中文 (Traditional)</option>
+            <option value="en">English</option>
+            <option value="zh-CN">简体中文 (Simplified)</option>
+            <option value="ja">日本語 (Japanese)</option>
+            <option value="de">Deutsch (German)</option>
+          </select>
+        </div>
+
+        <button type="button" class="ctrl-btn ctrl-btn-ghost" id="btn-overview-toggle" onclick="toggleOverview()">
+          <i data-lucide="layout-grid" width="15" height="15"></i>
+          <span id="txt-overview-btn">全景縮放總覽</span>
+        </button>
+
+        <button type="button" class="ctrl-btn" onclick="exportDiagnosticCSV()">
+          <i data-lucide="download" width="15" height="15"></i>
+          <span id="txt-export-btn">匯出報告</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="studio-body">
+      <!-- LEFT NAVIGATION (9 PANORAMIC SIDE TAGS) -->
+      <nav class="side-nav" aria-label="全景模組導覽">
+        <div class="side-nav-header">
+          <span class="side-nav-title" id="ui-nav-header">9 大全景決策模組</span>
+          <span class="card-tag">NYCU Ph.D.</span>
+        </div>
+
+        <button type="button" class="tag-btn is-active" data-tag="1" onclick="switchTag(1)">
+          <span class="tag-num">01</span>
+          <span class="tag-label" data-i18n="tag1">研究背景與產業痛點</span>
+          <span class="tag-chip">SCLI</span>
+        </button>
+        <button type="button" class="tag-btn" data-tag="2" onclick="switchTag(2)">
+          <span class="tag-num">02</span>
+          <span class="tag-label" data-i18n="tag2">4 層系統建造架構</span>
+          <span class="tag-chip">Ch.4</span>
+        </button>
+        <button type="button" class="tag-btn" data-tag="3" onclick="switchTag(3)">
+          <span class="tag-num">03</span>
+          <span class="tag-label" data-i18n="tag3">實體物流全景動畫</span>
+          <span class="tag-chip">Live</span>
+        </button>
+        <button type="button" class="tag-btn" data-tag="4" onclick="switchTag(4)">
+          <span class="tag-num">04</span>
+          <span class="tag-label" data-i18n="tag4">9 大條件約束與公式</span>
+          <span class="tag-chip">4-1~9</span>
+        </button>
+        <button type="button" class="tag-btn" data-tag="5" onclick="switchTag(5)">
+          <span class="tag-num">05</span>
+          <span class="tag-label" data-i18n="tag5">GAC 混沌煙花核心</span>
+          <span class="tag-chip">3-13~17</span>
+        </button>
+        <button type="button" class="tag-btn" data-tag="6" onclick="switchTag(6)">
+          <span class="tag-num">06</span>
+          <span class="tag-label" data-i18n="tag6">三階段非滿載計價</span>
+          <span class="tag-chip">Cost</span>
+        </button>
+        <button type="button" class="tag-btn" data-tag="7" onclick="switchTag(7)">
+          <span class="tag-num">07</span>
+          <span class="tag-label" data-i18n="tag7">8 大干擾與 3.5s 響應</span>
+          <span class="tag-chip">3.5s</span>
+        </button>
+        <button type="button" class="tag-btn" data-tag="8" onclick="switchTag(8)">
+          <span class="tag-num">08</span>
+          <span class="tag-label" data-i18n="tag8">GAC 實證對比雷達</span>
+          <span class="tag-chip">P12~17</span>
+        </button>
+        <button type="button" class="tag-btn" data-tag="9" onclick="switchTag(9)">
+          <span class="tag-num">09</span>
+          <span class="tag-label" data-i18n="tag9">原創貢獻與工業展望</span>
+          <span class="tag-chip">DBA</span>
+        </button>
+
+        <div class="sidebar-telemetry">
+          <div class="telemetry-row">
+            <span id="txt-side-scen">當前干擾場景</span>
+            <span class="telemetry-val" id="side-scen-badge">S1 穩態</span>
+          </div>
+          <div class="telemetry-row">
+            <span id="txt-side-p12">運輸成本優化 (P12)</span>
+            <span class="telemetry-val" id="side-p12-val">99.953%</span>
+          </div>
+          <div class="telemetry-row">
+            <span id="txt-side-p14">準時交付率 (P14)</span>
+            <span class="telemetry-val" id="side-p14-val">99.234%</span>
+          </div>
+          <div class="telemetry-row">
+            <span id="txt-side-resp">動態重排響應</span>
+            <span class="telemetry-val" id="side-resp-val">3.5s 穩態</span>
+          </div>
+        </div>
+      </nav>
+
+      <!-- RIGHT PANORAMIC STAGE -->
+      <main class="stage-viewport">
+        <!-- Panoramic Zoom-Out Overview Grid -->
+        <div class="overview-grid" id="overview-grid">
+          <div class="overview-card" onclick="selectFromOverview(1)">
+            <span class="card-tag">TAG 01 · SCLI</span>
+            <strong data-i18n="tag1">研究背景與產業痛點</strong>
+            <span class="kpi-sub">IT_ij = RT_ij - ST_ij · 60天×3筆=180條資訊序列</span>
+          </div>
+          <div class="overview-card" onclick="selectFromOverview(2)">
+            <span class="card-tag">TAG 02 · Ch.4</span>
+            <strong data-i18n="tag2">4 層系統建造架構</strong>
+            <span class="kpi-sub">用戶層 ➔ 系統調控層 ➔ 數據層 ➔ 製造資源層</span>
+          </div>
+          <div class="overview-card" onclick="selectFromOverview(3)">
+            <span class="card-tag">TAG 03 · Network</span>
+            <strong data-i18n="tag3">實體物流全景動畫</strong>
+            <span class="kpi-sub">S1~S3 ➔ 重卡車隊 ➔ M1 (A/B/C) ➔ R1~R3</span>
+          </div>
+          <div class="overview-card" onclick="selectFromOverview(4)">
+            <span class="card-tag">TAG 04 · Model</span>
+            <strong data-i18n="tag4">9 大條件約束與公式</strong>
+            <span class="kpi-sub">公式 (4-1)~(4-9) · [t1, t2] 避讓 · 無等待 · FCFM</span>
+          </div>
+          <div class="overview-card" onclick="selectFromOverview(5)">
+            <span class="card-tag">TAG 05 · GAC Core</span>
+            <strong data-i18n="tag5">GAC 混沌煙花核心</strong>
+            <span class="kpi-sub">z1+z2+z3+z4 多目標純量 · Logistic 混沌映射</span>
+          </div>
+          <div class="overview-card" onclick="selectFromOverview(6)">
+            <span class="card-tag">TAG 06 · Pricing</span>
+            <strong data-i18n="tag6">三階段非滿載計價</strong>
+            <span class="kpi-sub">q_min / q_max / P_min=70% · 標準差降 58%</span>
+          </div>
+          <div class="overview-card" onclick="selectFromOverview(7)">
+            <span class="card-tag">TAG 07 · 3.5s Live</span>
+            <strong data-i18n="tag7">8 大干擾與 3.5s 響應</strong>
+            <span class="kpi-sub">設備故障 / 訂單暴增 200% / 延遲 +50% 即時重排</span>
+          </div>
+          <div class="overview-card" onclick="selectFromOverview(8)">
+            <span class="card-tag">TAG 08 · Benchmark</span>
+            <strong data-i18n="tag8">GAC 實證對比雷達</strong>
+            <span class="kpi-sub">P12=99.953% · P14=99.234% · P17 領先 GGRA +23%</span>
+          </div>
+          <div class="overview-card" onclick="selectFromOverview(9)">
+            <span class="card-tag">TAG 09 · NYCU</span>
+            <strong data-i18n="tag9">原創貢獻與工業展望</strong>
+            <span class="kpi-sub">DBA LT=50,000 (23.5s) vs ILS · Lot-size-one</span>
+          </div>
+        </div>
+
+        <!-- Panoramic Camera Container -->
+        <div class="stage-camera" id="stage-camera">
+
+          <!-- TAG 1: 研究背景與產業痛點 -->
+          <section class="view-panel is-active" id="view-1">
+            <div class="view-head">
+              <div class="view-head-text">
+                <span class="view-eyebrow">TAG 01 · CHAPTER 1 &amp; 3.1 · SUPPLY CHAIN LOGISTICS INTEGRATION (SCLI)</span>
+                <h2 class="view-title" data-i18n="v1_title">研究背景、理論缺口與 SCLI 資訊傳輸瓶頸量化</h2>
+                <p class="view-desc" data-i18n="v1_desc">從「單一成本控制」轉向「全供應鏈協同效率」：透過時間差公式 IT_ij = RT_ij - ST_ij 精準定位高延遲節點。</p>
+              </div>
+              <div class="seg-bar" id="scli-node-tabs">
+                <button type="button" class="seg-btn is-active" onclick="selectScliNode('S1', this)">S1 晶片供應商</button>
+                <button type="button" class="seg-btn" onclick="selectScliNode('M1', this)">M1 智慧手機製造商</button>
+                <button type="button" class="seg-btn" onclick="selectScliNode('R3', this)">R3 零售商</button>
+              </div>
+            </div>
+
+            <div class="grid-4">
+              <div class="kpi-tile">
+                <span class="kpi-label" data-i18n="v1_k1_lbl">製造競爭本質轉型</span>
+                <span class="kpi-val">小批量 · 多批次</span>
+                <span class="kpi-sub">客製化與交期壓縮，傳統線性模型失靈</span>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label" data-i18n="v1_k2_lbl">SCLI 實證追蹤規模</span>
+                <span class="kpi-val">60天 × 3筆 = 180</span>
+                <span class="kpi-sub">ERP 與感測器時間戳記連續紀錄 (附錄 A)</span>
+              </div>
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label" data-i18n="v1_k3_lbl">選定節點平均 IT 延遲</span>
+                <span class="kpi-val" id="scli-it-mean">14.2 ms</span>
+                <span class="kpi-sub" id="scli-it-status">S1 供應鏈上游資訊流穩定度監控</span>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label" data-i18n="v1_k4_lbl">高負荷週期性瓶頸</span>
+                <span class="kpi-val" id="scli-peak-val">+38.6 ms</span>
+                <span class="kpi-sub">M1 生產負荷升高導致 IT 波動加劇 (圖 3-3)</span>
+              </div>
+            </div>
+
+            <div class="grid-asymmetric">
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">SCLI 資訊流時間序列與高延遲節點診斷 (圖 3-2 ~ 圖 3-4)</h3>
+                  <span class="card-tag" id="scli-node-badge">S1 節點追蹤</span>
+                </div>
+                <div class="chart-box-tall">
+                  <canvas id="chart-scli-it"></canvas>
+                </div>
+              </div>
+
+              <div class="card card-pale">
+                <div class="card-head">
+                  <h3 class="card-title">文獻缺口與公式 (3-1) ~ (3-4) 數學模型</h3>
+                  <span class="card-tag">Formula 3-1~3-4</span>
+                </div>
+                <div class="formula-box">
+                  <div>$$IT_{ij} = RT_{ij} - ST_{ij} \quad (3\text{-}1)$$</div>
+                  <div style="margin-top:4px;">$$X_i = \{x_i(1), x_i(2), \dots, x_i(k), \dots, x_i(K)\} \quad (3\text{-}2, 3\text{-}4)$$</div>
+                </div>
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>傳統排程 / 既有演算法缺陷</th>
+                      <th>本研究填補方案</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>傳統線性「供應商-製造-零售」忽略中轉樞紐與資源約束</td>
+                      <td>構建多節點協同網絡與 4 層閉環決策系統</td>
+                    </tr>
+                    <tr>
+                      <td>離散蝙蝠演算法 (DBA) 缺乏多目標動態權重調整機制</td>
+                      <td>GAC 多目標適應度函數分離懲罰與成本純量</td>
+                    </tr>
+                    <tr>
+                      <td>雙層變鄰域混沌 DBA 仍面臨局部最優陷阱與即時穩定性不足</td>
+                      <td>融合 Logistic 混沌煙花序列 (3-15~17) 與干擾避讓 (4-4)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAG 2: 4 層系統建造與軟硬體架構 -->
+          <section class="view-panel" id="view-2">
+            <div class="view-head">
+              <div class="view-head-text">
+                <span class="view-eyebrow">TAG 02 · CHAPTER 4.1 · HIERARCHICAL SYSTEM ARCHITECTURE (圖 4-1)</span>
+                <h2 class="view-title" data-i18n="v2_title">混合製造智慧物流優化排程 4 層建造架構與資料向上匯聚流</h2>
+                <p class="view-desc" data-i18n="v2_desc">由下至上（Layer 4 製造資源 ➔ Layer 3 數據與 SCLI ➔ Layer 2 系統調控與核心演算法 ➔ Layer 1 用戶決策介面）實現松耦合自動化。</p>
+              </div>
+              <button type="button" class="action-btn secondary" onclick="toggleArchFlow()">
+                <i data-lucide="activity" width="15" height="15"></i>
+                <span id="btn-arch-flow-txt">暫停粒子匯聚動畫</span>
+              </button>
+            </div>
+
+            <div class="arch-stack-wrap">
+              <div class="arch-layers-col" id="arch-layers-col">
+                <canvas class="arch-particle-canvas" id="arch-particle-canvas"></canvas>
+
+                <div class="arch-layer-box layer-1 is-selected" data-layer="1" onclick="selectArchLayer(1)">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>Layer 1｜用戶層 (User Layer) — 業務流程調控與視覺化決策中心</strong>
+                    <span class="card-tag">Top Interaction</span>
+                  </div>
+                  <div class="arch-modules-row">
+                    <span class="arch-pill">Desktop Interface 桌面介面</span>
+                    <span class="arch-pill">Web-based Interface 網頁端決策介面</span>
+                    <span class="arch-pill">即時 KPI 與甘特圖監控面板</span>
+                  </div>
+                </div>
+
+                <div class="arch-layer-box layer-2" data-layer="2" onclick="selectArchLayer(2)">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>Layer 2｜系統調控層 (System Layer) — 核心演算法執行平台</strong>
+                    <span class="card-tag">GAC × DBA × FCFM</span>
+                  </div>
+                  <div class="arch-modules-row">
+                    <span class="arch-pill">Optimize Scheduling Algorithm 優化排程演算法</span>
+                    <span class="arch-pill">Performance Conflict Diagnosis 性能衝突診斷</span>
+                    <span class="arch-pill">Multiple Workflows 多工作流引擎</span>
+                    <span class="arch-pill">Dispatch Monitoring 排程監控</span>
+                    <span class="arch-pill">Permission Allocation 許可權分配</span>
+                    <span class="arch-pill">Model &amp; System Maintenance 模型維護</span>
+                  </div>
+                </div>
+
+                <div class="arch-layer-box layer-3" data-layer="3" onclick="selectArchLayer(3)">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>Layer 3｜數據與 SCLI 層 (Data Layer) — 資訊序列與成本模型庫</strong>
+                    <span class="card-tag">Formula 3-1~3-12</span>
+                  </div>
+                  <div class="arch-modules-row">
+                    <span class="arch-pill">SCLI 節點時間差資料庫 (IT_ij)</span>
+                    <span class="arch-pill">三階段非滿載分段成本矩陣</span>
+                    <span class="arch-pill">ERP 訂單 / 庫存 / 產線日誌 (附錄 D)</span>
+                  </div>
+                </div>
+
+                <div class="arch-layer-box layer-4" data-layer="4" onclick="selectArchLayer(4)">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>Layer 4｜外部接口與製造資源層 (External Interface &amp; Manufacturing Resource Layer)</strong>
+                    <span class="card-tag card-tag-mint">IoT &amp; Workshop</span>
+                  </div>
+                  <div class="arch-modules-row">
+                    <span class="arch-pill">File Input / Data Input 檔案與資料登錄</span>
+                    <span class="arch-pill">Manufacturing Resources 製造資源</span>
+                    <span class="arch-pill">Manufacturing Workshop 增材/減材製造車間</span>
+                    <span class="arch-pill">Expert Knowledge 領域專家知識庫</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title" id="arch-detail-title">Layer 1：用戶層模組規格解析</h3>
+                  <span class="card-tag" id="arch-detail-tag">鬆耦合介面</span>
+                </div>
+                <p id="arch-detail-desc" style="margin:0; color:var(--on-surface-variant);">
+                  提供跨平台桌面端與 Web 端決策介面，將底層多目標適應度函數結果、直達與中轉成本差異 ΔC、以及干擾重排甘特圖即時呈現給營運管理者。
+                </p>
+                <div class="grid-2">
+                  <div class="kpi-tile">
+                    <span class="kpi-label">資料流方向</span>
+                    <span class="kpi-val" style="font-size:1.1rem;" id="arch-flow-dir">L4 ➔ L3 ➔ L2 ➔ L1</span>
+                    <span class="kpi-sub">即時感知向上匯聚，決策指令向下派發</span>
+                  </div>
+                  <div class="kpi-tile is-mint">
+                    <span class="kpi-label">架構耦合度</span>
+                    <span class="kpi-val" style="font-size:1.1rem;">模組化鬆耦合</span>
+                    <span class="kpi-sub">無縫替換 DBA / ILS 引擎</span>
+                  </div>
+                </div>
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>核心子模組</th>
+                      <th>對應論文機制 / 職責</th>
+                    </tr>
+                  </thead>
+                  <tbody id="arch-detail-tbody">
+                    <tr>
+                      <td>Desktop / Web Interface</td>
+                      <td>視覺化排程儀表板、干擾預警與參數調校</td>
+                    </tr>
+                    <tr>
+                      <td>多工作流調控視圖</td>
+                      <td>支援多優先級訂單插單與手動覆核鎖定</td>
+                    </tr>
+                    <tr>
+                      <td>圖 4-2 成本閾值控制</td>
+                      <td>設定成本節約閾值，觸發直達運輸 B_ir</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAG 3: 實體製造物流全景與 SCLI 動畫 -->
+          <section class="view-panel" id="view-3">
+            <div class="view-head">
+              <div class="view-head-text">
+                <span class="view-eyebrow">TAG 03 · CHAPTER 3.1 &amp; 4.2 · PHYSICAL LOGISTICS NETWORK &amp; SCLI TELEMETRY</span>
+                <h2 class="view-title" data-i18n="v3_title">實體供應鏈物流全景圖：S1~S3 ➔ 重卡車隊 ➔ M1 並行產線 ➔ R1~R3</h2>
+                <p class="view-desc" data-i18n="v3_desc">即時渲染重卡行駛、滿載/非滿載狀態、圖 4-2 直達(B_ir)與中轉成本決策 (ΔC = C2 - C1)，以及發光 SCLI 資訊脈衝。</p>
+              </div>
+              <div style="display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap;">
+                <div class="seg-bar">
+                  <button type="button" class="seg-btn is-active" id="btn-route-opt" onclick="setRouteMode('optimized', this)">GAC 直達優化 (B_ir)</button>
+                  <button type="button" class="seg-btn" id="btn-route-trad" onclick="setRouteMode('transit', this)">傳統中轉路徑 (C2)</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-4">
+              <div class="kpi-tile">
+                <span class="kpi-label">上游供應鏈節點</span>
+                <span class="kpi-val">S1 · S2 · S3</span>
+                <span class="kpi-sub">晶片 / 機殼 (波動 40~140%) / 螢幕</span>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">M1 混合製造產線</span>
+                <span class="kpi-val" id="net-m1-lines">A · B · C 並行</span>
+                <span class="kpi-sub" id="net-m1-sub">無等待連續裝配 (公式 4-6)</span>
+              </div>
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">直達成本節約額 ΔC</span>
+                <span class="kpi-val" id="net-delta-c">+42,850 元</span>
+                <span class="kpi-sub" id="net-delta-sub">ΔC = C2 - C1 &gt; 閾值 ➔ 執行 B_ir</span>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">SCLI 即時脈衝延遲</span>
+                <span class="kpi-val" id="net-scli-ms">11.8 ms</span>
+                <span class="kpi-sub" id="net-load-status">車隊平均載貨率: 96.4%</span>
+              </div>
+            </div>
+
+            <div class="logistics-stage">
+              <canvas class="logistics-canvas" id="logistics-canvas"></canvas>
+            </div>
+          </section>
+
+          <!-- TAG 4: 9 大條件約束與公式體系 -->
+          <section class="view-panel" id="view-4">
+            <div class="view-head">
+              <div class="view-head-text">
+                <span class="view-eyebrow">TAG 04 · CHAPTER 4.3 · DYNAMIC DISRUPTION SCHEDULING MODEL (4-1 ~ 4-9)</span>
+                <h2 class="view-title" data-i18n="v4_title">干擾管理動態排程 9 大條件約束與數學公式體系</h2>
+                <p class="view-desc" data-i18n="v4_desc">透過雙目標函數 (4-1) 平衡總加權完成時間與偏差，結合並行機唯一分配、干擾視窗避讓 [t1, t2]、無等待裝配與 FCFM 規則。</p>
+              </div>
+              <button type="button" class="action-btn" onclick="simulateFaultAvoidance()">
+                <i data-lucide="zap" width="15" height="15"></i>
+                <span id="btn-fault-sim-txt">模擬 Machine A [t1, t2] 干擾避讓</span>
+              </button>
+            </div>
+
+            <div class="constraints-grid" id="constraints-grid">
+              <div class="constraint-card is-selected" data-c="4-1" onclick="selectConstraint('4-1', this)">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>公式 (4-1) 雙目標優化</strong>
+                  <span class="card-tag">min f_I, f_II</span>
+                </div>
+                <span class="kpi-sub">最小化總加權完成時間 T_j 與干擾偏差 ΔT_j</span>
+              </div>
+              <div class="constraint-card" data-c="4-2" onclick="selectConstraint('4-2', this)">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>公式 (4-2) 訂單動態調整</strong>
+                  <span class="card-tag">s_ij, p_ij</span>
+                </div>
+                <span class="kpi-sub">由二元變數 x_ijk 鎖定開工與處理時間</span>
+              </div>
+              <div class="constraint-card" data-c="4-3" onclick="selectConstraint('4-3', this)">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>公式 (4-3) 並行機約束</strong>
+                  <span class="card-tag">Σ x_ijk = 1</span>
+                </div>
+                <span class="kpi-sub">每工序於並行機台僅分配一次，防資源衝突</span>
+              </div>
+              <div class="constraint-card" data-c="4-4" onclick="selectConstraint('4-4', this)">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>公式 (4-4) 機器干擾避讓</strong>
+                  <span class="card-tag card-tag-warn">[t1, t2]</span>
+                </div>
+                <span class="kpi-sub">故障或維護視窗不可重疊，自動分流他機</span>
+              </div>
+              <div class="constraint-card" data-c="4-5" onclick="selectConstraint('4-5', this)">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>公式 (4-5) 訂單權重分配</strong>
+                  <span class="card-tag">ω_j 優先級</span>
+                </div>
+                <span class="kpi-sub">高併發時保障 VIP 高權重訂單準時交付</span>
+              </div>
+              <div class="constraint-card" data-c="4-6" onclick="selectConstraint('4-6', this)">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>公式 (4-6) 無等待裝配</strong>
+                  <span class="card-tag card-tag-mint">-7.5% T_j</span>
+                </div>
+                <span class="kpi-sub">前後工序無縫銜接，消除中轉等待浪費</span>
+              </div>
+              <div class="constraint-card" data-c="4-7" onclick="selectConstraint('4-7', this)">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>公式 (4-7) 資源時間窗</strong>
+                  <span class="card-tag">增材/減材</span>
+                </div>
+                <span class="kpi-sub">夾具、人力與混合機台可用時間窗約束</span>
+              </div>
+              <div class="constraint-card" data-c="4-8" onclick="selectConstraint('4-8', this)">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>公式 (4-8) 物流同步銜接</strong>
+                  <span class="card-tag">SCLI 聯動</span>
+                </div>
+                <span class="kpi-sub">供應商元件到廠時刻鎖定製造開工下界</span>
+              </div>
+              <div class="constraint-card" data-c="4-9" onclick="selectConstraint('4-9', this)">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>公式 (4-9) FCFM 動態規則</strong>
+                  <span class="card-tag card-tag-mint">99.23% 準時</span>
+                </div>
+                <span class="kpi-sub">先到先加工結合緊急插單序列動態重排</span>
+              </div>
+            </div>
+
+            <div class="grid-asymmetric">
+              <div class="card card-pale">
+                <div class="card-head">
+                  <h3 class="card-title" id="c-detail-title">公式 (4-1) 雙目標動態排程模型詳解</h3>
+                  <span class="card-tag" id="c-detail-tag">核心目標函數</span>
+                </div>
+                <div class="formula-box" id="c-detail-math">
+                  $$\min f_{I}(\Delta\pi) = \sum_{j=1}^{n'} \omega_j T_j \quad , \quad \min f_{II}(\Delta\pi) = \sum_{j=1}^{n} \omega_j \cdot \Delta T_j$$
+                </div>
+                <p id="c-detail-body" style="margin:0; color:var(--on-surface-variant);">
+                  f_I 追求所有訂單總加權完成時間最小化（提升整體產線效率），f_II 追求受干擾訂單與原排程計畫之偏差加權和最小化（維持系統穩健性與客戶準時交付承諾）。
+                </p>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">並行機 A/B/C 干擾期 [t1, t2] 避讓即時排程示意</h3>
+                  <span class="card-tag" id="gantt-status-tag">常態連續裝配</span>
+                </div>
+                <canvas id="gantt-canvas" style="width:100%; height:170px; min-height:170px;"></canvas>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAG 5: GAC 多目標適應度與混沌煙花核心 -->
+          <section class="view-panel" id="view-5">
+            <div class="view-head">
+              <div class="view-head-text">
+                <span class="view-eyebrow">TAG 05 · CHAPTER 3.3 · GAC MULTI-OBJECTIVE FITNESS &amp; CHAOS FIREWORKS</span>
+                <h2 class="view-title" data-i18n="v5_title">GAC 多目標適應度函數 (z1~z4) 與 Logistic 混沌煙花序列 (3-15~3-17)</h2>
+                <p class="view-desc" data-i18n="v5_desc">將容量懲罰 z1、距離懲罰 z2、向量引導 z3 與距離成本 z4 轉化為純量 f，並透過混沌雙向空間映射跳脫局部最優。</p>
+              </div>
+              <button type="button" class="action-btn" onclick="resampleChaos()">
+                <i data-lucide="sparkles" width="15" height="15"></i>
+                <span>重新觸發混沌煙花迭代</span>
+              </button>
+            </div>
+
+            <div class="grid-4">
+              <div class="kpi-tile">
+                <span class="kpi-label">z1 容量超限懲罰 (CV)</span>
+                <span class="kpi-val" id="gac-z1">1,420</span>
+                <span class="kpi-sub">P_max × max(0, Σ y_jk c_j - CV)</span>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">z2 距離超限懲罰 (DV)</span>
+                <span class="kpi-val" id="gac-z2">860</span>
+                <span class="kpi-sub">P_max × max(0, Σ x_ijk d_ij - DV)</span>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">z3 向量方向引導 (OV_k)</span>
+                <span class="kpi-val" id="gac-z3">12,480</span>
+                <span class="kpi-sub">Σ d_ij x_ijk OV_k 全域方向牽引</span>
+              </div>
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">總適應度純量 f = Σ z_i</span>
+                <span class="kpi-val" id="gac-f-total">33,190</span>
+                <span class="kpi-sub">f 越小代表違約越少、路徑越優</span>
+              </div>
+            </div>
+
+            <div class="grid-asymmetric-rev">
+              <div class="card card-pale">
+                <div class="card-head">
+                  <h3 class="card-title">混沌參數與空間轉換控制台 (3-15 ~ 3-17)</h3>
+                  <span class="card-tag">Chaos Mapping</span>
+                </div>
+                <div class="formula-box">
+                  <div>$$y_{i+1} = 1 - 2 y_i^2 \quad (3\text{-}15)$$</div>
+                  <div style="margin-top:4px;">$$y_i = \frac{2(x_i - a_i)}{b_i - a_i} - 1 \; (3\text{-}16) \;\rightleftharpoons\; x_i = \frac{1}{2}(b_i - a_i)y_i + \frac{1}{2}(b_i + a_i) \; (3\text{-}17)$$</div>
+                </div>
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <label for="slider-chaos-y0">混沌初始種子 y0 (-0.95 ~ 0.95)</label>
+                    <span class="slider-val" id="val-chaos-y0">0.37</span>
+                  </div>
+                  <input type="range" id="slider-chaos-y0" min="-0.95" max="0.95" step="0.01" value="0.37" oninput="updateChaosSim(this.value)">
+                </div>
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <label for="slider-penalty-pmax">懲罰係數 P_max (10 ~ 200)</label>
+                    <span class="slider-val" id="val-penalty-pmax">80</span>
+                  </div>
+                  <input type="range" id="slider-penalty-pmax" min="10" max="200" step="5" value="80" oninput="updatePenaltySim(this.value)">
+                </div>
+                <p class="kpi-sub" style="margin:0;">
+                  註：煙花個體從搜索空間 x_i 映射至混沌空間 y_i 後進行遍歷性擾動，再反映射回煙花空間更新解集，顯著克服傳統 DBA 易陷局部最優的缺陷。
+                </p>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">Logistic 混沌遍歷序列與適應度 f 收斂軌跡</h3>
+                  <span class="card-tag card-tag-mint">全域尋優無早熟收斂</span>
+                </div>
+                <div class="chart-box-tall">
+                  <canvas id="chart-chaos-gac"></canvas>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAG 6: 三階段非滿載成本與物流計價 -->
+          <section class="view-panel" id="view-6">
+            <div class="view-head">
+              <div class="view-head-text">
+                <span class="view-eyebrow">TAG 06 · CHAPTER 3.2 · NON-FULL-LOAD 3-STAGE SEGMENTED COST MODEL (3-5 ~ 3-12)</span>
+                <h2 class="view-title" data-i18n="v6_title">三階段非滿載運輸成本估算與動態計價模型 (圖 3-6, 3-7)</h2>
+                <p class="view-desc" data-i18n="v6_desc">結合時間延誤成本 C_t 與距離成本 C_d，精準刻畫 q_min（最低計費門檻）、P_min = 70% 非滿載懲罰與 q_max 滿載區間。</p>
+              </div>
+              <span class="card-tag card-tag-mint">滿載標準差 σ: 120元 ➔ 50元 (-58%)</span>
+            </div>
+
+            <div class="grid-4">
+              <div class="kpi-tile">
+                <span class="kpi-label">時間延誤成本 C_t (3-5)</span>
+                <span class="kpi-val" id="cost-ct">3,840 元</span>
+                <span class="kpi-sub">C_at × (d / v + t_z)</span>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">行駛距離成本 C_d (3-6)</span>
+                <span class="kpi-val" id="cost-cd">9,600 元</span>
+                <span class="kpi-sub">C_ad × d (含燃油與折舊維護)</span>
+              </div>
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">單車總運輸成本 K_ij (3-7)</span>
+                <span class="kpi-val" id="cost-kij">13,440 元</span>
+                <span class="kpi-sub" id="cost-stage-badge">Stage 3：標準滿載最優區間</span>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">非滿載單位懲罰倍率</span>
+                <span class="kpi-val" id="cost-penalty-mult">1.00×</span>
+                <span class="kpi-sub">P_min = 70% 為非滿載懲罰臨界點</span>
+              </div>
+            </div>
+
+            <div class="grid-asymmetric-rev">
+              <div class="card card-pale">
+                <div class="card-head">
+                  <h3 class="card-title">動態運輸參數調控器</h3>
+                  <span class="card-tag">Formula 3-5~3-10</span>
+                </div>
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <label for="slider-load-rate">車輛載貨率 q / q_max (%)</label>
+                    <span class="slider-val" id="val-load-rate">95%</span>
+                  </div>
+                  <input type="range" id="slider-load-rate" min="20" max="140" step="5" value="95" oninput="updateCostModel()">
+                </div>
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <label for="slider-dist">運輸距離 d (km)</label>
+                    <span class="slider-val" id="val-dist">320 km</span>
+                  </div>
+                  <input type="range" id="slider-dist" min="50" max="600" step="10" value="320" oninput="updateCostModel()">
+                </div>
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <label for="slider-speed">平均車速 v (km/h)</label>
+                    <span class="slider-val" id="val-speed">75 km/h</span>
+                  </div>
+                  <input type="range" id="slider-speed" min="35" max="100" step="5" value="75" oninput="updateCostModel()">
+                </div>
+                <div class="slider-row">
+                  <div class="slider-header">
+                    <label for="slider-tz">中轉 / 等待額外時間 t_z (hr)</label>
+                    <span class="slider-val" id="val-tz">1.5 hr</span>
+                  </div>
+                  <input type="range" id="slider-tz" min="0" max="6" step="0.5" value="1.5" oninput="updateCostModel()">
+                </div>
+                <div class="formula-box">
+                  $$C_t = C_{at}\left(\frac{d}{v}+t_z\right),\; C_d = C_{ad}\cdot d,\; K_{ij} = C_t + C_d$$
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">三階段分段計價曲線 (標示 q_min, P_min=70%, q_max)</h3>
+                  <span class="card-tag" id="cost-chart-zone">當前位於：滿載黃金區</span>
+                </div>
+                <div class="chart-box-tall">
+                  <canvas id="chart-three-stage"></canvas>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAG 7: 8 大動態干擾測試場景與 3.5s 即時響應 -->
+          <section class="view-panel" id="view-7">
+            <div class="view-head">
+              <div class="view-head-text">
+                <span class="view-eyebrow">TAG 07 · CHAPTER 5.2 · DYNAMIC DISRUPTION STRESS TEST &amp; 3.5s RECOVERY</span>
+                <h2 class="view-title" data-i18n="v7_title">8 大動態干擾測試場景與 3.5 秒即時自動重排程響應</h2>
+                <p class="view-desc" data-i18n="v7_desc">點擊任一干擾場景卡片，即時觸發「SCLI 瓶頸偵測 ➔ GAC 重搜 ➔ DBA 並行機重分配」，於 3.5 秒內恢復系統穩態。</p>
+              </div>
+              <button type="button" class="action-btn" onclick="triggerRescheduleSim()">
+                <i data-lucide="refresh-cw" width="15" height="15"></i>
+                <span>重跑 3.5s 動態重排演練</span>
+              </button>
+            </div>
+
+            <div class="scenario-grid-8" id="scenario-grid-8">
+              <!-- Populated and updated by JS -->
+            </div>
+
+            <div class="grid-asymmetric">
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title" id="scen-active-title">場景 1：常規滿載穩態 (Baseline Full-Load)</h3>
+                  <span class="card-tag card-tag-mint" id="scen-phase-badge">穩態運行中</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <div style="display:flex; justify-content:space-between; font-size:var(--label-size);">
+                    <span id="resched-phase-text">演算法狀態：監測 SCLI 與車隊軌跡中…</span>
+                    <strong style="font-family:var(--font-label);" id="resched-timer-text">3.50s / 3.50s (100%)</strong>
+                  </div>
+                  <div class="resched-bar-wrap">
+                    <div class="resched-bar-fill" id="resched-bar-fill"></div>
+                  </div>
+                </div>
+                <p id="scen-active-desc" style="margin:0; color:var(--on-surface-variant);">
+                  所有供應商 S1~S3 與製造線 M1 Machine A/B/C 正常協同運作，車隊滿載率維持 96.4%，SCLI 延遲低於 12ms。
+                </p>
+                <div class="grid-3">
+                  <div class="kpi-tile is-mint">
+                    <span class="kpi-label">恢復後準時交付</span>
+                    <span class="kpi-val" id="scen-kpi-ontime">99.23%</span>
+                  </div>
+                  <div class="kpi-tile">
+                    <span class="kpi-label">重排後成本優化</span>
+                    <span class="kpi-val" id="scen-kpi-cost">99.95%</span>
+                  </div>
+                  <div class="kpi-tile">
+                    <span class="kpi-label">系統穩定恢復時間</span>
+                    <span class="kpi-val" id="scen-kpi-time">1.8 s</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">高負載干擾後系統穩定時間變化規律 (圖 5-3, 圖 5-4)</h3>
+                  <span class="card-tag">≤ 3.5s 韌性收斂</span>
+                </div>
+                <div class="chart-box">
+                  <canvas id="chart-stability-54"></canvas>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAG 8: GRA vs GGRA vs Improve GGRA vs GAC 完整實證數據 -->
+          <section class="view-panel" id="view-8">
+            <div class="view-head">
+              <div class="view-head-text">
+                <span class="view-eyebrow">TAG 08 · CHAPTER 3.3 &amp; APPENDIX C · EMPIRICAL BENCHMARK (表 3-1, 圖 3-9)</span>
+                <h2 class="view-title" data-i18n="v8_title">GRA vs. GGRA vs. Improve GGRA vs. GAC 完整實證指標對比</h2>
+                <p class="view-desc" data-i18n="v8_desc">100% 依據論文附錄 C 與表 3-1 數據：GAC 在 6 大指標 (P12~P17) 維持約 95% 置信度穩健表現，P17 較 GGRA 提升 23%。</p>
+              </div>
+              <div class="seg-bar">
+                <button type="button" class="seg-btn is-active" onclick="setBenchChartType('radar', this)">多維度雷達圖</button>
+                <button type="button" class="seg-btn" onclick="setBenchChartType('bar', this)">分組長條圖</button>
+              </div>
+            </div>
+
+            <div class="grid-4">
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">P12 運輸成本優化率</span>
+                <span class="kpi-val">99.953%</span>
+                <span class="kpi-sub">逼近理論理想最優解 (案例 2)</span>
+              </div>
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">P14 訂單準時交付率</span>
+                <span class="kpi-val">99.234%</span>
+                <span class="kpi-sub">顯著超越 GRA (90.405%)</span>
+              </div>
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">P16 系統排程穩定性</span>
+                <span class="kpi-val">95.711%</span>
+                <span class="kpi-sub">高出 Improve GGRA +20.04%</span>
+              </div>
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">P17 複雜場景適應性</span>
+                <span class="kpi-val">93.844%</span>
+                <span class="kpi-sub">較傳統 GGRA (71.050%) 提升 ~23%</span>
+              </div>
+            </div>
+
+            <div class="grid-asymmetric">
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">表 3-1 四種適應度與分類評估方法完整實證數據 (%)</h3>
+                  <span class="card-tag">附錄 C 原始實測數據</span>
+                </div>
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>評估指標 (P/%)</th>
+                      <th>核心物理意義</th>
+                      <th class="num">GRA</th>
+                      <th class="num">GGRA</th>
+                      <th class="num">Improve GGRA</th>
+                      <th class="num">GAC (本研究)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>P12</strong></td>
+                      <td>運輸成本優化率</td>
+                      <td class="num">99.127</td>
+                      <td class="num">91.714</td>
+                      <td class="num">84.506</td>
+                      <td class="num best-cell">99.953</td>
+                    </tr>
+                    <tr>
+                      <td><strong>P13</strong></td>
+                      <td>節點協作效率 (故障容錯)</td>
+                      <td class="num">94.421</td>
+                      <td class="num">91.571</td>
+                      <td class="num">88.608</td>
+                      <td class="num best-cell">90.542*</td>
+                    </tr>
+                    <tr>
+                      <td><strong>P14</strong></td>
+                      <td>訂單準時交付率</td>
+                      <td class="num">90.405</td>
+                      <td class="num">94.213</td>
+                      <td class="num">93.114</td>
+                      <td class="num best-cell">99.234</td>
+                    </tr>
+                    <tr>
+                      <td><strong>P15</strong></td>
+                      <td>資源配置均衡度</td>
+                      <td class="num">98.871</td>
+                      <td class="num">81.809</td>
+                      <td class="num">95.978</td>
+                      <td class="num best-cell">96.206</td>
+                    </tr>
+                    <tr>
+                      <td><strong>P16</strong></td>
+                      <td>系統排程穩定性</td>
+                      <td class="num">87.012</td>
+                      <td class="num">82.411</td>
+                      <td class="num">75.668</td>
+                      <td class="num best-cell">95.711</td>
+                    </tr>
+                    <tr>
+                      <td><strong>P17</strong></td>
+                      <td>複雜場景適應性</td>
+                      <td class="num">91.959</td>
+                      <td class="num">71.050</td>
+                      <td class="num">79.087</td>
+                      <td class="num best-cell">93.844</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="kpi-sub" style="margin:0;">
+                  *註：在 M1 設備故障極端壓力測試 (案例 3) 下，GAC 仍透過路徑重分配維持 90.542% 高水準協作效率，且六項指標整體置信度波動最小（穩定於 95% 左右）。
+                </p>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">圖 3-9 四種方法多指標性能比較圖</h3>
+                  <span class="card-tag card-tag-mint">GAC 面積最大且最穩健</span>
+                </div>
+                <div class="chart-box-tall">
+                  <canvas id="chart-benchmark-p"></canvas>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAG 9: 本研究原創貢獻與結論展望 -->
+          <section class="view-panel" id="view-9">
+            <div class="view-head">
+              <div class="view-head-text">
+                <span class="view-eyebrow">TAG 09 · CHAPTER 5.1, 6 &amp; 7 · ORIGINAL CONTRIBUTIONS &amp; DBA VS. ILS</span>
+                <h2 class="view-title" data-i18n="v9_title">本研究原創貢獻：DBA vs. ILS 實證優勢、LT 最佳平衡與工業 4.0 展望</h2>
+                <p class="view-desc" data-i18n="v9_desc">驗證陽明交大博士論文核心貢獻：LT=50,000 (23.505 秒) 達成時間與解品質最佳平衡，滿載成本標準差下降 58%。</p>
+              </div>
+              <div class="seg-bar">
+                <button type="button" class="seg-btn is-active" onclick="setCh5View('lt', this)">表 5-1 LT 學習時間分析</button>
+                <button type="button" class="seg-btn" onclick="setCh5View('ils', this)">表 5-2 DBA vs. ILS (8 案例)</button>
+              </div>
+            </div>
+
+            <div class="grid-4">
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">DBA 最佳平衡點 (Mark 5)</span>
+                <span class="kpi-val">23.505 s</span>
+                <span class="kpi-sub">LT=50,000 平均解 485,903 元</span>
+              </div>
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">滿載成本標準差降幅</span>
+                <span class="kpi-val">-58% (σ=50)</span>
+                <span class="kpi-sub">由 σ1=120 元大幅收斂至 σ2=50 元</span>
+              </div>
+              <div class="kpi-tile is-mint">
+                <span class="kpi-label">訂單平均完成時間 T_j</span>
+                <span class="kpi-val">-7.5%</span>
+                <span class="kpi-sub">並行機約束 (4-3) + 無等待規則 (4-6)</span>
+              </div>
+              <div class="kpi-tile">
+                <span class="kpi-label">跨產業複製與展望</span>
+                <span class="kpi-val">Lot-size-one</span>
+                <span class="kpi-sub">高值醫材 / 汽車混流 JIT / 全球雲端排程</span>
+              </div>
+            </div>
+
+            <div class="grid-asymmetric">
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title" id="ch5-chart-title">表 5-1 學習時間 (LT) 對 DBA 解品質與耗時之平衡曲線</h3>
+                  <span class="card-tag">WO1 場景測試</span>
+                </div>
+                <div class="chart-box-tall">
+                  <canvas id="chart-ch5-dba"></canvas>
+                </div>
+              </div>
+
+             <div class="card card-pale responsive-card">
+  <!-- 卡片標頭 -->
+  <div class="card-head">
+    <h3 class="card-title">三大原創理論突破與實務應用藍圖 (Ch.6~7)</h3>
+    <span class="card-tag card-tag-mint">NYCU 研究團隊原創核心貢獻</span>
+  </div>
+
+  <!-- 原創理論摘要段落 -->
+  <p class="card-desc">
+    本研究由國立陽明交通大學科技管理研究所之工業工程管理研究團隊（<strong>鄭凱文、林正旺</strong>）提出，針對傳統啟發式演算法難以兼顧多目標衝突與突發干擾之痛點，原創開發將容量懲罰 <strong>z₁</strong>、混沌距離懲罰 <strong>z₂</strong>、方向向量引導 <strong>z₃</strong> 與路線成本 <strong>z₄</strong> 解耦整合的多目標適應度函數，結合 <strong>Logistic 混沌煙花序列 (GAC)</strong> 與 <strong>離散蝙蝠演算法 (DBA)</strong>，並嵌入 9 大干擾管理約束與三階段非滿載動態計價，實現端到端毫秒級感測與 3.5 秒內韌性重排程。
+  </p>
+
+  <!-- 表格包裹層 (防止表格寬度超出卡片) -->
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 35%;">原創維度</th>
+          <th style="width: 65%;">核心突破與跨產業價值</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. 混合製造 × 智慧供應鏈</strong></td>
+          <td>整合增材/減材柔性製程與 SCLI 即時資料感知，建立閉環決策框架。</td>
+        </tr>
+        <tr>
+          <td><strong>2. GAC × 混沌煙花函數</strong></td>
+          <td>分離懲罰項與成本項 (z₁~z₄)，在 8 大案例中比 ILS 顯著更穩健、無早熟收斂。</td>
+        </tr>
+        <tr>
+          <td><strong>3. 動態干擾管理模型</strong></td>
+          <td>預先內嵌設備故障、插單、延遲等 9 大約束，實現 3.5s 工業級抗干擾韌性。</td>
+        </tr>
+        <tr>
+          <td><strong>4. 醫材「批量一」應用</strong></td>
+          <td>支援客製化骨科植入物/手術導板之高度離散工藝路徑與生醫材料排程。</td>
+        </tr>
+        <tr>
+          <td><strong>5. 汽車混流與全球佈局</strong></td>
+          <td>支援數千零部件 JIT 配送，未來可整合關稅、匯率、地緣風險與 6G 數位雙生預測。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  /* 關鍵響應式與防溢出 CSS */
+  .responsive-card {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    overflow-y: auto;          /* 垂直字數過多時自動出滾輪，絕不掉出框外 */
+    word-break: break-word;     /* 長文字自動換行 */
+  }
+
+  .card-desc {
+    margin: 8px 0 14px 0;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    flex-shrink: 0;
+  }
+
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;          /* 畫面放大時，表格若太寬可橫向滑動，不破壞卡片邊界 */
+    flex-grow: 1;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+</style>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+
+    <!-- BOTTOM TELEMETRY FOOTER -->
+    <footer class="studio-footer">
+      <div style="display:flex; align-items:center; gap:var(--space-md);">
+        <span class="status-pill">
+          <span class="status-dot"></span>
+          <span id="footer-engine-status">GAC × DBA 優化引擎待命 · 23.5s 平衡模式</span>
+        </span>
+        <span id="footer-bench-note">硬體基準：Intel i7-12700K / 64GB RAM / Python 實測 · 國立陽明交通大學博士論文成果系統</span>
+      </div>
+      <div id="footer-save-status">狀態已同步至工作區</div>
+    </footer>
+  </div>
+
+  <!-- Gemini Notebook Shim API Tag -->
+  <api-shim></api-shim>
+
+  <script>
+    /* =========================================================================
+       1. CSS Token Reader & Global State
+       ========================================================================= */
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    const APP_STATE = {
+      activeTag: 1,
+      activeScenario: 0,
+      lang: `zh-TW`,
+      overviewMode: false,
+      scliNode: `S1`,
+      routeMode: `optimized`,
+      faultSimulated: false,
+      chaosY0: 0.37,
+      penaltyPmax: 80,
+      loadRate: 95,
+      distKm: 320,
+      speedKmh: 75,
+      tzHr: 1.5,
+      benchChartType: `radar`,
+      ch5View: `lt`
+    };
+
+    /* =========================================================================
+       2. Multilingual i18n Dictionary (zh-TW, en, zh-CN, ja, de)
+       ========================================================================= */
+    const I18N = {
+      "zh-TW": {
+        title: `基於智慧供應鏈與 AI 之混合製造物流排程優化與干擾管理決策支援系統`,
+        subtitle: `國立陽明交通大學 科技管理研究所｜鄭凱文、林正旺｜原創多目標適應度函數｜GAC 混沌煙花序列 × DBA 離散蝙蝠演算法 × 動態干擾管理`,
+        navHeader: `9 大全景決策模組`,
+        overviewBtn: `全景縮放總覽`,
+        exportBtn: `匯出報告`,
+        lblScenario: `動態干擾測試場景`,
+        lblLang: `Google 翻譯 / Language`,
+        tag1: `研究背景與產業痛點`,
+        tag2: `4 層系統建造架構`,
+        tag3: `實體物流全景動畫`,
+        tag4: `9 大條件約束與公式`,
+        tag5: `GAC 混沌煙花核心`,
+        tag6: `三階段非滿載計價`,
+        tag7: `8 大干擾與 3.5s 響應`,
+        tag8: `GAC 實證對比雷達`,
+        tag9: `原創貢獻與工業展望`,
+        v1_title: `研究背景、理論缺口與 SCLI 資訊傳輸瓶頸量化`,
+        v1_desc: `從「單一成本控制」轉向「全供應鏈協同效率」：透過時間差公式 IT_ij = RT_ij - ST_ij 精準定位高延遲節點。`,
+        v2_title: `混合製造智慧物流優化排程 4 層建造架構與資料向上匯聚流`,
+        v2_desc: `由下至上（Layer 4 製造資源 ➔ Layer 3 數據與 SCLI ➔ Layer 2 系統調控與核心演算法 ➔ Layer 1 用戶決策介面）實現松耦合自動化。`,
+        v3_title: `實體供應鏈物流全景圖：S1~S3 ➔ 重卡車隊 ➔ M1 並行產線 ➔ R1~R3`,
+        v3_desc: `即時渲染重卡行駛、滿載/非滿載狀態、圖 4-2 直達(B_ir)與中轉成本決策 (ΔC = C2 - C1)，以及發光 SCLI 資訊脈衝。`,
+        v4_title: `干擾管理動態排程 9 大條件約束與數學公式體系`,
+        v4_desc: `透過雙目標函數 (4-1) 平衡總加權完成時間與偏差，結合並行機唯一分配、干擾視窗避讓 [t1, t2]、無等待裝配與 FCFM 規則。`,
+        v5_title: `GAC 多目標適應度函數 (z1~z4) 與 Logistic 混沌煙花序列 (3-15~3-17)`,
+        v5_desc: `將容量懲罰 z1、距離懲罰 z2、向量引導 z3 與距離成本 z4 轉化為純量 f，並透過混沌雙向空間映射跳脫局部最優。`,
+        v6_title: `三階段非滿載運輸成本估算與動態計價模型 (圖 3-6, 3-7)`,
+        v6_desc: `結合時間延誤成本 C_t 與距離成本 C_d，精準刻畫 q_min（最低計費門檻）、P_min = 70% 非滿載懲罰與 q_max 滿載區間。`,
+        v7_title: `8 大動態干擾測試場景與 3.5 秒即時自動重排程響應`,
+        v7_desc: `點擊任一干擾場景卡片，即時觸發「SCLI 瓶頸偵測 ➔ GAC 重搜 ➔ DBA 並行機重分配」，於 3.5 秒內恢復系統穩態。`,
+        v8_title: `GRA vs. GGRA vs. Improve GGRA vs. GAC 完整實證指標對比`,
+        v8_desc: `100% 依據論文附錄 C 與表 3-1 數據：GAC 在 6 大指標 (P12~P17) 維持約 95% 置信度穩健表現，P17 較 GGRA 提升 23%。`,
+        v9_title: `本研究原創貢獻：DBA vs. ILS 實證優勢、LT 最佳平衡與工業 4.0 展望`,
+        v9_desc: `驗證陽明交大博士論文核心貢獻：LT=50,000 (23.505 秒) 達成時間與解品質最佳平衡，滿載成本標準差下降 58%。`
+      },
+      "en": {
+        title: `Smart Supply Chain & AI Hybrid Manufacturing Logistics Scheduling & Disruption Management DSS`,
+        subtitle: `NYCU Institute of Management of Technology & IEM｜Hoiman Cheng, Chengwang Lin｜Multi-Objective Fitness｜GAC Chaos Fireworks × DBA × Dynamic Disruption Management`,
+        navHeader: `9 Panoramic Decision Modules`,
+        overviewBtn: `Zoom Out Overview`,
+        exportBtn: `Export CSV`,
+        lblScenario: `Disruption Scenario`,
+        lblLang: `Translate / Language`,
+        tag1: `Background & SCLI Gaps`,
+        tag2: `4-Layer System Architecture`,
+        tag3: `Physical Network & SCLI`,
+        tag4: `9 Scheduling Constraints`,
+        tag5: `GAC & Chaos Fireworks`,
+        tag6: `3-Stage LTL Cost Model`,
+        tag7: `8 Scenarios & 3.5s Recovery`,
+        tag8: `Empirical Radar (P12~P17)`,
+        tag9: `Contributions & Outlook`,
+        v1_title: `Research Motivation & SCLI Information Transmission Bottleneck Model`,
+        v1_desc: `Shifting from single-link cost cuts to full-chain synchronization using IT_ij = RT_ij - ST_ij latency quantification.`,
+        v2_title: `4-Layer Hybrid Manufacturing Intelligent Logistics System Architecture`,
+        v2_desc: `Bottom-up data convergence from Manufacturing Resources (L4) & Data/SCLI (L3) to System Control (L2) and User Interface (L1).`,
+        v3_title: `Physical Logistics Panorama: S1~S3 ➔ Fleet ➔ M1 Parallel Lines ➔ R1~R3`,
+        v3_desc: `Live truck fleet animation, Full/LTL load states, Direct (B_ir) vs. Transit (C2) cost routing, and pulsing SCLI telemetry.`,
+        v4_title: `9 Dynamic Disruption Scheduling Constraints & Mathematical Equations (4-1~4-9)`,
+        v4_desc: `Bi-objective optimization min(f_I, f_II) with parallel machine assignment, [t1, t2] fault avoidance, no-wait assembly, and FCFM.`,
+        v5_title: `GAC Multi-Objective Fitness (z1~z4) & Logistic Chaos Fireworks (3-15~3-17)`,
+        v5_desc: `Decomposing capacity/distance penalties and vector guidance into scalar f with bidirectional chaos space mapping.`,
+        v6_title: `3-Stage Non-Full-Load Segmented Transport Pricing & Cost Estimation`,
+        v6_desc: `Integrating time-delay cost C_t and distance cost C_d across q_min, P_min=70% penalty threshold, and q_max full-load zone.`,
+        v7_title: `8 Dynamic Disruption Stress Scenarios & 3.5-Second Real-Time Rescheduling`,
+        v7_desc: `Triggering SCLI detection, GAC chaos search, and DBA reallocation to restore schedule stability within 3.5 seconds.`,
+        v8_title: `Empirical Benchmark: GRA vs. GGRA vs. Improve GGRA vs. GAC (P12~P17)`,
+        v8_desc: `Verified from Thesis Appendix C & Table 3-1: GAC reaches 99.953% (P12), 99.234% (P14), and +23% adaptability over GGRA (P17).`,
+        v9_title: `Original Contributions: DBA vs. ILS, Optimal LT=50,000 & Industry 4.0`,
+        v9_desc: `NYCU Ph.D. contributions: 23.505s optimal trade-off at LT=50,000, 58% cost std reduction, and Lot-size-one scalability.`
+      },
+      "zh-CN": {
+        title: `基于智慧供应链与 AI 之混合制造物流排程优化与干扰管理决策支持系统`,
+        subtitle: `国立阳明交通大学 科技管理研究所及工业工程管理｜郑凯文、林正旺｜原创多目标适应度函数｜GAC 混沌烟花序列 × DBA 离散蝙蝠算法 × 动态干扰管理`,
+        navHeader: `9 大全景决策模块`,
+        overviewBtn: `全景缩放总览`,
+        exportBtn: `导出报告`,
+        lblScenario: `动态干扰测试场景`,
+        lblLang: `Google 翻译 / Language`,
+        tag1: `研究背景与产业痛点`,
+        tag2: `4 层系统建造架构`,
+        tag3: `实体物流全景动画`,
+        tag4: `9 大条件约束与公式`,
+        tag5: `GAC 混沌烟花核心`,
+        tag6: `三阶段非满载计价`,
+        tag7: `8 大干扰与 3.5s 响应`,
+        tag8: `GAC 实证对比雷达`,
+        tag9: `原创贡献与工业展望`,
+        v1_title: `研究背景、理论缺口与 SCLI 信息传输瓶颈量化`,
+        v1_desc: `从“单一成本控制”转向“全供应链协同效率”：通过时间差公式 IT_ij = RT_ij - ST_ij 精准定位高延迟节点。`,
+        v2_title: `混合制造智慧物流优化排程 4 层建造架构与数据向上汇聚流`,
+        v2_desc: `由下至上（Layer 4 制造资源 ➔ Layer 3 数据与 SCLI ➔ Layer 2 系统调控与核心算法 ➔ Layer 1 用户决策界面）实现松耦合自动化。`,
+        v3_title: `实体供应链物流全景图：S1~S3 ➔ 重卡车队 ➔ M1 并行产线 ➔ R1~R3`,
+        v3_desc: `实时渲染重卡行驶、满载/非满载状态、图 4-2 直达(B_ir)与中转成本决策 (ΔC = C2 - C1)，以及发光 SCLI 信息脉冲。`,
+        v4_title: `干扰管理动态排程 9 大条件约束与数学公式体系`,
+        v4_desc: `通过双目标函数 (4-1) 平衡总加权完成时间与偏差，结合并行机唯一分配、干扰窗口避让 [t1, t2]、无等待装配与 FCFM 规则。`,
+        v5_title: `GAC 多目标适应度函数 (z1~z4) 与 Logistic 混沌烟花序列 (3-15~3-17)`,
+        v5_desc: `将容量惩罚 z1、距离惩罚 z2、向量引导 z3 与距离成本 z4 转化为标量 f，并通过混沌双向空间映射跳脱局部最优。`,
+        v6_title: `三阶段非满载运输成本估算与动态计价模型 (图 3-6, 3-7)`,
+        v6_desc: `结合时间延误成本 C_t 与距离成本 C_d，精准刻画 q_min（最低计费门槛）、P_min = 70% 非满载惩罚与 q_max 满载区间。`,
+        v7_title: `8 大动态干扰测试场景与 3.5 秒实时自动重排程响应`,
+        v7_desc: `点击任一干扰场景卡片，实时触发“SCLI 瓶颈侦测 ➔ GAC 重搜 ➔ DBA 并行机重分配”，于 3.5 秒内恢复系统稳态。`,
+        v8_title: `GRA vs. GGRA vs. Improve GGRA vs. GAC 完整实证指标对比`,
+        v8_desc: `100% 依据论文附录 C 与表 3-1 数据：GAC 在 6 大指标 (P12~P17) 维持约 95% 置信度稳健表现，P17 较 GGRA 提升 23%。`,
+        v9_title: `本研究原创贡献：DBA vs. ILS 实证优势、LT 最佳平衡与工业 4.0 展望`,
+        v9_desc: `验证阳明交大博士论文核心贡献：LT=50,000 (23.505 秒) 达成时间与解质量最佳平衡，满载成本标准差下降 58%。`
+      },
+      "ja": {
+        title: `スマートサプライチェーンと AI に基づくハイブリッド製造物流スケジューリング・外乱管理 DSS`,
+        subtitle: `国立陽明交通大学 技術管理研究所・工業工程管理｜鄭凱文、林正旺｜多目的適応度関数｜GAC カオス花火 × DBA 離散コウモリ × 動的ディスターバンス管理`,
+        navHeader: `9大パノラマ意思決定モジュール`,
+        overviewBtn: `全体ズームアウト`,
+        exportBtn: `CSV 出力`,
+        lblScenario: `動的ディスターバンス`,
+        lblLang: `言語切替 / Language`,
+        tag1: `研究背景と SCLI ボトルネック`,
+        tag2: `4層システム構築アーキテクチャ`,
+        tag3: `物流ネットワークと SCLI パルス`,
+        tag4: `9大制約条件と数理モデル`,
+        tag5: `GAC カオス花火コア`,
+        tag6: `3段階積載率別コスト計価`,
+        tag7: `8大シナリオと 3.5秒即時応答`,
+        tag8: `実証ベンチマーク (P12~P17)`,
+        tag9: `独創的貢献と産業4.0展望`,
+        v1_title: `研究背景・従来手法の課題と SCLI 情報伝送遅延の定量化`,
+        v1_desc: `部分最適化から全体協調へ：時間差式 IT_ij = RT_ij - ST_ij により高遅延ボトルネックノードを特定。`,
+        v2_title: `4層ハイブリッド製造スマート物流スケジューリングシステム構造`,
+        v2_desc: `資源層(L4)→データ・SCLI層(L3)→システム制御層(L2)→ユーザー層(L1)への疎結合データ統合と自動意思決定。`,
+        v3_title: `サプライチェーン物流パノラマ：S1~S3 ➔ 大型車両 ➔ M1 並列ライン ➔ R1~R3`,
+        v3_desc: `積載率・直送(B_ir)対中継(C2)のコスト差 ΔC 判定と発光 SCLI 情報パルスをリアルタイム可視化。`,
+        v4_title: `動的ディスターバンス管理における 9大制約条件と数式体系 (4-1~4-9)`,
+        v4_desc: `2目的最適化 min(f_I, f_II)、並列機割当、故障期間 [t1, t2] 回避、無待機連続組立、FCFM ルールを統合。`,
+        v5_title: `GAC 多目的適応度関数 (z1~z4) とロジスティック・カオス花火 (3-15~3-17)`,
+        v5_desc: `容量・距離ペナルティと方向ベクトルをスカラー f へ統合し、双方向カオス写像で局所解を回避。`,
+        v6_title: `3段階非満載輸送コスト推定と動的料金モデル (図 3-6, 3-7)`,
+        v6_desc: `遅延コスト C_t と走行コスト C_d を統合し、q_min、P_min=70% ペナルティ、q_max 最適積載領域をモデル化。`,
+        v7_title: `8大動的ディスターバンス試験シナリオと 3.5秒自動リスケジューリング`,
+        v7_desc: `SCLI 検知→GAC 再探索→DBA 並列機再配分を 3.5 秒以内で完了し、定常状態へ高速回復。`,
+        v8_title: `GRA / GGRA / Improve GGRA / GAC 実証性能レーダー比較 (P12~P17)`,
+        v8_desc: `付録 C・表 3-1 の実測データ：GAC は全6指標で約 95% の安定信頼度を維持し、P17 は GGRA 比 +23% 向上。`,
+        v9_title: `独創的貢献：DBA 対 ILS の優位性・LT=50,000 最適均衡と将来展望`,
+        v9_desc: `LT=50,000 (23.505秒) で計算時間と解品質の最適均衡を達成し、満載コスト標準偏差を 58% 低減。`
+      },
+      "de": {
+        title: `KI-gestütztes Entscheidungsunterstützungssystem für Hybride Fertigungslogistik & Störungsmanagement`,
+        subtitle: `NYCU Institute of Management of Technology & IEM｜Hoiman Cheng, Chengwang Lin｜Multi-Objektiv-Fitness｜GAC Chaos-Feuerwerk × DBA × Dynamisches Störungsmanagement`,
+        navHeader: `9 Panorama-Entscheidungsmodule`,
+        overviewBtn: `Gesamtübersicht`,
+        exportBtn: `CSV Export`,
+        lblScenario: `Störungsszenario`,
+        lblLang: `Sprache / Language`,
+        tag1: `Hintergrund & SCLI-Engpässe`,
+        tag2: `4-Schichten-Systemarchitektur`,
+        tag3: `Logistiknetz & SCLI-Puls`,
+        tag4: `9 Nebenbedingungen (4-1~9)`,
+        tag5: `GAC & Chaos-Feuerwerk`,
+        tag6: `3-Stufen-Teilladungskosten`,
+        tag7: `8 Szenarien & 3,5s Rescheduling`,
+        tag8: `Empirischer Benchmark (P12~17)`,
+        tag9: `Beiträge & Industrie 4.0`,
+        v1_title: `Forschungsmotivation & Quantifizierung von SCLI-Informationslatenzen`,
+        v1_desc: `Von lokaler Kostenkontrolle zu ganzheitlicher Synchronisation mittels IT_ij = RT_ij - ST_ij Latenzanalyse.`,
+        v2_title: `4-Schichten-Architektur für intelligente hybride Fertigungslogistik`,
+        v2_desc: `Entkoppelte Datenkonvergenz von Fertigungsressourcen (L4) über Daten/SCLI (L3) und Steuerung (L2) bis zur UI (L1).`,
+        v3_title: `Physisches Logistikpanorama: S1~S3 ➔ LKW-Flotte ➔ M1 Parallellinien ➔ R1~R3`,
+        v3_desc: `Echtzeit-Flottenanimation, Auslastungszustände, Direkt- (B_ir) vs. Transit-Routing (ΔC) und SCLI-Datenimpulse.`,
+        v4_title: `9 Dynamische Störungs-Nebenbedingungen & Gleichungssystem (4-1~4-9)`,
+        v4_desc: `Bi-kriterielle Optimierung min(f_I, f_II) mit Maschinenausfall-Vermeidung [t1, t2], No-Wait-Montage und FCFM.`,
+        v5_title: `GAC Multi-Objektiv-Fitness (z1~z4) & Logistisches Chaos-Feuerwerk (3-15~3-17)`,
+        v5_desc: `Skalarisierung von Kapazitäts-/Distanzstrafen und Vektorführung mit bidirektionaler Chaos-Raumabbildung.`,
+        v6_title: `3-Stufen-Teilladungskostenmodell & Dynamische Frachtpreisberechnung`,
+        v6_desc: `Integration von Zeitverzugskosten C_t und Streckenkosten C_d über q_min, P_min=70% Strafe und q_max Volllast.`,
+        v7_title: `8 Dynamische Störungsszenarien & 3,5-Sekunden-Echtzeit-Neuplanung`,
+        v7_desc: `SCLI-Erkennung, GAC-Chaos-Neusuche und DBA-Umverteilung stellen Stabilität innerhalb von 3,5 Sekunden wieder her.`,
+        v8_title: `Empirischer Vergleich: GRA vs. GGRA vs. Improve GGRA vs. GAC (P12~P17)`,
+        v8_desc: `Daten aus Anhang C & Tabelle 3-1: GAC erreicht 99,953% (P12), 99,234% (P14) und +23% Adaptivität gegenüber GGRA.`,
+        v9_title: `Originalbeiträge: DBA vs. ILS, LT=50.000 Balance & Industrie 4.0`,
+        v9_desc: `NYCU-Promotionsergebnisse: 23,505s Optimum bei LT=50.000, 58% geringere Kostenstandardabweichung, Lot-size-one.`
+      }
+    };
+
+    /* =========================================================================
+       3. Source-Grounded Scenario & Model Datasets
+       ========================================================================= */
+    const SCENARIOS = [
+      {
+        id: 0, code: `S1`, short: `S1 穩態`,
+        name: `1. 常規滿載穩態 (Baseline Full-Load)`,
+        badge: `滿載 96.4%`, isAlert: false,
+        desc: `所有供應商 S1~S3 與製造線 M1 Machine A/B/C 正常協同運作，車隊滿載率維持 96.4%，SCLI 延遲低於 12ms。`,
+        ontime: `99.23%`, costOpt: `99.95%`, recTime: `1.8 s`,
+        p12: `99.953%`, p14: `99.234%`, scliMs: `11.8 ms`,
+        faultLine: -1, loadPct: 96, overload: false,
+        stabCurve: [1.2, 1.2, 1.3, 1.8, 1.5, 1.3, 1.2, 1.2]
+      },
+      {
+        id: 1, code: `S2`, short: `S2 +200%`,
+        name: `2. 高併發訂單暴增 +200% (案例 2)`,
+        badge: `高併發衝擊`, isAlert: true,
+        desc: `模擬雙十一/急單高併發湧入，啟動公式 (4-5) 高權重訂單優先排程與分段成本模型，達成運輸成本優化率 99.953% (P12)。`,
+        ontime: `98.85%`, costOpt: `99.95%`, recTime: `2.7 s`,
+        p12: `99.953%`, p14: `98.850%`, scliMs: `22.4 ms`,
+        faultLine: -1, loadPct: 100, overload: false,
+        stabCurve: [1.3, 2.9, 3.1, 2.7, 2.1, 1.6, 1.4, 1.3]
+      },
+      {
+        id: 2, code: `S3`, short: `S3 A機故障`,
+        name: `3. Machine A 故障停機 2h (案例 3)`,
+        badge: `設備故障`, isAlert: true,
+        desc: `M1 Machine A 於 [t1, t2] 發生非預期故障，觸發公式 (4-4) 避讓約束與並行機 B/C 動態分流，維持 90.542% 節點協作效率 (P13)。`,
+        ontime: `97.90%`, costOpt: `98.40%`, recTime: `2.9 s`,
+        p12: `98.402%`, p14: `97.904%`, scliMs: `19.6 ms`,
+        faultLine: 0, loadPct: 92, overload: false,
+        stabCurve: [1.4, 3.3, 3.4, 2.9, 2.3, 1.8, 1.5, 1.4]
+      },
+      {
+        id: 3, code: `S4`, short: `S4 延遲+50%`,
+        name: `4. S1 晶片供貨延遲 +50%`,
+        badge: `SCLI 預警`, isAlert: true,
+        desc: `SCLI 資訊流模型 (公式 3-1) 偵測 S1 節點 IT 時間差驟升至 +38.6ms，系統自動重排無等待裝配序列 (4-6) 並調用緩衝庫存。`,
+        ontime: `98.12%`, costOpt: `98.75%`, recTime: `2.6 s`,
+        p12: `98.750%`, p14: `98.120%`, scliMs: `38.6 ms`,
+        faultLine: -1, loadPct: 88, overload: false,
+        stabCurve: [1.3, 2.7, 3.0, 2.6, 2.0, 1.6, 1.4, 1.3]
+      },
+      {
+        id: 4, code: `S5`, short: `S5 低載50%`,
+        name: `5. 極端低載 50% 非滿載懲罰`,
+        badge: `P_min 觸發`, isAlert: true,
+        desc: `載貨率跌破 P_min=70% 非滿載懲罰線，圖 4-2 演算法評估 ΔC = C2 - C1 後自動合併發車並轉為直達運輸 B_ir，消除空駛浪費。`,
+        ontime: `99.10%`, costOpt: `96.21%`, recTime: `2.3 s`,
+        p12: `96.206%`, p14: `99.102%`, scliMs: `14.5 ms`,
+        faultLine: -1, loadPct: 50, overload: false,
+        stabCurve: [1.2, 2.4, 2.5, 2.3, 1.8, 1.5, 1.3, 1.2]
+      },
+      {
+        id: 5, code: `S6`, short: `S6 超載140%`,
+        name: `6. S2-M1 路線超載波動 140%`,
+        badge: `圖 3-5 超載`, isAlert: true,
+        desc: `針對圖 3-5 實證觀察之 S2-M1 路線劇烈波動 (40%~140%)，適應度 z1 容量超限懲罰強制啟動跨車隊拆單均衡配載。`,
+        ontime: `98.65%`, costOpt: `97.88%`, recTime: `2.8 s`,
+        p12: `97.880%`, p14: `98.650%`, scliMs: `21.0 ms`,
+        faultLine: -1, loadPct: 140, overload: true,
+        stabCurve: [1.4, 3.1, 3.2, 2.8, 2.2, 1.7, 1.5, 1.4]
+      },
+      {
+        id: 6, code: `S7`, short: `S7 VIP插單`,
+        name: `7. VIP 急單動態插入 (FCFM)`,
+        badge: `案例 5 急單`, isAlert: true,
+        desc: `突發高權重 VIP 急單插入，依公式 (4-9) FCFM 與雙目標偏差函數 f_II 動態重排序列，實測準時交付率仍達 99.234% (P14)。`,
+        ontime: `99.23%`, costOpt: `99.15%`, recTime: `2.4 s`,
+        p12: `99.150%`, p14: `99.234%`, scliMs: `16.2 ms`,
+        faultLine: -1, loadPct: 98, overload: false,
+        stabCurve: [1.3, 2.6, 2.8, 2.4, 1.9, 1.5, 1.3, 1.2]
+      },
+      {
+        id: 7, code: `S8`, short: `S8 複合風暴`,
+        name: `8. 複合風暴雙重干擾 (極限測試)`,
+        badge: `複合壓力`, isAlert: true,
+        desc: `Machine A 故障與 S1 延遲同時發生，啟動完整混沌煙花全域重搜與 9 大約束求解，於 3.4 秒內收斂至 93.844% 複雜場景適應度 (P17)。`,
+        ontime: `96.80%`, costOpt: `95.71%`, recTime: `3.4 s`,
+        p12: `95.711%`, p14: `96.805%`, scliMs: `34.1 ms`,
+        faultLine: 0, loadPct: 78, overload: false,
+        stabCurve: [1.5, 3.5, 3.48, 3.4, 2.8, 2.1, 1.7, 1.5]
+      }
+    ];
+
+    const CONSTRAINTS_DATA = {
+      "4-1": {
+        title: `公式 (4-1) 雙目標動態排程模型詳解`,
+        tag: `核心目標函數`,
+        math: `$$\\min f_{I}(\\Delta\\pi) = \\sum_{j=1}^{n'} \\omega_j T_j \\quad , \\quad \\min f_{II}(\\Delta\\pi) = \\sum_{j=1}^{n} \\omega_j \\cdot \\Delta T_j$$`,
+        body: `f_I 追求所有訂單總加權完成時間最小化（提升整體產線效率），f_II 追求受干擾訂單與原排程計畫之偏差加權和最小化（維持系統穩健性與客戶準時交付承諾）。`
+      },
+      "4-2": {
+        title: `公式 (4-2) 訂單動態調整機制`,
+        tag: `資源分配映射`,
+        math: `$$s_{ij} = s_{ijk} \\cdot x_{ijk} \\quad , \\quad p_{ij} = p_{ijk} \\cdot x_{ijk} \\quad , \\quad x_{ijk} \\in \\{0, 1\\}$$`,
+        body: `定義訂單 j 在工序 i 的實際開始時間 s_ij 與處理時間 p_ij 如何根據第三章 GAC 求解之二元決策變量 x_ijk 鎖定至機器 k，大幅簡化排程並加速系統響應。`
+      },
+      "4-3": {
+        title: `公式 (4-3) 並行機唯一分配約束`,
+        tag: `並行機協調`,
+        math: `$$\\sum_{k=1}^{K} x_{ijk} = 1 \\quad \\forall i, j$$`,
+        body: `確保任何訂單的單一工序在同一製造階段中僅由 K 台並行機器中的一台處理，最大化多機台並行吞吐量同時杜絕重複排工衝突。`
+      },
+      "4-4": {
+        title: `公式 (4-4) 機器干擾期 [t1, t2] 避讓約束`,
+        tag: `故障抗擾動`,
+        math: `$$[s_{ijk},\\; s_{ijk} + p_{ijk}] \\cap [t_1, t_2] = \\emptyset$$`,
+        body: `當設備 k 於 [t1, t2] 區間發生預期外故障或預防性維護時，強制受影響工序避開該時間窗並重新分配至其他可用並行機，防止返工與產線癱瘓。`
+      },
+      "4-5": {
+        title: `公式 (4-5) 訂單權重與優先級保障約束`,
+        tag: `高併發策略`,
+        math: `$$\\omega_j = \\frac{\\text{Priority}_j}{\\sum_{m=1}^n \\text{Priority}_m} \\; , \\; \\omega_{\\text{VIP}} > \\omega_{\\text{Std}}$$`,
+        body: `在高併發訂單湧入場景下，透過動態調整權重係數 ω_j，優先鎖定高價值或急迫交期訂單之機器資源，避免關鍵客戶違約。`
+      },
+      "4-6": {
+        title: `公式 (4-6) 無等待連續裝配約束`,
+        tag: `T_j 縮短 7.5%`,
+        math: `$$s_{i+1, j} = s_{ij} + p_{ij} \\quad (\\text{Zero-Wait Buffer})$$`,
+        body: `限制智慧手機關鍵組裝工序之間不得出現非必要停滯等待，直接壓縮在製品堆積，實證使訂單平均完成時間 T_j 較基準演算法縮短 7.5%。`
+      },
+      "4-7": {
+        title: `公式 (4-7) 混合製造資源時間窗約束`,
+        tag: `增材 × 減材`,
+        math: `$$[s_{ijk},\\; s_{ijk}+p_{ijk}] \\subseteq [A_{k,\\text{start}},\\; A_{k,\\text{end}}]$$`,
+        body: `整合增材製造 (SLM) 與減材加工設備、專用夾具及操作人員的可用班次時間窗，確保計算排程完全符合真實工廠排班限制。`
+      },
+      "4-8": {
+        title: `公式 (4-8) 供應鏈物流與製造同步銜接`,
+        tag: `SCLI 聯動`,
+        math: `$$s_{1,j} \\ge \\max_{m \\in \\text{BOM}(j)} \\left( t_{\\text{arrival}, m} + IT_m \\right)$$`,
+        body: `製造開工下界直接接收第三章 SCLI 資訊傳輸延遲 (IT) 與重卡運輸到達時刻，打通「供應商發貨 ➔ 產線開工」的數據閉環。`
+      },
+      "4-9": {
+        title: `公式 (4-9) FCFM 先到先加工與動態插單規則`,
+        tag: `99.23% 準時率`,
+        math: `$$\\pi^* = \\arg\\min_{\\pi \\in \\Pi_{\\text{FCFM}}} \\left( \\alpha f_I(\\pi) + (1-\\alpha) f_{II}(\\pi) \\right)$$`,
+        body: `結合 FCFM (First-Come-First-Machined) 基礎公平性與干擾事件觸發後的急單重排規則，在案例 5 複雜突發場景中達成 99.234% 實測準時交付率。`
+      }
+    };
+
+    const ARCH_LAYERS = {
+      1: {
+        title: `Layer 1：用戶層 (User Layer) 規格解析`,
+        tag: `業務流程調控中心`,
+        dir: `L4 ➔ L3 ➔ L2 ➔ L1`,
+        desc: `提供跨平台桌面端 (Desktop Interface) 與網頁端 (Web-based Interface) 決策介面，將底層多目標適應度函數結果、直達與中轉成本差異 ΔC、以及干擾重排甘特圖即時呈現給營運管理者。`,
+        rows: [
+          [`Desktop / Web Interface`, `視覺化排程儀表板、干擾預警與參數調校`],
+          [`多工作流調控視圖`, `支援多優先級訂單插單與手動覆核鎖定`],
+          [`圖 4-2 成本閾值控制`, `設定成本節約閾值，觸發直達運輸 B_ir`]
+        ]
+      },
+      2: {
+        title: `Layer 2：系統調控層 (System Layer) 核心引擎`,
+        tag: `核心演算法執行平台`,
+        dir: `L3 ⇄ L2 (閉環求解)`,
+        desc: `整個智慧決策系統大腦，整合物流優化排程演算法 (GAC + 混沌煙花 + DBA)、性能衝突診斷演算法 (干擾管理 4-1~4-9)、多工作流引擎與排程監控系統。`,
+        rows: [
+          [`Optimize Scheduling Algorithm`, `執行 GAC 多目標適應度與 DBA 離散蝙蝠全域尋優`],
+          [`Performance Conflict Diagnosis`, `偵測設備故障與原料延遲，執行 3.5s 動態重排`],
+          [`Multiple Workflows & Monitoring`, `同步協調多批次工作流並監控排程執行穩定性`]
+        ]
+      },
+      3: {
+        title: `Layer 3：數據與 SCLI 層 (Data Layer)`,
+        tag: `附錄 D 資料庫結構`,
+        dir: `L4 ➔ L3 ➔ L2`,
+        desc: `負責儲存與清洗來自 ERP 及感測器的 180+ 筆時間戳記記錄，維護 SCLI 節點時間差序列 X_i (公式 3-1~3-4) 及三階段非滿載運輸分段成本矩陣 (公式 3-5~3-12)。`,
+        rows: [
+          [`SCLI 時間差時序庫`, `追蹤 S1~S3, M1, R1~R3 訂單/庫存/生產延遲`],
+          [`分段成本參數矩陣`, `動態計算 C_t, C_d, q_min 與 P_min=70% 罰則`],
+          [`附錄 D 程式模組接口`, `標準化 JSON/SQL 交換格式支援實務工業部署`]
+        ]
+      },
+      4: {
+        title: `Layer 4：外部接口與製造資源層`,
+        tag: `實體車間與 IoT 接入`,
+        dir: `感測器/ERP ➔ L3`,
+        desc: `對接實體製造車間 (增材 SLM 與減材並行機台)、重卡車隊 GPS/載重感測器、檔案/資料登錄接口 (File/Data Input) 以及領域專家規則知識庫。`,
+        rows: [
+          [`Manufacturing Workshop`, `M1 Machine A/B/C 混合製程設備與狀態感測`],
+          [`File / Data Input 接口`, `支援 Taillard 測試集與企業 ERP 即時匯入`],
+          [`Expert Knowledge 專家庫`, `提供 FCFM 規則與多目標懲罰上界 P_max 基準`]
+        ]
+      }
+    };
+
+    /* =========================================================================
+       4. Chart Instances & Animation Loop Owners
+       ========================================================================= */
+    let chartScli = null;
+    let chartChaos = null;
+    let chartThreeStage = null;
+    let chartStability = null;
+    let chartBench = null;
+    let chartCh5 = null;
+
+    let archAnimId = null;
+    let archFlowRunning = true;
+    let archParticles = [];
+
+    let logisticsAnimId = null;
+    let trucks = [];
+    let pulses = [];
+    let animClock = 0;
+
+    let reschedTimer = null;
+
+    /* =========================================================================
+       5. Initialization & Gemini Notebook Shim State Persistence
+       ========================================================================= */
+    document.addEventListener(`DOMContentLoaded`, async function() {
+      if (window.lucide && typeof window.lucide.createIcons === `function`) {
+        window.lucide.createIcons();
+      }
+
+      renderScenarioCards();
+      renderAllCharts();
+      renderGanttCanvas();
+      initArchParticleLoop();
+      initLogisticsLoop();
+      renderKaTeX();
+
+      // Load saved state via notebookAppApi if available
+      try {
+        if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === `function`) {
+          const saved = await window.notebookAppApi.getAppState();
+          if (saved && typeof saved === `object`) {
+            restoreSavedState(saved);
+          }
+          window.notebookAppApi.notifyAppReady();
+        }
+      } catch (err) {
+        updateSaveStatus(`本機互動模式已就緒`);
+      }
+    });
+
+    function restoreSavedState(saved) {
+      if (typeof saved.activeScenario === `number` && saved.activeScenario >= 0 && saved.activeScenario < SCENARIOS.length) {
+        selectScenario(saved.activeScenario, false);
+      }
+      if (typeof saved.lang === `string` && I18N[saved.lang]) {
+        const sel = document.getElementById(`lang-select`);
+        if (sel) sel.value = saved.lang;
+        switchLanguage(saved.lang, true);
+      }
+      if (typeof saved.loadRate === `number`) {
+        const sLoad = document.getElementById(`slider-load-rate`);
+        if (sLoad) sLoad.value = saved.loadRate;
+        updateCostModel(true);
+      }
+      if (typeof saved.activeTag === `number` && saved.activeTag >= 1 && saved.activeTag <= 9) {
+        switchTag(saved.activeTag, true);
+      }
+      updateSaveStatus(`已還原上次決策工作階段`);
+    }
+
+    async function persistState() {
+      try {
+        if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === `function`) {
+          await window.notebookAppApi.setAppState({
+            activeTag: APP_STATE.activeTag,
+            activeScenario: APP_STATE.activeScenario,
+            lang: APP_STATE.lang,
+            loadRate: APP_STATE.loadRate,
+            chaosY0: APP_STATE.chaosY0
+          });
+          updateSaveStatus(`狀態已自動儲存`);
+        }
+      } catch (e) {
+        // Ignore in local file preview
+      }
+    }
+
+    function updateSaveStatus(msg) {
+      const el = document.getElementById(`footer-save-status`);
+      if (el) el.textContent = msg;
+    }
+
+    function renderKaTeX() {
+      if (typeof window.renderMathInElement === `function`) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: `$$`, right: `$$`, display: true },
+            { left: `$`, right: `$`, display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    /* =========================================================================
+       6. Navigation: 9 Side Tags with 60FPS Panoramic Zoom In / Out Transition
+       ========================================================================= */
+    function switchTag(tagNum, skipSave) {
+      const num = Number(tagNum);
+      if (num < 1 || num > 9) return;
+      APP_STATE.activeTag = num;
+
+      if (APP_STATE.overviewMode) {
+        toggleOverview(false);
+      }
+
+      // Update sidebar active state
+      const btns = document.querySelectorAll(`.tag-btn`);
+      btns.forEach(function(b) {
+        b.classList.toggle(`is-active`, Number(b.dataset.tag) === num);
+      });
+
+      const camera = document.getElementById(`stage-camera`);
+      const panels = document.querySelectorAll(`.view-panel`);
+
+      if (camera) {
+        camera.classList.add(`is-zooming-out`);
+        setTimeout(function() {
+          panels.forEach(function(p) {
+            p.classList.toggle(`is-active`, p.id === `view-` + num);
+          });
+          camera.classList.remove(`is-zooming-out`);
+          camera.classList.add(`is-zooming-in`);
+          requestAnimationFrame(function() {
+            camera.classList.remove(`is-zooming-in`);
+            resizeActiveCharts(num);
+          });
+        }, 160);
+      } else {
+        panels.forEach(function(p) {
+          p.classList.toggle(`is-active`, p.id === `view-` + num);
+        });
+        resizeActiveCharts(num);
+      }
+
+      if (!skipSave) persistState();
+    }
+
+    function resizeActiveCharts(num) {
+      if (num === 1 && chartScli) chartScli.resize();
+      if (num === 2) resizeCanvasToParent(document.getElementById(`arch-particle-canvas`));
+      if (num === 3) resizeCanvasToParent(document.getElementById(`logistics-canvas`));
+      if (num === 4) renderGanttCanvas();
+      if (num === 5 && chartChaos) chartChaos.resize();
+      if (num === 6 && chartThreeStage) chartThreeStage.resize();
+      if (num === 7 && chartStability) chartStability.resize();
+      if (num === 8 && chartBench) chartBench.resize();
+      if (num === 9 && chartCh5) chartCh5.resize();
+    }
+
+    function toggleOverview(forceState) {
+      APP_STATE.overviewMode = typeof forceState === `boolean` ? forceState : !APP_STATE.overviewMode;
+      const grid = document.getElementById(`overview-grid`);
+      const cam = document.getElementById(`stage-camera`);
+      const btn = document.getElementById(`btn-overview-toggle`);
+      if (grid && cam) {
+        grid.classList.toggle(`is-active`, APP_STATE.overviewMode);
+        cam.style.display = APP_STATE.overviewMode ? `none` : `flex`;
+      }
+      if (btn) {
+        btn.classList.toggle(`ctrl-btn`, APP_STATE.overviewMode);
+        btn.classList.toggle(`ctrl-btn-ghost`, !APP_STATE.overviewMode);
+      }
+    }
+
+    function selectFromOverview(tagNum) {
+      toggleOverview(false);
+      switchTag(tagNum);
+    }
+
+    /* =========================================================================
+       7. Language Switcher (Google Translate Menu)
+       ========================================================================= */
+    function switchLanguage(lang, skipSave) {
+      const pack = I18N[lang] || I18N[`zh-TW`];
+      APP_STATE.lang = lang;
+      document.documentElement.lang = lang === `zh-TW` ? `zh-Hant` : (lang === `zh-CN` ? `zh-Hans` : lang);
+
+      const setText = function(id, txt) {
+        const el = document.getElementById(id);
+        if (el && txt) el.textContent = txt;
+      };
+
+      setText(`ui-main-title`, pack.title);
+      setText(`ui-main-subtitle`, pack.subtitle);
+      setText(`ui-nav-header`, pack.navHeader);
+      setText(`txt-overview-btn`, pack.overviewBtn);
+      setText(`txt-export-btn`, pack.exportBtn);
+      setText(`lbl-global-scenario`, pack.lblScenario);
+      setText(`lbl-lang-switch`, pack.lblLang);
+
+      const nodes = document.querySelectorAll(`[data-i18n]`);
+      nodes.forEach(function(el) {
+        const key = el.dataset.i18n;
+        if (pack[key]) el.textContent = pack[key];
+      });
+
+      if (!skipSave) persistState();
+    }
+
+    /* =========================================================================
+       8. Tag 1: SCLI Node Latency Inspector
+       ========================================================================= */
+    const SCLI_SERIES = {
+      S1: {
+        mean: `14.2 ms`, peak: `+38.6 ms`, status: `S1 晶片供應商：供貨前置時間偶發脈衝延遲`,
+        order: [10, 11, 14, 12, 18, 29, 38, 22, 15, 13, 12, 11],
+        inv:   [8, 9, 10, 11, 12, 16, 19, 14, 11, 10, 9, 9]
+      },
+      M1: {
+        mean: `24.8 ms`, peak: `+46.2 ms`, status: `M1 組裝廠：高生產負荷期間產生週期性延遲 (圖 3-3)`,
+        order: [16, 19, 25, 31, 42, 46, 39, 28, 21, 19, 24, 22],
+        inv:   [14, 15, 19, 22, 29, 34, 28, 20, 18, 16, 19, 17]
+      },
+      R3: {
+        mean: `9.4 ms`, peak: `+16.8 ms`, status: `R3 零售商：終端訂單回傳最穩定，僅促銷日微幅上升`,
+        order: [7, 8, 9, 10, 15, 17, 13, 10, 8, 8, 9, 8],
+        inv:   [5, 6, 6, 7, 9, 10, 8, 7, 6, 6, 6, 6]
+      }
+    };
+
+    function selectScliNode(nodeKey, btn) {
+      APP_STATE.scliNode = nodeKey;
+      const bar = document.getElementById(`scli-node-tabs`);
+      if (bar) {
+        bar.querySelectorAll(`.seg-btn`).forEach(function(b) { b.classList.remove(`is-active`); });
+      }
+      if (btn) btn.classList.add(`is-active`);
+
+      const data = SCLI_SERIES[nodeKey];
+      if (!data) return;
+      const elMean = document.getElementById(`scli-it-mean`);
+      const elPeak = document.getElementById(`scli-peak-val`);
+      const elStat = document.getElementById(`scli-it-status`);
+      const elBadge = document.getElementById(`scli-node-badge`);
+      if (elMean) elMean.textContent = data.mean;
+      if (elPeak) elPeak.textContent = data.peak;
+      if (elStat) elStat.textContent = data.status;
+      if (elBadge) elBadge.textContent = nodeKey + ` 節點追蹤`;
+
+      if (chartScli) {
+        chartScli.data.datasets[0].data = data.order;
+        chartScli.data.datasets[1].data = data.inv;
+        chartScli.update();
+      }
+    }
+
+    /* =========================================================================
+       9. Tag 2: 4-Layer Architecture Selection & Upward Particle Convergence
+       ========================================================================= */
+    function selectArchLayer(layerNum) {
+      const boxes = document.querySelectorAll(`.arch-layer-box`);
+      boxes.forEach(function(b) {
+        b.classList.toggle(`is-selected`, Number(b.dataset.layer) === layerNum);
+      });
+      const info = ARCH_LAYERS[layerNum];
+      if (!info) return;
+
+      const setEl = function(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+      setEl(`arch-detail-title`, info.title);
+      setEl(`arch-detail-tag`, info.tag);
+      setEl(`arch-detail-desc`, info.desc);
+      setEl(`arch-flow-dir`, info.dir);
+
+      const tbody = document.getElementById(`arch-detail-tbody`);
+      if (tbody) {
+        tbody.innerHTML = info.rows.map(function(r) {
+          return `<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td></tr>`;
+        }).join(``);
+      }
+    }
+
+    function toggleArchFlow() {
+      archFlowRunning = !archFlowRunning;
+      const btn = document.getElementById(`btn-arch-flow-txt`);
+      if (btn) btn.textContent = archFlowRunning ? `暫停粒子匯聚動畫` : `啟動粒子匯聚動畫`;
+    }
+
+    function resizeCanvasToParent(canvas) {
+      if (!canvas || !canvas.parentElement) return;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      }
+    }
+
+    function initArchParticleLoop() {
+      const canvas = document.getElementById(`arch-particle-canvas`);
+      if (!canvas) return;
+      resizeCanvasToParent(canvas);
+      const ctx = canvas.getContext(`2d`);
+
+      archParticles = [];
+      for (let i = 0; i < 36; i++) {
+        archParticles.push({
+          xRatio: 0.08 + Math.random() * 0.84,
+          y: Math.random(),
+          speed: 0.002 + Math.random() * 0.003,
+          r: 2.2 + Math.random() * 2.2
+        });
+      }
+
+      if (archAnimId) cancelAnimationFrame(archAnimId);
+      function tickArch() {
+        if (APP_STATE.activeTag === 2 && canvas.width > 0 && canvas.height > 0) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const colPrimary = cssVar(`--primary`);
+          const colMint = cssVar(`--tertiary`);
+
+          // Vertical upward guide channels
+          ctx.strokeStyle = cssVar(`--primary-container`);
+          ctx.lineWidth = 1.5;
+          [0.2, 0.5, 0.8].forEach(function(xr) {
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * xr, canvas.height);
+            ctx.lineTo(canvas.width * xr, 0);
+            ctx.stroke();
+          });
+
+          archParticles.forEach(function(p, idx) {
+            if (archFlowRunning) {
+              p.y -= p.speed;
+              if (p.y < 0) p.y = 1;
+            }
+            const px = canvas.width * p.xRatio;
+            const py = canvas.height * p.y;
+            ctx.fillStyle = idx % 3 === 0 ? colMint : colPrimary;
+            ctx.beginPath();
+            ctx.arc(px, py, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+        archAnimId = requestAnimationFrame(tickArch);
+      }
+      tickArch();
+    }
+
+    /* =========================================================================
+       10. Tag 3: Physical Logistics Network & SCLI Pulse Animation
+       ========================================================================= */
+    function setRouteMode(mode, btn) {
+      APP_STATE.routeMode = mode;
+      const optBtn = document.getElementById(`btn-route-opt`);
+      const tradBtn = document.getElementById(`btn-route-trad`);
+      if (optBtn) optBtn.classList.toggle(`is-active`, mode === `optimized`);
+      if (tradBtn) tradBtn.classList.toggle(`is-active`, mode === `transit`);
+
+      const elDelta = document.getElementById(`net-delta-c`);
+      const elSub = document.getElementById(`net-delta-sub`);
+      if (mode === `optimized`) {
+        if (elDelta) elDelta.textContent = `+42,850 元`;
+        if (elSub) elSub.textContent = `ΔC = C2 - C1 > 閾值 ➔ 執行直達運輸 B_ir`;
+      } else {
+        if (elDelta) elDelta.textContent = `中轉加價 +18%`;
+        if (elSub) elSub.textContent = `經由中轉樞紐配送 (C2)，等待成本 t_z 上升`;
+      }
+    }
+
+    function initLogisticsLoop() {
+      const canvas = document.getElementById(`logistics-canvas`);
+      if (!canvas) return;
+      resizeCanvasToParent(canvas);
+      const ctx = canvas.getContext(`2d`);
+
+      trucks = [
+        { lane: `S1-M1`, t: 0.1, speed: 0.0028, label: `T-01 晶片`, load: 96 },
+        { lane: `S2-M1`, t: 0.55, speed: 0.0024, label: `T-02 機殼`, load: 140 },
+        { lane: `S3-M1`, t: 0.82, speed: 0.0026, label: `T-03 螢幕`, load: 92 },
+        { lane: `M1-R1`, t: 0.2, speed: 0.0031, label: `D-11 成品`, load: 98 },
+        { lane: `M1-R2`, t: 0.6, speed: 0.0029, label: `D-12 成品`, load: 94 },
+        { lane: `M1-R3`, t: 0.4, speed: 0.0027, label: `D-13 VIP`, load: 100 }
+      ];
+
+      pulses = [
+        { from: `R1`, to: `M1`, t: 0.1 },
+        { from: `R2`, to: `M1`, t: 0.45 },
+        { from: `M1`, to: `S1`, t: 0.7 },
+        { from: `M1`, to: `S2`, t: 0.3 }
+      ];
+
+      if (logisticsAnimId) cancelAnimationFrame(logisticsAnimId);
+      function drawLogistics() {
+        animClock += 0.03;
+        if (APP_STATE.activeTag === 3 && canvas.width > 0 && canvas.height > 0) {
+          const w = canvas.width;
+          const h = canvas.height;
+          ctx.clearRect(0, 0, w, h);
+
+          const cBg = cssVar(`--surface-container-low`);
+          const cRoad = cssVar(`--on-surface-variant`);
+          const cPrimary = cssVar(`--primary`);
+          const cDeep = cssVar(`--primary-deep`);
+          const cMint = cssVar(`--tertiary`);
+          const cWarn = cssVar(`--warning`);
+          const cErr = cssVar(`--error`);
+          const cWhite = cssVar(`--background`);
+          const cRule = cssVar(`--outline-variant`);
+
+          // Subtle engineering grid background
+          ctx.strokeStyle = cRule;
+          ctx.lineWidth = 0.6;
+          for (let gx = 40; gx < w; gx += 48) {
+            ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
+          }
+          for (let gy = 40; gy < h; gy += 48) {
+            ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+          }
+
+          const nodes = {
+            S1: { x: w * 0.11, y: h * 0.22, title: `S1 晶片供應商`, sub: `Chipset` },
+            S2: { x: w * 0.11, y: h * 0.50, title: `S2 機殼供應商`, sub: `40~140% 波動` },
+            S3: { x: w * 0.11, y: h * 0.78, title: `S3 螢幕供應商`, sub: `Display` },
+            HUB: { x: w * 0.30, y: h * 0.50, title: `中轉樞紐`, sub: `Transit C2` },
+            M1: { x: w * 0.50, y: h * 0.50, title: `M1 智慧手機組裝廠`, sub: `Machine A · B · C` },
+            R1: { x: w * 0.88, y: h * 0.22, title: `R1 北區零售商`, sub: `Retailer 1` },
+            R2: { x: w * 0.88, y: h * 0.50, title: `R2 中區零售商`, sub: `Retailer 2` },
+            R3: { x: w * 0.88, y: h * 0.78, title: `R3 南區零售商`, sub: `Retailer 3` }
+          };
+
+          const scen = SCENARIOS[APP_STATE.activeScenario] || SCENARIOS[0];
+
+          // Draw Highways
+          const drawRoad = function(n1, n2, dashed) {
+            ctx.save();
+            ctx.strokeStyle = cRoad;
+            ctx.lineWidth = 14;
+            ctx.lineCap = `round`;
+            ctx.beginPath();
+            ctx.moveTo(n1.x, n1.y);
+            ctx.lineTo(n2.x, n2.y);
+            ctx.stroke();
+
+            ctx.strokeStyle = cWhite;
+            ctx.lineWidth = 1.5;
+            if (dashed) ctx.setLineDash([8, 8]);
+            ctx.beginPath();
+            ctx.moveTo(n1.x, n1.y);
+            ctx.lineTo(n2.x, n2.y);
+            ctx.stroke();
+            ctx.restore();
+          };
+
+          if (APP_STATE.routeMode === `transit`) {
+            drawRoad(nodes.S1, nodes.HUB, true);
+            drawRoad(nodes.S2, nodes.HUB, true);
+            drawRoad(nodes.S3, nodes.HUB, true);
+            drawRoad(nodes.HUB, nodes.M1, true);
+          } else {
+            drawRoad(nodes.S1, nodes.M1, true);
+            drawRoad(nodes.S2, nodes.M1, true);
+            drawRoad(nodes.S3, nodes.M1, true);
+          }
+          drawRoad(nodes.M1, nodes.R1, true);
+          drawRoad(nodes.M1, nodes.R2, true);
+          drawRoad(nodes.M1, nodes.R3, true);
+
+          // Glowing SCLI Information Pulses (Reverse & Forward Telemetry)
+          ctx.save();
+          ctx.strokeStyle = cPrimary;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 6]);
+          ctx.lineDashOffset = -animClock * 12;
+          [[nodes.R1, nodes.M1], [nodes.R2, nodes.M1], [nodes.M1, nodes.S1], [nodes.M1, nodes.S2]].forEach(function(pair) {
+            ctx.beginPath();
+            ctx.moveTo(pair[0].x, pair[0].y - 16);
+            ctx.lineTo(pair[1].x, pair[1].y - 16);
+            ctx.stroke();
+          });
+          ctx.restore();
+
+          pulses.forEach(function(p) {
+            p.t = (p.t + 0.008) % 1;
+            const a = nodes[p.from];
+            const b = nodes[p.to];
+            const px = a.x + (b.x - a.x) * p.t;
+            const py = (a.y - 16) + ((b.y - 16) - (a.y - 16)) * p.t;
+            ctx.fillStyle = cPrimary;
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          // Draw Moving Heavy Trucks
+          const laneTargets = {
+            "S1-M1": [nodes.S1, nodes.M1],
+            "S2-M1": [nodes.S2, nodes.M1],
+            "S3-M1": [nodes.S3, nodes.M1],
+            "M1-R1": [nodes.M1, nodes.R1],
+            "M1-R2": [nodes.M1, nodes.R2],
+            "M1-R3": [nodes.M1, nodes.R3]
+          };
+
+          trucks.forEach(function(tr) {
+            tr.t = (tr.t + tr.speed) % 1;
+            const pair = laneTargets[tr.lane];
+            if (!pair) return;
+            const x = pair[0].x + (pair[1].x - pair[0].x) * tr.t;
+            const y = pair[0].y + (pair[1].y - pair[0].y) * tr.t;
+            const angle = Math.atan2(pair[1].y - pair[0].y, pair[1].x - pair[0].x);
+
+            const effectiveLoad = tr.lane === `S2-M1` && scen.overload ? 140 : (scen.loadPct < 70 ? scen.loadPct : tr.load);
+            const truckColor = effectiveLoad > 100 ? cErr : (effectiveLoad < 70 ? cWarn : cMint);
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.fillStyle = truckColor;
+            ctx.fillRect(-14, -7, 22, 14);
+            ctx.fillStyle = cDeep;
+            ctx.fillRect(8, -6, 7, 12);
+            ctx.restore();
+
+            ctx.fillStyle = cDeep;
+            ctx.font = `600 10px "IBM Plex Mono", sans-serif`;
+            ctx.fillText(tr.label + ` (` + effectiveLoad + `%)`, x - 26, y - 13);
+          });
+
+          // Draw Supply & Retail Nodes
+          [`S1`, `S2`, `S3`, `R1`, `R2`, `R3`].forEach(function(k) {
+            const n = nodes[k];
+            ctx.fillStyle = cWhite;
+            ctx.strokeStyle = k.startsWith(`S`) ? cPrimary : cMint;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.roundRect(n.x - 56, n.y - 24, 112, 48, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = cDeep;
+            ctx.font = `700 12px "Noto Sans TC", sans-serif`;
+            ctx.textAlign = `center`;
+            ctx.fillText(n.title, n.x, n.y - 3);
+            ctx.fillStyle = cRoad;
+            ctx.font = `500 10px "IBM Plex Mono", sans-serif`;
+            ctx.fillText(n.sub, n.x, n.y + 14);
+          });
+
+          // Transit Hub if active
+          if (APP_STATE.routeMode === `transit`) {
+            const hb = nodes.HUB;
+            ctx.fillStyle = cWhite;
+            ctx.strokeStyle = cWarn;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(hb.x - 42, hb.y - 20, 84, 40, 6);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = cWarn;
+            ctx.font = `700 11px "Noto Sans TC", sans-serif`;
+            ctx.textAlign = `center`;
+            ctx.fillText(hb.title, hb.x, hb.y + 4);
+          }
+
+          // Draw M1 Hybrid Manufacturing Hub with Parallel Lines A, B, C
+          const m1 = nodes.M1;
+          ctx.fillStyle = cWhite;
+          ctx.strokeStyle = cDeep;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(m1.x - 84, m1.y - 68, 168, 136, 8);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = cDeep;
+          ctx.font = `700 13px "Noto Sans TC", sans-serif`;
+          ctx.textAlign = `center`;
+          ctx.fillText(`M1 智慧手機組裝廠`, m1.x, m1.y - 44);
+
+          [`Line A (增材/貼片)`, `Line B (減材/CNC)`, `Line C (精密組裝)`].forEach(function(lineName, idx) {
+            const ly = m1.y - 22 + idx * 28;
+            const isFault = scen.faultLine === idx;
+            ctx.fillStyle = isFault ? cssVar(`--surface-red`) : cssVar(`--surface-mint`);
+            ctx.strokeStyle = isFault ? cErr : cMint;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(m1.x - 70, ly, 140, 22, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = isFault ? cErr : cMint;
+            ctx.font = `600 10.5px "Noto Sans TC", sans-serif`;
+            ctx.fillText(isFault ? `Line A [故障停機避讓]` : lineName, m1.x, ly + 15);
+          });
+          ctx.textAlign = `left`;
+        }
+        logisticsAnimId = requestAnimationFrame(drawLogistics);
+      }
+      drawLogistics();
+    }
+
+    /* =========================================================================
+       11. Tag 4: 9 Constraints & Machine A [t1, t2] Avoidance Gantt
+       ========================================================================= */
+    function selectConstraint(key, card) {
+      const grid = document.getElementById(`constraints-grid`);
+      if (grid) {
+        grid.querySelectorAll(`.constraint-card`).forEach(function(c) { c.classList.remove(`is-selected`); });
+      }
+      if (card) card.classList.add(`is-selected`);
+
+      const data = CONSTRAINTS_DATA[key];
+      if (!data) return;
+      const t = document.getElementById(`c-detail-title`);
+      const tg = document.getElementById(`c-detail-tag`);
+      const m = document.getElementById(`c-detail-math`);
+      const b = document.getElementById(`c-detail-body`);
+      if (t) t.textContent = data.title;
+      if (tg) tg.textContent = data.tag;
+      if (m) m.textContent = data.math;
+      if (b) b.textContent = data.body;
+      renderKaTeX();
+    }
+
+    function simulateFaultAvoidance() {
+      APP_STATE.faultSimulated = !APP_STATE.faultSimulated;
+      const btnTxt = document.getElementById(`btn-fault-sim-txt`);
+      const statusTag = document.getElementById(`gantt-status-tag`);
+      if (btnTxt) {
+        btnTxt.textContent = APP_STATE.faultSimulated ? `恢復常態並行裝配` : `模擬 Machine A [t1, t2] 干擾避讓`;
+      }
+      if (statusTag) {
+        statusTag.textContent = APP_STATE.faultSimulated ? `已啟動 (4-4) 避讓 + (4-3) 分流` : `常態連續裝配`;
+        statusTag.className = APP_STATE.faultSimulated ? `card-tag card-tag-warn` : `card-tag`;
+      }
+      renderGanttCanvas();
+    }
+
+    function renderGanttCanvas() {
+      const canvas = document.getElementById(`gantt-canvas`);
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0) canvas.width = rect.width;
+      canvas.height = 170;
+      const ctx = canvas.getContext(`2d`);
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const cPrimary = cssVar(`--primary`);
+      const cDeep = cssVar(`--primary-deep`);
+      const cMint = cssVar(`--tertiary`);
+      const cErr = cssVar(`--error`);
+      const cSurfaceErr = cssVar(`--surface-red`);
+      const cRule = cssVar(`--outline-variant`);
+
+      const lanes = [`Machine A`, `Machine B`, `Machine C`];
+      const padL = 82;
+      const laneH = 42;
+
+      lanes.forEach(function(ln, idx) {
+        const y = 16 + idx * laneH;
+        ctx.fillStyle = cDeep;
+        ctx.font = `600 11px "IBM Plex Mono", sans-serif`;
+        ctx.fillText(ln, 8, y + 22);
+        ctx.strokeStyle = cRule;
+        ctx.beginPath();
+        ctx.moveTo(padL, y + 34);
+        ctx.lineTo(w - 12, y + 34);
+        ctx.stroke();
+      });
+
+      const drawJob = function(laneIdx, startPct, durPct, label, color) {
+        const usableW = w - padL - 16;
+        const x = padL + usableW * startPct;
+        const bw = usableW * durPct;
+        const y = 20 + laneIdx * laneH;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.roundRect(x, y, bw, 26, 4);
+        ctx.fill();
+        ctx.fillStyle = cssVar(`--background`);
+        ctx.font = `600 10px "IBM Plex Mono", sans-serif`;
+        ctx.fillText(label, x + 6, y + 17);
+      };
+
+      if (!APP_STATE.faultSimulated) {
+        drawJob(0, 0.02, 0.25, `J101 (無等待)`, cPrimary);
+        drawJob(0, 0.29, 0.28, `J104`, cPrimary);
+        drawJob(0, 0.59, 0.30, `J107`, cPrimary);
+        drawJob(1, 0.05, 0.32, `J102`, cMint);
+        drawJob(1, 0.39, 0.28, `J105`, cMint);
+        drawJob(2, 0.10, 0.35, `J103`, cDeep);
+        drawJob(2, 0.47, 0.34, `J106`, cDeep);
+      } else {
+        drawJob(0, 0.02, 0.22, `J101`, cPrimary);
+        // [t1, t2] Fault Window on Machine A
+        const usableW = w - padL - 16;
+        const fx = padL + usableW * 0.27;
+        const fw = usableW * 0.34;
+        ctx.fillStyle = cSurfaceErr;
+        ctx.strokeStyle = cErr;
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(fx, 18, fw, 30);
+        ctx.strokeRect(fx, 18, fw, 30);
+        ctx.fillStyle = cErr;
+        ctx.font = `700 10px "IBM Plex Mono", sans-serif`;
+        ctx.fillText(`干擾視窗 [t1, t2]`, fx + 8, 37);
+
+        drawJob(0, 0.64, 0.26, `J107`, cPrimary);
+        drawJob(1, 0.04, 0.26, `J102`, cMint);
+        drawJob(1, 0.32, 0.28, `J104 (轉調分流)`, cssVar(`--warning`));
+        drawJob(1, 0.62, 0.28, `J105`, cMint);
+        drawJob(2, 0.10, 0.34, `J103`, cDeep);
+        drawJob(2, 0.46, 0.34, `J106 (FCFM)`, cDeep);
+      }
+    }
+
+    /* =========================================================================
+       12. Tag 5: GAC Multi-Objective Fitness & Chaos Fireworks Simulator
+       ========================================================================= */
+    function generateChaosSequence(y0, pmax) {
+      let y = Number(y0);
+      const chaosSeries = [];
+      const fitnessSeries = [];
+      for (let i = 0; i < 24; i++) {
+        y = 1 - 2 * y * y;
+        chaosSeries.push(Number(((y + 1) * 50).toFixed(2)));
+        const decay = Math.exp(-i * 0.14);
+        const fVal = 31000 + pmax * 110 * decay * (0.85 + 0.15 * Math.abs(y));
+        fitnessSeries.push(Math.round(fVal));
+      }
+      return { chaosSeries: chaosSeries, fitnessSeries: fitnessSeries };
+    }
+
+    function updateChaosSim(val) {
+      APP_STATE.chaosY0 = Number(val);
+      const el = document.getElementById(`val-chaos-y0`);
+      if (el) el.textContent = APP_STATE.chaosY0.toFixed(2);
+      refreshGacDisplay();
+    }
+
+    function updatePenaltySim(val) {
+      APP_STATE.penaltyPmax = Number(val);
+      const el = document.getElementById(`val-penalty-pmax`);
+      if (el) el.textContent = APP_STATE.penaltyPmax;
+      refreshGacDisplay();
+    }
+
+    function resampleChaos() {
+      const randSeed = ((Math.random() * 1.8) - 0.9).toFixed(2);
+      const slider = document.getElementById(`slider-chaos-y0`);
+      if (slider) slider.value = randSeed;
+      updateChaosSim(randSeed);
+    }
+
+    function refreshGacDisplay() {
+      const p = APP_STATE.penaltyPmax;
+      const y = APP_STATE.chaosY0;
+      const z1 = Math.round(p * 17.75 * (1 + 0.12 * Math.abs(y)));
+      const z2 = Math.round(p * 10.75 * (1 + 0.08 * Math.abs(y)));
+      const z3 = 12480;
+      const z4 = 18430;
+      const total = z1 + z2 + z3 + z4;
+
+      const setT = function(id, v) { const e = document.getElementById(id); if (e) e.textContent = v.toLocaleString(); };
+      setT(`gac-z1`, z1);
+      setT(`gac-z2`, z2);
+      setT(`gac-z3`, z3);
+      setT(`gac-f-total`, total);
+
+      if (chartChaos) {
+        const sim = generateChaosSequence(y, p);
+        chartChaos.data.datasets[0].data = sim.fitnessSeries;
+        chartChaos.data.datasets[1].data = sim.chaosSeries;
+        chartChaos.update();
+      }
+    }
+
+    /* =========================================================================
+       13. Tag 6: 3-Stage Non-Full-Load Cost Model
+       ========================================================================= */
+    function computeStageCost(loadPct, distKm, speedKmh, tzHr) {
+      const Cat = 420;
+      const Cad = 30;
+      const ct = Cat * (distKm / speedKmh + tzHr);
+      const cd = Cad * distKm;
+      let mult = 1.0;
+      let stageLabel = `Stage 3：標準滿載最優區間`;
+      let zoneLabel = `當前位於：滿載黃金區 (q_max)`;
+
+      if (loadPct < 45) {
+        mult = 1.55;
+        stageLabel = `Stage 1：低於 q_min 基本門檻懲罰`;
+        zoneLabel = `當前位於：極端低載懲罰區 (< q_min)`;
+      } else if (loadPct < 70) {
+        mult = 1.0 + (70 - loadPct) * 0.018;
+        stageLabel = `Stage 2：低於 P_min=70% 非滿載爬坡`;
+        zoneLabel = `當前位於：非滿載分段計價區 (< 70%)`;
+      } else if (loadPct > 105) {
+        mult = 1.0 + (loadPct - 105) * 0.012;
+        stageLabel = `超載警示：超過 q_max 額外損耗懲罰`;
+        zoneLabel = `當前位於：超載違規懲罰區 (> 100%)`;
+      }
+
+      const kij = Math.round((ct + cd) * mult);
+      return { ct: Math.round(ct), cd: Math.round(cd), kij: kij, mult: mult, stageLabel: stageLabel, zoneLabel: zoneLabel };
+    }
+
+    function updateCostModel(skipSave) {
+      const sLoad = document.getElementById(`slider-load-rate`);
+      const sDist = document.getElementById(`slider-dist`);
+      const sSpeed = document.getElementById(`slider-speed`);
+      const sTz = document.getElementById(`slider-tz`);
+
+      if (sLoad) APP_STATE.loadRate = Number(sLoad.value);
+      if (sDist) APP_STATE.distKm = Number(sDist.value);
+      if (sSpeed) APP_STATE.speedKmh = Number(sSpeed.value);
+      if (sTz) APP_STATE.tzHr = Number(sTz.value);
+
+      const setTxt = function(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; };
+      setTxt(`val-load-rate`, APP_STATE.loadRate + `%`);
+      setTxt(`val-dist`, APP_STATE.distKm + ` km`);
+      setTxt(`val-speed`, APP_STATE.speedKmh + ` km/h`);
+      setTxt(`val-tz`, APP_STATE.tzHr.toFixed(1) + ` hr`);
+
+      const res = computeStageCost(APP_STATE.loadRate, APP_STATE.distKm, APP_STATE.speedKmh, APP_STATE.tzHr);
+      setTxt(`cost-ct`, res.ct.toLocaleString() + ` 元`);
+      setTxt(`cost-cd`, res.cd.toLocaleString() + ` 元`);
+      setTxt(`cost-kij`, res.kij.toLocaleString() + ` 元`);
+      setTxt(`cost-penalty-mult`, res.mult.toFixed(2) + `×`);
+      setTxt(`cost-stage-badge`, res.stageLabel);
+      setTxt(`cost-chart-zone`, res.zoneLabel);
+
+      if (chartThreeStage) {
+        const loads = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140];
+        chartThreeStage.data.datasets[0].data = loads.map(function(l) {
+          return computeStageCost(l, APP_STATE.distKm, APP_STATE.speedKmh, APP_STATE.tzHr).kij;
+        });
+        chartThreeStage.data.datasets[1].data = loads.map(function(l) {
+          return l === APP_STATE.loadRate ? res.kij : null;
+        });
+        chartThreeStage.update();
+      }
+      if (!skipSave) persistState();
+    }
+
+    /* =========================================================================
+       14. Tag 7: 8 Dynamic Disruption Scenarios & 3.5s Live Rescheduling
+       ========================================================================= */
+    function renderScenarioCards() {
+      const container = document.getElementById(`scenario-grid-8`);
+      if (!container) return;
+      container.innerHTML = SCENARIOS.map(function(sc) {
+        const activeCls = sc.id === APP_STATE.activeScenario ? `is-active` : ``;
+        const alertCls = sc.isAlert ? `is-alert` : ``;
+        const tagCls = sc.isAlert ? `card-tag card-tag-warn` : `card-tag card-tag-mint`;
+        return `<button type="button" class="scenario-card ${activeCls} ${alertCls}" onclick="selectScenario(${sc.id}, true)">
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <strong style="font-size:var(--label-size); color:var(--primary-deep);">${sc.code}</strong>
+            <span class="${tagCls}">${sc.badge}</span>
+          </div>
+          <span style="font-size:0.8rem; font-weight:600; color:var(--on-surface);">${sc.name.replace(/^\d+\.\s*/, ``)}</span>
+          <span class="kpi-sub">P14: ${sc.ontime} · 恢復 ${sc.recTime}</span>
+        </button>`;
+      }).join(``);
+    }
+
+    function selectScenario(idx, runSim) {
+      const sIdx = Number(idx);
+      const sc = SCENARIOS[sIdx] || SCENARIOS[0];
+      APP_STATE.activeScenario = sc.id;
+
+      const globalSel = document.getElementById(`global-scenario-select`);
+      if (globalSel) globalSel.value = String(sc.id);
+
+      renderScenarioCards();
+
+      const setT = function(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; };
+      setT(`side-scen-badge`, sc.short);
+      setT(`side-p12-val`, sc.p12);
+      setT(`side-p14-val`, sc.p14);
+      setT(`side-resp-val`, sc.recTime + ` 穩態`);
+      setT(`net-scli-ms`, sc.scliMs);
+      setT(`net-load-status`, `車隊平均載貨率: ` + sc.loadPct + `%`);
+      setT(`scen-active-title`, `場景 ` + sc.name);
+      setT(`scen-active-desc`, sc.desc);
+      setT(`scen-kpi-ontime`, sc.ontime);
+      setT(`scen-kpi-cost`, sc.costOpt);
+      setT(`scen-kpi-time`, sc.recTime);
+
+      if (chartStability) {
+        chartStability.data.datasets[0].data = sc.stabCurve;
+        chartStability.update();
+      }
+
+      if (runSim) {
+        triggerRescheduleSim();
+        persistState();
+      }
+    }
+
+    function triggerRescheduleSim() {
+      if (reschedTimer) clearInterval(reschedTimer);
+      const fill = document.getElementById(`resched-bar-fill`);
+      const phaseTxt = document.getElementById(`resched-phase-text`);
+      const timerTxt = document.getElementById(`resched-timer-text`);
+      const badge = document.getElementById(`scen-phase-badge`);
+
+      let elapsed = 0;
+      const totalMs = 3500;
+      const stepMs = 100;
+
+      if (fill) {
+        fill.classList.add(`is-running`);
+        fill.style.width = `0%`;
+      }
+      if (badge) {
+        badge.textContent = `動態重排演算中…`;
+        badge.className = `card-tag card-tag-warn`;
+      }
+
+      reschedTimer = setInterval(function() {
+        elapsed += stepMs;
+        const pct = Math.min(100, Math.round((elapsed / totalMs) * 100));
+        const secStr = (elapsed / 1000).toFixed(2);
+        if (fill) fill.style.width = pct + `%`;
+        if (timerTxt) timerTxt.textContent = secStr + `s / 3.50s (` + pct + `%)`;
+
+        if (phaseTxt) {
+          if (pct < 30) phaseTxt.textContent = `階段 1/3：SCLI 節點時間差偵測與瓶頸鎖定…`;
+          else if (pct < 70) phaseTxt.textContent = `階段 2/3：GAC 混沌煙花序列 (3-15~3-17) 全域重搜…`;
+          else if (pct < 100) phaseTxt.textContent = `階段 3/3：DBA 並行機避讓 (4-4) 與 FCFM 重分配…`;
+          else phaseTxt.textContent = `重排完成：已收斂至全域最優穩態！`;
+        }
+
+        if (elapsed >= totalMs) {
+          clearInterval(reschedTimer);
+          if (fill) fill.classList.remove(`is-running`);
+          if (badge) {
+            badge.textContent = `穩態已恢復 (≤3.5s)`;
+            badge.className = `card-tag card-tag-mint`;
+          }
+        }
+      }, stepMs);
+    }
+
+    /* =========================================================================
+       15. Tag 8 & Tag 9 Interactive Toggles
+       ========================================================================= */
+    function setBenchChartType(type, btn) {
+      APP_STATE.benchChartType = type;
+      const bar = btn ? btn.parentElement : null;
+      if (bar) bar.querySelectorAll(`.seg-btn`).forEach(function(b) { b.classList.remove(`is-active`); });
+      if (btn) btn.classList.add(`is-active`);
+      buildBenchmarkChart();
+    }
+
+    function setCh5View(mode, btn) {
+      APP_STATE.ch5View = mode;
+      const bar = btn ? btn.parentElement : null;
+      if (bar) bar.querySelectorAll(`.seg-btn`).forEach(function(b) { b.classList.remove(`is-active`); });
+      if (btn) btn.classList.add(`is-active`);
+      buildCh5Chart();
+    }
+
+    /* =========================================================================
+       16. Chart.js Builders (Using :root tokens via cssVar)
+       ========================================================================= */
+    function renderAllCharts() {
+      buildScliChart();
+      buildChaosChart();
+      buildThreeStageChart();
+      buildStabilityChart();
+      buildBenchmarkChart();
+      buildCh5Chart();
+    }
+
+    function buildScliChart() {
+      const ctx = document.getElementById(`chart-scli-it`);
+      if (!ctx) return;
+      const data = SCLI_SERIES[APP_STATE.scliNode];
+      chartScli = new Chart(ctx, {
+        type: `line`,
+        data: {
+          labels: [`D5`, `D10`, `D15`, `D20`, `D25`, `D30`, `D35`, `D40`, `D45`, `D50`, `D55`, `D60`],
+          datasets: [
+            {
+              label: `訂單資訊流時間差 IT_ij (ms)`,
+              data: data.order,
+              borderColor: cssVar(`--data-1`),
+              backgroundColor: cssVar(`--primary-container`),
+              borderWidth: 2.5,
+              tension: 0.3,
+              fill: false
+            },
+            {
+              label: `庫存資訊流時間差 IT_ij (ms)`,
+              data: data.inv,
+              borderColor: cssVar(`--data-3`),
+              borderWidth: 2,
+              borderDash: [5, 4],
+              tension: 0.3,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: `top` } },
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: `延遲時間差 IT (ms)` } }
+          }
+        }
+      });
+    }
+
+    function buildChaosChart() {
+      const ctx = document.getElementById(`chart-chaos-gac`);
+      if (!ctx) return;
+      const sim = generateChaosSequence(APP_STATE.chaosY0, APP_STATE.penaltyPmax);
+      const labels = sim.fitnessSeries.map(function(_, i) { return `Iter ` + (i + 1); });
+      chartChaos = new Chart(ctx, {
+        type: `line`,
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: `適應度總純量 f = z1+z2+z3+z4`,
+              data: sim.fitnessSeries,
+              borderColor: cssVar(`--data-1`),
+              borderWidth: 2.5,
+              yAxisID: `y`,
+              tension: 0.25
+            },
+            {
+              label: `Logistic 混沌空間軌跡分佈 (%)`,
+              data: sim.chaosSeries,
+              borderColor: cssVar(`--data-3`),
+              borderWidth: 1.5,
+              borderDash: [4, 3],
+              yAxisID: `y1`,
+              tension: 0.15
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { position: `left`, title: { display: true, text: `適應度純量 f (越小越優)` } },
+            y1: { position: `right`, min: 0, max: 100, grid: { drawOnChartArea: false }, title: { display: true, text: `混沌遍歷度 (%)` } }
+          }
+        }
+      });
+    }
+
+    function buildThreeStageChart() {
+      const ctx = document.getElementById(`chart-three-stage`);
+      if (!ctx) return;
+      const loads = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140];
+      const costs = loads.map(function(l) {
+        return computeStageCost(l, APP_STATE.distKm, APP_STATE.speedKmh, APP_STATE.tzHr).kij;
+      });
+      const markerData = loads.map(function(l) {
+        return l === APP_STATE.loadRate ? computeStageCost(l, APP_STATE.distKm, APP_STATE.speedKmh, APP_STATE.tzHr).kij : null;
+      });
+      chartThreeStage = new Chart(ctx, {
+        type: `line`,
+        data: {
+          labels: loads.map(function(l) { return l + `%`; }),
+          datasets: [
+            {
+              label: `三階段分段運輸總成本 K_ij (元)`,
+              data: costs,
+              borderColor: cssVar(`--data-1`),
+              borderWidth: 2.5,
+              tension: 0.2
+            },
+            {
+              label: `當前營運載貨率點位`,
+              data: markerData,
+              borderColor: cssVar(`--data-5`),
+              backgroundColor: cssVar(`--data-5`),
+              pointRadius: 8,
+              showLine: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { title: { display: true, text: `車輛載貨利用率 (q_min=45%, P_min=70%, q_max=100%)` } },
+            y: { title: { display: true, text: `單車總成本 K_ij (元)` } }
+          }
+        }
+      });
+    }
+
+    function buildStabilityChart() {
+      const ctx = document.getElementById(`chart-stability-54`);
+      if (!ctx) return;
+      const sc = SCENARIOS[APP_STATE.activeScenario];
+      chartStability = new Chart(ctx, {
+        type: `line`,
+        data: {
+          labels: [`0.0s`, `0.5s`, `1.0s`, `1.5s`, `2.0s`, `2.5s`, `3.0s`, `3.5s`],
+          datasets: [
+            {
+              label: `GAC+DBA 系統穩定時間 (s)`,
+              data: sc.stabCurve,
+              borderColor: cssVar(`--data-3`),
+              backgroundColor: cssVar(`--surface-mint`),
+              borderWidth: 2.5,
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: `3.5s 工業級安全閾值線`,
+              data: [3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5],
+              borderColor: cssVar(`--data-5`),
+              borderDash: [6, 4],
+              borderWidth: 1.5,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { min: 0, max: 4.5, title: { display: true, text: `恢復穩定耗時 (秒)` } } }
+        }
+      });
+    }
+
+    function buildBenchmarkChart() {
+      const ctx = document.getElementById(`chart-benchmark-p`);
+      if (!ctx) return;
+      if (chartBench) chartBench.destroy();
+
+      const labels = [`P12 成本優化`, `P13 節點協作`, `P14 準時交付`, `P15 資源均衡`, `P16 排程穩定`, `P17 複雜適應`];
+      const datasets = [
+        {
+          label: `GAC (本研究)`,
+          data: [99.953, 90.542, 99.234, 96.206, 95.711, 93.844],
+          borderColor: cssVar(`--data-1`),
+          backgroundColor: APP_STATE.benchChartType === `radar` ? `rgba(37, 99, 235, 0.16)` : cssVar(`--data-1`),
+          borderWidth: 2.5
+        },
+        {
+          label: `GRA`,
+          data: [99.127, 94.421, 90.405, 98.871, 87.012, 91.959],
+          borderColor: cssVar(`--data-3`),
+          backgroundColor: APP_STATE.benchChartType === `radar` ? `rgba(21, 128, 61, 0.08)` : cssVar(`--data-3`),
+          borderWidth: 1.8
+        },
+        {
+          label: `GGRA`,
+          data: [91.714, 91.571, 94.213, 81.809, 82.411, 71.050],
+          borderColor: cssVar(`--data-4`),
+          backgroundColor: APP_STATE.benchChartType === `radar` ? `rgba(217, 119, 6, 0.06)` : cssVar(`--data-4`),
+          borderWidth: 1.5
+        },
+        {
+          label: `Improve GGRA`,
+          data: [84.506, 88.608, 93.114, 95.978, 75.668, 79.087],
+          borderColor: cssVar(`--data-context`),
+          backgroundColor: APP_STATE.benchChartType === `radar` ? `rgba(148, 163, 184, 0.05)` : cssVar(`--data-context`),
+          borderWidth: 1.5,
+          borderDash: [4, 3]
+        }
+      ];
+
+      chartBench = new Chart(ctx, {
+        type: APP_STATE.benchChartType,
+        data: { labels: labels, datasets: datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: APP_STATE.benchChartType === `radar`
+            ? { r: { min: 65, max: 100, ticks: { stepSize: 10 } } }
+            : { y: { min: 65, max: 102, title: { display: true, text: `指標值 P (%)` } } }
+        }
+      });
+    }
+
+    function buildCh5Chart() {
+      const ctx = document.getElementById(`chart-ch5-dba`);
+      if (!ctx) return;
+      if (chartCh5) chartCh5.destroy();
+      const titleEl = document.getElementById(`ch5-chart-title`);
+
+      if (APP_STATE.ch5View === `lt`) {
+        if (titleEl) titleEl.textContent = `表 5-1 學習時間 (LT) 對 DBA 解品質與耗時之平衡曲線 (Mark 5 最佳平衡)`;
+        chartCh5 = new Chart(ctx, {
+          type: `line`,
+          data: {
+            labels: [`M1 (0.1s)`, `M2 (0.4s)`, `M3 (2.1s)`, `M4 (4.3s)`, `M5 (23.5s ★)`, `M6 (32.3s)`, `M7 (52.9s)`, `M8 (78.3s)`],
+            datasets: [
+              {
+                label: `DBA 平均解成本 (元)`,
+                data: [529102, 517143, 518411, 511677, 485903, 486375, 486994, 484811],
+                borderColor: cssVar(`--data-1`),
+                borderWidth: 2.5,
+                tension: 0.25
+              },
+              {
+                label: `DBA 最差解成本 (元)`,
+                data: [545926, 524469, 524927, 512664, 492270, 488543, 512289, 511891],
+                borderColor: cssVar(`--data-4`),
+                borderDash: [5, 4],
+                borderWidth: 1.8,
+                tension: 0.25
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { min: 475000, max: 550000, title: { display: true, text: `總排程成本 (元)` } } }
+          }
+        });
+      } else {
+        if (titleEl) titleEl.textContent = `表 5-2 DBA vs. ILS 在 8 大案例下之最優解穩定度對比`;
+        chartCh5 = new Chart(ctx, {
+          type: `bar`,
+          data: {
+            labels: [`案例1`, `案例2`, `案例3`, `案例4`, `案例5`, `案例6`, `案例7`, `案例8`],
+            datasets: [
+              {
+                label: `DBA 平均解 (元)`,
+                data: [494340, 519867, 509657, 513736, 483471, 495012, 506939, 520107],
+                backgroundColor: cssVar(`--data-1`)
+              },
+              {
+                label: `ILS 平均解 (元)`,
+                data: [507615, 484485, 484819, 515727, 522487, 520057, 516163, 517610],
+                backgroundColor: cssVar(`--data-context`)
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { min: 470000, max: 530000, title: { display: true, text: `平均解成本 (元)` } } }
+          }
+        });
+      }
+    }
+
+    /* =========================================================================
+       17. Google Drive 直連檔案匯出 / 下載功能
+       ========================================================================= */
+
+function exportDiagnosticCSV() {
+  const pdfUrl = 'https://drive.google.com/file/d/10r_RW0O7-u41hhjNPwfHWput6W2poU4m/view?usp=sharing';
+  
+  // 建立隱藏 <a> 標籤點擊，避開 window.open 的彈窗封鎖
+  const a = document.createElement('a');
+  a.href = pdfUrl;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  if (typeof updateSaveStatus === 'function') {
+    updateSaveStatus('已開啟 Google Drive PDF 報告');
+  }
+}    window.addEventListener(`resize`, function() {
+      resizeActiveCharts(APP_STATE.activeTag);
+    });
+  </script>
+</body>
+</html>

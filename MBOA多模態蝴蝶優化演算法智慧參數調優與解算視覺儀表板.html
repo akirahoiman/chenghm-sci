@@ -1,0 +1,3432 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="carbon">
+  <title>MBOA-Studio｜多模態蝴蝶優化演算法智慧參數調優與解算視覺儀表板</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* Carbon Base + Clean Light Mode (#F8FAFC, #FFFFFF, #0F172A) */
+      --background: #F8FAFC;
+      --surface-card: #FFFFFF;
+      --surface-container-low: #F1F5F9;
+      --surface-container: #F1F5F9;
+      --surface-container-high: #E2E8F0;
+
+      /* Ink */
+      --on-surface: #0F172A;
+      --on-surface-variant: #475569;
+
+      /* Rules */
+      --outline: #64748B;
+      --outline-variant: #CBD5E1;
+      --outline-subtle: #E2E8F0;
+
+      /* Accents */
+      --primary: #0F62FE;
+      --primary-hover: #0353E9;
+      --on-primary: #FFFFFF;
+      --primary-container: #DBEAFE;
+      --on-primary-container: #0F172A;
+      --secondary: #475569;
+      --tertiary: #0F766E;
+      --error: #DC2626;
+      --on-error: #FFFFFF;
+
+      /* Semantic */
+      --positive: #15803D;
+      --positive-bg: #DCFCE7;
+      --warning: #B45309;
+      --warning-bg: #FEF3C7;
+      --focus: #0F62FE;
+
+      /* Data series */
+      --data-1: #0F62FE;
+      --data-2: #6929C4;
+      --data-3: #0F766E;
+      --data-4: #B45309;
+      --data-5: #DC2626;
+      --data-context: #94A3B8;
+
+      /* Fonts */
+      --font-headline: 'Noto Sans TC', 'IBM Plex Sans', sans-serif;
+      --font-body: 'Noto Sans TC', 'IBM Plex Sans', sans-serif;
+      --font-label: 'IBM Plex Mono', 'Noto Sans TC', monospace;
+
+      /* Shape */
+      --rounded: 0.125rem;
+      --rounded-lg: 0.25rem;
+      --rounded-full: 0.75rem;
+
+      /* Type scale (Dashboard tight ratio) */
+      --display-size: clamp(1.125rem, 0.95rem + 0.55vw, 1.375rem);
+      --headline-size: clamp(1rem, 0.9rem + 0.35vw, 1.1875rem);
+      --subhead-size: clamp(0.875rem, 0.82rem + 0.2vw, 0.96875rem);
+      --body-size: clamp(0.78125rem, 0.75rem + 0.12vw, 0.875rem);
+      --label-size: 0.75rem;
+
+      /* Spacing scale (4pt base) */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 0.75rem;
+      --space-lg: 1rem;
+      --space-xl: 1.5rem;
+      --space-2xl: 2.5rem;
+
+      /* Effects */
+      --shadow-1: 0 1px 3px rgb(15 23 42 / 0.06);
+      --shadow-2: 0 4px 12px rgb(15 23 42 / 0.08);
+      --rule: 1px solid var(--outline-subtle);
+      --rule-strong: 1px solid var(--outline-variant);
+      --field-rule: 1px solid var(--outline);
+      --indicator: 3px solid var(--primary);
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 220ms;
+      --dur-long: 420ms;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      overflow-x: clip;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.48;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      color: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Strict 16:9 100vh Studio Shell */
+    .studio-shell {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      background-color: var(--background);
+    }
+
+    /* Top Header Bar (static inside grid) */
+    header.topbar {
+      position: static !important;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-lg);
+      background-color: var(--surface-card);
+      border-bottom: var(--rule-strong);
+      min-height: 58px;
+      z-index: 10;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      min-width: 0;
+    }
+
+    .studio-code {
+      display: inline-flex;
+      align-items: center;
+      padding: var(--space-xs) var(--space-sm);
+      background-color: var(--on-surface);
+      color: var(--on-primary);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      border-radius: var(--rounded);
+      white-space: nowrap;
+    }
+
+    .title-stack {
+      min-width: 0;
+    }
+
+    .title-stack h1 {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 600;
+      line-height: 1.15;
+      color: var(--on-surface);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .title-stack .subtitle {
+      margin: 0;
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      font-family: var(--font-label);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Top-right Interactive Controls & Sliders */
+    .controls-cluster {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      flex-shrink: 0;
+    }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-xs) var(--space-md);
+      background-color: var(--background);
+      border: var(--rule-strong);
+      border-radius: var(--rounded);
+    }
+
+    .slider-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 112px;
+    }
+
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-xs);
+    }
+
+    .slider-head label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+    }
+
+    .slider-val {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      margin: 2px 0;
+    }
+
+    .transport-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 36px;
+      padding: 0 var(--space-md);
+      font-size: var(--label-size);
+      font-weight: 500;
+      border-radius: var(--rounded);
+      border: 1px solid var(--outline-variant);
+      background-color: var(--surface-card);
+      color: var(--on-surface);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out);
+    }
+
+    .btn:hover {
+      background-color: var(--surface-container-low);
+      border-color: var(--outline);
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+
+    .btn.is-active {
+      background-color: var(--primary-container);
+      border-color: var(--primary);
+      color: var(--on-primary-container);
+      font-weight: 600;
+    }
+
+    /* Main Workspace Grid */
+    .workspace {
+      display: grid;
+      grid-template-columns: 244px minmax(0, 1fr);
+      min-height: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .workspace * { min-width: 0; }
+
+    /* Left Sidebar Navigation */
+    aside.sidebar {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background-color: var(--surface-card);
+      border-right: var(--rule-strong);
+      padding: var(--space-md);
+      gap: var(--space-sm);
+      overflow: hidden;
+    }
+
+    .nav-section-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--on-surface-variant);
+      letter-spacing: 0.06em;
+      padding: 0 var(--space-xs);
+      margin-bottom: var(--space-xs);
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .nav-btn {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--space-sm);
+      width: 100%;
+      padding: var(--space-sm) var(--space-sm);
+      text-align: left;
+      background-color: var(--background);
+      border: 1px solid var(--outline-subtle);
+      border-left: 3px solid transparent;
+      border-radius: var(--rounded);
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out);
+    }
+
+    .nav-btn:hover {
+      background-color: var(--surface-container-low);
+      border-color: var(--outline-variant);
+    }
+
+    .nav-btn.is-active {
+      background-color: var(--primary-container);
+      border-color: var(--primary);
+      border-left: var(--indicator);
+    }
+
+    .nav-idx {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--on-surface-variant);
+      text-align: center;
+      background-color: var(--surface-card);
+      border: 1px solid var(--outline-subtle);
+      border-radius: var(--rounded);
+      padding: 2px 0;
+    }
+
+    .nav-btn.is-active .nav-idx {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .nav-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav-title {
+      font-size: var(--body-size);
+      font-weight: 600;
+      color: var(--on-surface);
+      line-height: 1.25;
+    }
+
+    .nav-sub {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-chip {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .nav-divider {
+      height: 1px;
+      background-color: var(--outline-subtle);
+      margin: var(--space-xs) 0;
+    }
+
+    .sidebar-telemetry {
+      background-color: var(--background);
+      border: var(--rule);
+      border-top: 2px solid var(--on-surface);
+      padding: var(--space-sm);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .tel-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+    }
+
+    .tel-key { color: var(--on-surface-variant); }
+    .tel-val { font-weight: 600; color: var(--on-surface); font-variant-numeric: tabular-nums; }
+    .tel-val.is-ok { color: var(--positive); }
+
+    /* Camera Stage (Zoom In / Zoom Out FX) */
+    main.stage-viewport {
+      position: relative;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      background-color: var(--background);
+      background-image:
+        linear-gradient(to right, var(--outline-subtle) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--outline-subtle) 1px, transparent 1px);
+      background-size: 28px 28px;
+      padding: var(--space-md);
+    }
+
+    .camera-frame {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      transform-origin: center center;
+      transition: transform var(--dur-long) var(--ease-out),
+                  opacity var(--dur-short) var(--ease-out),
+                  filter var(--dur-short) var(--ease-out);
+    }
+
+    .camera-frame.is-zooming-out {
+      transform: scale(0.94);
+      opacity: 0.25;
+      filter: blur(1px);
+    }
+
+    .camera-frame.is-zooming-in {
+      transform: scale(1.03);
+      opacity: 0.25;
+    }
+
+    .view-panel {
+      display: none;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .view-panel.is-visible {
+      display: grid;
+    }
+
+    /* Panorama Zoom-Out View */
+    .panorama-grid {
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: var(--space-md);
+    }
+
+    .panorama-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-lg);
+      background-color: var(--surface-card);
+      border: var(--rule-strong);
+      border-left: 4px solid var(--primary);
+      padding: var(--space-md) var(--space-lg);
+      box-shadow: var(--shadow-1);
+    }
+
+    .panorama-banner h2 {
+      margin: 0 0 2px 0;
+      font-size: var(--headline-size);
+      font-weight: 600;
+    }
+
+    .panorama-banner p {
+      margin: 0;
+      font-size: var(--body-size);
+      color: var(--on-surface-variant);
+    }
+
+    .panorama-kpis {
+      display: flex;
+      gap: var(--space-lg);
+      flex-shrink: 0;
+    }
+
+    .mini-kpi {
+      border-top: 2px solid var(--primary);
+      padding-top: var(--space-xs);
+      min-width: 96px;
+    }
+
+    .mini-kpi-label {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+    }
+
+    .mini-kpi-val {
+      font-family: var(--font-label);
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .panorama-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: var(--space-md);
+      min-height: 0;
+    }
+
+    .pano-card {
+      background-color: var(--surface-card);
+      border: var(--rule-strong);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      cursor: pointer;
+      box-shadow: var(--shadow-1);
+      transition: transform var(--dur-short) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out),
+                  box-shadow var(--dur-short) var(--ease-out);
+      text-align: left;
+    }
+
+    .pano-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-2);
+      transform: translateY(-2px);
+    }
+
+    .pano-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      border-bottom: var(--rule);
+      padding-bottom: var(--space-xs);
+    }
+
+    .pano-tag {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+      border-radius: var(--rounded);
+    }
+
+    .pano-zoom-hint {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    .pano-card h3 {
+      margin: 0;
+      font-size: var(--subhead-size);
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+
+    .pano-card p {
+      margin: 0;
+      font-size: var(--body-size);
+      color: var(--on-surface-variant);
+      line-height: 1.45;
+    }
+
+    .pano-formula {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      background-color: var(--background);
+      border: var(--rule);
+      padding: var(--space-xs) var(--space-sm);
+      color: var(--on-surface);
+    }
+
+    .pano-arch-card {
+      background-color: var(--surface-container-low);
+      border: var(--rule-strong);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Sub-Modal Zoom-In Layout (Tags 1 - 5) */
+    .tag-layout {
+      grid-template-columns: minmax(0, 1.38fr) minmax(320px, 0.92fr);
+      gap: var(--space-md);
+      height: 100%;
+      min-height: 0;
+    }
+
+    .viz-column {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: var(--space-md);
+      min-height: 0;
+      height: 100%;
+    }
+
+    /* Top KPI Row inside each Tag */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .kpi-tile {
+      background-color: var(--surface-card);
+      border: var(--rule-strong);
+      border-bottom: 2px solid var(--outline-variant);
+      padding: var(--space-sm) var(--space-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-1);
+    }
+
+    .kpi-tile.is-primary {
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .kpi-label {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-value {
+      font-family: var(--font-label);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+
+    .kpi-tile.is-primary .kpi-value {
+      color: var(--primary);
+    }
+
+    .kpi-sub {
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+      margin-top: 2px;
+    }
+
+    /* Visualization Cards */
+    .viz-stack {
+      display: grid;
+      gap: var(--space-md);
+      min-height: 0;
+      height: 100%;
+    }
+
+    .viz-stack.two-col {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .viz-stack.two-row {
+      grid-template-rows: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    }
+
+    .viz-stack.two-col-asymmetric {
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.18fr);
+    }
+
+    .card {
+      background-color: var(--surface-card);
+      border: var(--rule-strong);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      box-shadow: var(--shadow-1);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      border-bottom: var(--rule);
+      padding-bottom: var(--space-xs);
+      margin-bottom: var(--space-sm);
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: var(--subhead-size);
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+
+    .card-badge {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      padding: 2px 6px;
+      background-color: var(--surface-container-low);
+      border: var(--rule);
+      color: var(--on-surface-variant);
+      white-space: nowrap;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 140px;
+      width: 100%;
+      background-color: var(--background);
+      border: var(--rule);
+      overflow: hidden;
+    }
+
+    .canvas-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-md);
+      margin-top: var(--space-xs);
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+      flex-shrink: 0;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .swatch {
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+      border-radius: 1px;
+    }
+
+    .swatch-blue { background-color: var(--data-1); }
+    .swatch-purple { background-color: var(--data-2); }
+    .swatch-teal { background-color: var(--data-3); }
+    .swatch-amber { background-color: var(--data-4); }
+    .swatch-red { background-color: var(--data-5); }
+    .swatch-gray { background-color: var(--data-context); }
+
+    /* Right Column: Math & Explanatory Panel */
+    .doc-card {
+      background-color: var(--surface-card);
+      border: var(--rule-strong);
+      border-top: 3px solid var(--primary);
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      min-height: 0;
+      overflow-y: auto;
+      box-shadow: var(--shadow-1);
+    }
+
+    .doc-kicker {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: 0.05em;
+    }
+
+    .doc-title {
+      margin: 0;
+      font-size: var(--headline-size);
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--on-surface);
+    }
+
+    .formula-box {
+      background-color: var(--background);
+      border: var(--rule-strong);
+      border-left: 3px solid var(--on-surface);
+      padding: var(--space-sm) var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .formula-caption {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .math-display {
+      font-family: var(--font-label);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--on-surface);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      line-height: 1.5;
+    }
+
+    .math-var {
+      font-style: italic;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .math-frac {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      margin: 0 4px;
+      font-size: 0.8125rem;
+      line-height: 1.25;
+    }
+
+    .math-frac .num {
+      border-bottom: 1px solid var(--on-surface);
+      padding: 0 4px 2px 4px;
+    }
+
+    .math-frac .den {
+      padding: 2px 4px 0 4px;
+    }
+
+    .var-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-xs) var(--space-md);
+      border-top: var(--rule);
+      padding-top: var(--space-xs);
+    }
+
+    .var-list.single-col {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .var-list li {
+      font-size: 0.75rem;
+      color: var(--on-surface-variant);
+      line-height: 1.38;
+    }
+
+    .var-list strong {
+      font-family: var(--font-label);
+      color: var(--on-surface);
+      font-weight: 600;
+    }
+
+    .doc-section {
+      border-top: var(--rule);
+      padding-top: var(--space-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .doc-section h4 {
+      margin: 0;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+
+    .doc-section p {
+      margin: 0;
+      font-size: var(--body-size);
+      color: var(--on-surface-variant);
+      line-height: 1.52;
+    }
+
+    .highlight-note {
+      background-color: var(--primary-container);
+      border-left: 3px solid var(--primary);
+      padding: var(--space-xs) var(--space-sm);
+      font-size: 0.78125rem;
+      color: var(--on-primary-container);
+      line-height: 1.45;
+    }
+
+    /* Inline Segmented Toggle */
+    .seg-group {
+      display: inline-flex;
+      border: var(--rule-strong);
+      border-radius: var(--rounded);
+      overflow: hidden;
+    }
+
+    .seg-btn {
+      border: 0;
+      background-color: var(--surface-card);
+      color: var(--on-surface-variant);
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out);
+    }
+
+    .seg-btn + .seg-btn {
+      border-left: var(--rule-strong);
+    }
+
+    .seg-btn.is-active {
+      background-color: var(--primary);
+      color: var(--on-primary);
+      font-weight: 600;
+    }
+
+    /* Tag 4: Confusion Matrix Grid */
+    .cm-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .cm-grid {
+      display: grid;
+      grid-template-columns: 34px repeat(9, minmax(0, 1fr));
+      grid-template-rows: 22px repeat(9, minmax(0, 1fr));
+      gap: 2px;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .cm-axis {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--on-surface-variant);
+    }
+
+    .cm-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      font-variant-numeric: tabular-nums;
+      border: 1px solid var(--outline-subtle);
+      cursor: pointer;
+      padding: 0;
+      transition: transform var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out);
+    }
+
+    .cm-cell:hover {
+      border-color: var(--on-surface);
+      transform: scale(1.04);
+      z-index: 2;
+    }
+
+    .cm-cell.is-diag-high {
+      background-color: var(--primary);
+      color: var(--on-primary);
+      font-weight: 600;
+      border-color: var(--primary);
+    }
+
+    .cm-cell.is-diag-mid {
+      background-color: var(--tertiary);
+      color: var(--on-primary);
+      font-weight: 600;
+      border-color: var(--tertiary);
+    }
+
+    .cm-cell.is-off-low {
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+
+    .cm-cell.is-zero {
+      background-color: var(--background);
+      color: var(--outline);
+    }
+
+    .cm-inspector {
+      background-color: var(--background);
+      border: var(--rule);
+      padding: var(--space-xs) var(--space-sm);
+      font-family: var(--font-label);
+      font-size: 0.75rem;
+      color: var(--on-surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    /* Tag 5: Data Table */
+    .bench-table-wrap {
+      overflow-x: auto;
+      border: var(--rule);
+    }
+
+    table.bench-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+
+    table.bench-table th {
+      background-color: var(--surface-container-high);
+      color: var(--on-surface);
+      font-family: var(--font-label);
+      font-weight: 600;
+      text-align: left;
+      padding: 5px 8px;
+      border-bottom: var(--rule-strong);
+      white-space: nowrap;
+    }
+
+    table.bench-table td {
+      padding: 4px 8px;
+      border-bottom: var(--rule);
+      font-family: var(--font-label);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    table.bench-table tr:nth-child(even) td {
+      background-color: var(--background);
+    }
+
+    table.bench-table tr.is-highlight td {
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+      font-weight: 600;
+    }
+
+    table.bench-table td.num,
+    table.bench-table th.num {
+      text-align: right;
+    }
+
+    /* Mobile Fallback */
+    @media (max-width: 640px) {
+      html, body, .studio-shell {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: clip;
+      }
+      header.topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls-cluster {
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      .workspace {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
+      }
+      aside.sidebar {
+        border-right: 0;
+        border-bottom: var(--rule-strong);
+      }
+      .tag-layout,
+      .panorama-cards,
+      .viz-stack.two-col,
+      .viz-stack.two-col-asymmetric,
+      .kpi-strip {
+        grid-template-columns: 1fr;
+      }
+      main.stage-viewport {
+        overflow: visible;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="studio-shell">
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="brand-group">
+        <span class="studio-code">MBOA-STUDIO</span>
+        <div class="title-stack">
+          <h1>多模態蝴蝶優化演算法智慧參數調優與解算視覺儀表板</h1>
+          <p class="subtitle">SCIE (IEEE Access 2024)｜作者：林正旺、鄭凱文｜Clean Light Mode 16:9 單螢幕解算架構</p>
+        </div>
+      </div>
+
+      <div class="controls-cluster">
+        <div class="slider-group" role="group" aria-label="演算法核心參數微調">
+          <div class="slider-item">
+            <div class="slider-head">
+              <label for="slider-c">感知形態 c</label>
+              <span class="slider-val" id="val-c">0.50</span>
+            </div>
+            <input type="range" id="slider-c" min="0.10" max="1.50" step="0.05" value="0.50" oninput="onParamC(this.value)">
+          </div>
+          <div class="slider-item">
+            <div class="slider-head">
+              <label for="slider-a">模式指數 a</label>
+              <span class="slider-val" id="val-a">0.30</span>
+            </div>
+            <input type="range" id="slider-a" min="0.10" max="0.90" step="0.05" value="0.30" oninput="onParamA(this.value)">
+          </div>
+          <div class="slider-item">
+            <div class="slider-head">
+              <label for="slider-speed">解算速率</label>
+              <span class="slider-val" id="val-speed">1.0x</span>
+            </div>
+            <input type="range" id="slider-speed" min="0.5" max="2.5" step="0.5" value="1.0" oninput="onParamSpeed(this.value)">
+          </div>
+        </div>
+
+        <div class="transport-bar" role="group" aria-label="模擬播放控制">
+          <button type="button" class="btn btn-primary" id="btn-play" onclick="togglePlay(true)">播放 Play</button>
+          <button type="button" class="btn" id="btn-pause" onclick="togglePlay(false)">暫停 Pause</button>
+          <button type="button" class="btn" id="btn-reset" onclick="resetSimulation()">重設 Reset</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="workspace">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div>
+          <div class="nav-section-label">鏡頭視角與模組切換</div>
+          <div class="nav-list">
+            <button type="button" class="nav-btn" id="nav-panorama" onclick="switchView('panorama')">
+              <span class="nav-idx">ALL</span>
+              <span class="nav-text">
+                <span class="nav-title">全景架構總覽</span>
+                <span class="nav-sub">Zoom Out 全系統視角</span>
+              </span>
+              <span class="nav-chip">全景</span>
+            </button>
+
+            <div class="nav-divider"></div>
+
+            <button type="button" class="nav-btn is-active" id="nav-tag1" onclick="switchView('tag1')">
+              <span class="nav-idx">01</span>
+              <span class="nav-text">
+                <span class="nav-title">香氣場與佳點集</span>
+                <span class="nav-sub">Fragrance &amp; Best Point</span>
+              </span>
+              <span class="nav-chip">f=cIᵃ</span>
+            </button>
+
+            <button type="button" class="nav-btn" id="nav-tag2" onclick="switchView('tag2')">
+              <span class="nav-idx">02</span>
+              <span class="nav-text">
+                <span class="nav-title">記憶存儲與提純</span>
+                <span class="nav-sub">Memory &amp; Purification</span>
+              </span>
+              <span class="nav-chip">5th</span>
+            </button>
+
+            <button type="button" class="nav-btn" id="nav-tag3" onclick="switchView('tag3')">
+              <span class="nav-idx">03</span>
+              <span class="nav-text">
+                <span class="nav-title">逐維與非線性搜尋</span>
+                <span class="nav-sub">Dimension Search</span>
+              </span>
+              <span class="nav-chip">exp(-5)</span>
+            </button>
+
+            <button type="button" class="nav-btn" id="nav-tag4" onclick="switchView('tag4')">
+              <span class="nav-idx">04</span>
+              <span class="nav-text">
+                <span class="nav-title">SVM 軸承故障診斷</span>
+                <span class="nav-sub">CWRU X1–X9 Matrix</span>
+              </span>
+              <span class="nav-chip">&gt;90%</span>
+            </button>
+
+            <button type="button" class="nav-btn" id="nav-tag5" onclick="switchView('tag5')">
+              <span class="nav-idx">05</span>
+              <span class="nav-text">
+                <span class="nav-title">IIR 濾波與效能對比</span>
+                <span class="nav-sub">942 Epochs Benchmark</span>
+              </span>
+              <span class="nav-chip">93.3%</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="sidebar-telemetry">
+          <div class="tel-row">
+            <span class="tel-key">演算法狀態</span>
+            <span class="tel-val is-ok" id="tel-status">RUNNING</span>
+          </div>
+          <div class="tel-row">
+            <span class="tel-key">當前疊代 (t / max)</span>
+            <span class="tel-val" id="tel-iter">1 / 50</span>
+          </div>
+          <div class="tel-row">
+            <span class="tel-key">記憶庫存儲極值數</span>
+            <span class="tel-val" id="tel-memory">6 nodes</span>
+          </div>
+          <div class="tel-row">
+            <span class="tel-key">平均適應度 (DGBOA)</span>
+            <span class="tel-val" id="tel-fitness">1.440</span>
+          </div>
+          <div class="tel-row">
+            <span class="tel-key">種群規模 (Pop)</span>
+            <span class="tel-val">50 隻蝴蝶</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- STAGE VIEWPORT -->
+      <main class="stage-viewport">
+        <div class="camera-frame" id="camera-frame">
+
+          <!-- PANORAMA VIEW (ZOOM OUT) -->
+          <section class="view-panel panorama-grid" id="view-panorama" aria-label="全景架構視角">
+            <div class="panorama-banner">
+              <div>
+                <h2>MBOA / DGBOA 多模態蝴蝶優化演算法：全景系統架構視圖 (Zoom Out)</h2>
+                <p>結合佳點集均勻初始化、Memory 記憶存儲與提純程序、以及逐維非線性局部搜尋，克服傳統 BOA 易陷局部最優與收斂緩慢之缺陷。點擊任意模組卡片即可 Zoom In 進入微觀解算介面。</p>
+              </div>
+              <div class="panorama-kpis">
+                <div class="mini-kpi">
+                  <div class="mini-kpi-label">最優收斂疊代</div>
+                  <div class="mini-kpi-val">第 5 代</div>
+                </div>
+                <div class="mini-kpi">
+                  <div class="mini-kpi-label">Precision / Recall</div>
+                  <div class="mini-kpi-val">0.95</div>
+                </div>
+                <div class="mini-kpi">
+                  <div class="mini-kpi-label">求解成功率</div>
+                  <div class="mini-kpi-val">93.314%</div>
+                </div>
+                <div class="mini-kpi">
+                  <div class="mini-kpi-label">平均解算耗時</div>
+                  <div class="mini-kpi-val">0.014 s</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panorama-cards">
+              <button type="button" class="pano-card" onclick="switchView('tag1')">
+                <div class="pano-card-head">
+                  <span class="pano-tag">TAG 01｜物理初始化</span>
+                  <span class="pano-zoom-hint">點擊 Zoom In →</span>
+                </div>
+                <h3>香氣場物理感應與 1000 佳點集</h3>
+                <p>模擬蝴蝶在多峰香氣場中依適應度釋放與感知香氣，並以確定性佳點集取代隨機初始化，確保種群均勻覆蓋解空間。</p>
+                <div class="pano-formula">f = c · Iᵃ ｜ Best Point Set (N=1000)</div>
+              </button>
+
+              <button type="button" class="pano-card" onclick="switchView('tag2')">
+                <div class="pano-card-head">
+                  <span class="pano-tag">TAG 02｜記憶與提純</span>
+                  <span class="pano-zoom-hint">點擊 Zoom In →</span>
+                </div>
+                <h3>記憶存儲組件、加速檢測與提純程序</h3>
+                <p>透過適應度概率 p 與距離概率 P(||Dᵢ,ₙ||, s) 雙重篩選極值存入 Memory，消除冗餘解並於第 5 次疊代快速收斂。</p>
+                <div class="pano-formula">p = 1 - (J(xₖ)-J(x_best))/(J(x_worst)-J(x_best))</div>
+              </button>
+
+              <button type="button" class="pano-card" onclick="switchView('tag3')">
+                <div class="pano-card-head">
+                  <span class="pano-tag">TAG 03｜精細開發</span>
+                  <span class="pano-zoom-hint">點擊 Zoom In →</span>
+                </div>
+                <h3>逐維搜尋與非線性指數衰減擾動</h3>
+                <p>固定其餘維度對當前最優解逐維微調，結合二次指數衰減包絡線，前期大步探索避開局部極值、後期高精度收斂。</p>
+                <div class="pano-formula">xⱼ*ᵗ' = xⱼ*ᵗ(1 + exp(-5(t/max_gen)²+0.3)·unifrnd(-1,1))</div>
+              </button>
+
+              <button type="button" class="pano-card" onclick="switchView('tag4')">
+                <div class="pano-card-head">
+                  <span class="pano-tag">TAG 04｜工業診斷</span>
+                  <span class="pano-zoom-hint">點擊 Zoom In →</span>
+                </div>
+                <h3>SVM 超平面調優與 CWRU 軸承故障分類</h3>
+                <p>在 c∈[0.01,350]、g∈[0.01,100] 空間優化 SVM 懲罰係數與核參數，於 9 類軸承故障 (X1–X9) 達成 &gt;90% 準確率。</p>
+                <div class="pano-formula">Wᵀx + b = 0 ｜ Margin = 2 / ||W|| ｜ Precision = 0.95</div>
+              </button>
+
+              <button type="button" class="pano-card" onclick="switchView('tag5')">
+                <div class="pano-card-head">
+                  <span class="pano-tag">TAG 05｜濾波與實證</span>
+                  <span class="pano-zoom-hint">點擊 Zoom In →</span>
+                </div>
+                <h3>IIR 數位濾波系統辨識與多演算法對比</h3>
+                <p>完成 942 Epochs 求解，成功率 93.314%、方差趨近 0，RMSE (0.10–0.11) 與 MAE (0.10–0.12) 均全面領先 PSO/OFA/BAT/CSA。</p>
+                <div class="pano-formula">942 Epochs ｜ 14.338 s 總耗時 ｜ 0.014 s/Epoch</div>
+              </button>
+
+              <div class="pano-arch-card">
+                <div class="pano-card-head">
+                  <span class="pano-tag">論文實證實驗環境</span>
+                  <span class="card-badge">100 次獨立重複實驗</span>
+                </div>
+                <div>
+                  <h3 style="margin:0 0 6px 0; font-size: var(--subhead-size);">實驗平台與測試基準 (Lin &amp; Cheng, 2024)</h3>
+                  <ul class="var-list single-col" style="border-top:0; padding-top:0;">
+                    <li><strong>硬體配置：</strong>Intel Core i9-10900K (10C/20T, 3.7–5.3GHz)、32GB DDR4 3200MHz、Ubuntu 20.04 LTS</li>
+                    <li><strong>基準測試集：</strong>UCI Iris (150 樣本 / 3 類 / 4 特徵)、CWRU 軸承振動資料集 (X1–X9 共 9 類)、IIR 自適應濾波器</li>
+                    <li><strong>演算法參數：</strong>種群規模 50、變數維度 numVars=2、球形函數最優值 0.95 / 均值 0.94 / 標準差 0.01</li>
+                  </ul>
+                </div>
+                <div class="highlight-note">
+                  <strong>使用提示：</strong>頂部「感知形態 c」與「模式指數 a」滑桿會即時同步影響香氣場模擬動態；點擊任意左側分頁即可切換焦距。
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TAG 1: FRAGRANCE FIELD & BEST POINT SET -->
+          <section class="view-panel tag-layout is-visible" id="view-tag1" aria-label="香氣場與佳點集">
+            <div class="viz-column">
+              <div class="kpi-strip">
+                <div class="kpi-tile is-primary">
+                  <span class="kpi-label">香氣計算模型</span>
+                  <span class="kpi-value" id="kpi-t1-f">f = 0.50·I⁰·³⁰</span>
+                  <span class="kpi-sub">隨 c 與 a 滑桿即時更新</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">初始化採樣點</span>
+                  <span class="kpi-value">1,000 pts</span>
+                  <span class="kpi-sub">二維單位空間 [0,1]²</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">佳點集空間均勻度</span>
+                  <span class="kpi-value">98.4%</span>
+                  <span class="kpi-sub">低差異數覆蓋無聚類盲區</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">對比隨機採樣盲區</span>
+                  <span class="kpi-value">高離散聚集</span>
+                  <span class="kpi-sub">每次運行分佈不穩定</span>
+                </div>
+              </div>
+
+              <div class="viz-stack two-col">
+                <div class="card">
+                  <div class="card-head">
+                    <h3 class="card-title">動態香氣場與蝴蝶群體覓食軌跡</h3>
+                    <span class="card-badge" id="badge-t1-field">c=0.50, a=0.30</span>
+                  </div>
+                  <div class="canvas-wrap">
+                    <canvas id="canvas-fragrance"></canvas>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-item"><span class="swatch swatch-blue"></span>全域/局部香氣高峰 (Stimulus I)</span>
+                    <span class="legend-item"><span class="swatch swatch-teal"></span>追蹤全域最優蝴蝶 (Global Search)</span>
+                    <span class="legend-item"><span class="swatch swatch-amber"></span>隨機鄰域游走蝴蝶 (Local Search)</span>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-head">
+                    <h3 class="card-title">1000 點空間分佈對比 (Fig. 3)</h3>
+                    <div class="seg-group" role="group" aria-label="點集顯示模式">
+                      <button type="button" class="seg-btn is-active" id="btn-pts-split" onclick="setPointMode('split')">並排對比</button>
+                      <button type="button" class="seg-btn" id="btn-pts-best" onclick="setPointMode('best')">僅佳點集</button>
+                      <button type="button" class="seg-btn" id="btn-pts-rand" onclick="setPointMode('rand')">僅隨機點</button>
+                    </div>
+                  </div>
+                  <div class="canvas-wrap">
+                    <canvas id="canvas-points"></canvas>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-item"><span class="swatch swatch-blue"></span>佳點集 Best Point Set (均勻網格覆蓋)</span>
+                    <span class="legend-item"><span class="swatch swatch-red"></span>隨機點 Random Points (易聚集產生空洞)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <article class="doc-card">
+              <div class="doc-kicker">MODULE 01｜生物物理感應與空間初始化</div>
+              <h2 class="doc-title">蝴蝶香氣場強度模型與佳點集均勻化機制</h2>
+
+              <div class="formula-box">
+                <div class="formula-caption">
+                  <span>公式 (1) 蝴蝶香氣強度方程</span>
+                  <span>Section III-A</span>
+                </div>
+                <div class="math-display">
+                  <span class="math-var">f</span> = <span class="math-var">c</span> · <span class="math-var">I</span><sup><span class="math-var">a</span></sup>
+                </div>
+                <ul class="var-list">
+                  <li><strong>f：</strong>蝴蝶散發之香氣強度，決定鄰近個體被吸引的強度。</li>
+                  <li><strong>c：</strong>感知形態係數（感覺模態），控制氣味在空間中擴散與感測靈敏度。</li>
+                  <li><strong>I：</strong>刺激強度，與當前候選解的適應度函數值成正比。</li>
+                  <li><strong>a：</strong>依賴模式的冪指數（通常介於 0.1–0.9），調節吸收程度的非線性關係。</li>
+                </ul>
+              </div>
+
+              <div class="doc-section">
+                <h4>1. 物理與生物群體行為意義</h4>
+                <p>在蝴蝶優化演算法 (BOA) 中，每隻蝴蝶代表解空間中的一個候選解。適應度越高的蝴蝶會釋放越濃郁的香氣 <em>f</em>。當蝴蝶感應到同類散發的最強香氣時，會朝該方向進行「全域探索」飛行；反之若未感應到足夠強的香氣，則在自身鄰域進行隨機步長之「局部開發」，藉此在多峰函數地形中平衡探索與收斂。</p>
+              </div>
+
+              <div class="doc-section">
+                <h4>2. 佳點集 (Best Point Set) 為何能維持種群多樣性？</h4>
+                <p>傳統 BOA 採用隨機亂數初始化種群（如圖左半/紅點），容易產生局部聚集與大面積採樣空白，且每次啟動的分佈極不穩定，導致演算法早期就錯失全域最優區域而過早收斂於局部極值。</p>
+                <p>本研究引入數論「佳點集」策略構建 1000 個二維初始點（藍點）。如實驗對比所示，佳點集點位在二維單位空間 [0,1]² 內呈高度一致且均勻的網格分佈，能確保每次執行皆具備穩定的初始種群多樣性，大幅降低陷入局部最優的風險。</p>
+              </div>
+
+              <div class="highlight-note">
+                <strong>參數互動觀察：</strong>調高頂部 <strong>c (感知形態)</strong> 會增強遠距香氣吸引力，使左側模擬中的蝴蝶加速向峰值匯聚；調低 <strong>a</strong> 則能減緩高適應度峰值的飽和效應，維持多峰探索張力。
+              </div>
+            </article>
+          </section>
+
+          <!-- TAG 2: STORAGE MEMORY & PURIFICATION -->
+          <section class="view-panel tag-layout" id="view-tag2" aria-label="記憶存儲與提純機制">
+            <div class="viz-column">
+              <div class="kpi-strip">
+                <div class="kpi-tile is-primary">
+                  <span class="kpi-label">最優解收斂疊代</span>
+                  <span class="kpi-value">第 5 次疊代</span>
+                  <span class="kpi-sub">目標函數值達最小且不再變化</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">平均適應度穩定值</span>
+                  <span class="kpi-value">1.44</span>
+                  <span class="kpi-sub">第 20 代穩定（傳統 BOA 僅 0.98）</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">Memory 保留節點</span>
+                  <span class="kpi-value" id="kpi-t2-mem">6 個極值</span>
+                  <span class="kpi-sub">兼顧高適應度與空間距離</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">提純程序剔除冗餘</span>
+                  <span class="kpi-value" id="kpi-t2-pruned">14 次</span>
+                  <span class="kpi-sub">防止多樣性喪失與早熟收斂</span>
+                </div>
+              </div>
+
+              <div class="viz-stack two-row">
+                <div class="card">
+                  <div class="card-head">
+                    <h3 class="card-title">Memory 記憶組件篩選、加速檢測與提純程序動態</h3>
+                    <span class="card-badge" id="badge-t2-phase">競爭與距離篩選中</span>
+                  </div>
+                  <div class="canvas-wrap">
+                    <canvas id="canvas-memory"></canvas>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-item"><span class="swatch swatch-blue"></span>Memory 記憶存儲極值 (mₙ)</span>
+                    <span class="legend-item"><span class="swatch swatch-teal"></span>通過 p≥0.5 與距離驗證之新候選解</span>
+                    <span class="legend-item"><span class="swatch swatch-red"></span>提純程序剔除之冗餘/相似解</span>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-head">
+                    <h3 class="card-title">五種演算法收斂曲線對比 (Fig. 8 &amp; Fig. 11)</h3>
+                    <div class="seg-group" role="group" aria-label="收斂圖表模式">
+                      <button type="button" class="seg-btn is-active" id="btn-conv-obj" onclick="setConvMode('obj')">目標函數收斂</button>
+                      <button type="button" class="seg-btn" id="btn-conv-fit" onclick="setConvMode('fit')">平均適應度 (DGBOA vs BOA)</button>
+                    </div>
+                  </div>
+                  <div class="canvas-wrap">
+                    <canvas id="canvas-convergence"></canvas>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-item"><span class="swatch swatch-blue"></span>MBOA / DGBOA (第 5 代達最優 / 適應度 1.44)</span>
+                    <span class="legend-item"><span class="swatch swatch-purple"></span>PSO</span>
+                    <span class="legend-item"><span class="swatch swatch-teal"></span>OFA</span>
+                    <span class="legend-item"><span class="swatch swatch-gray"></span>BOA / BAT / CSA (第 40–50 代後收斂)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <article class="doc-card">
+              <div class="doc-kicker">MODULE 02｜多模態記憶存儲與提純策略</div>
+              <h2 class="doc-title">記憶組件篩選概率、加速檢測與提純程序</h2>
+
+              <div class="formula-box">
+                <div class="formula-caption">
+                  <span>公式 (4)(6)(7) 適應度概率與距離接受準則</span>
+                  <span>Section III-B</span>
+                </div>
+                <div class="math-display">
+                  <span class="math-var">p</span> = 1 −
+                  <span class="math-frac">
+                    <span class="num"><span class="math-var">J</span>(<span class="math-var">x</span><sub>k</sub>) − <span class="math-var">J</span>(<span class="math-var">x</span><sub>best</sub>)</span>
+                    <span class="den"><span class="math-var">J</span>(<span class="math-var">x</span><sub>worst</sub>) − <span class="math-var">J</span>(<span class="math-var">x</span><sub>best</sub>)</span>
+                  </span>
+                  ，僅 <span class="math-var">p</span> ∈ [0.5, 1] 進入評估
+                </div>
+                <div class="math-display" style="margin-top: 4px;">
+                  <span class="math-var">P</span>(‖<span class="math-var">D</span><sub>i,n</sub>‖, <span class="math-var">s</span>) =
+                  <span class="math-frac">
+                    <span class="num">‖<span class="math-var">D</span><sub>i,n</sub>‖</span>
+                    <span class="den">‖<span class="math-var">s</span>‖</span>
+                  </span>
+                  （距離越遠，開闢新記憶槽機率越高）
+                </div>
+                <ul class="var-list">
+                  <li><strong>J(xₖ)：</strong>第 k 代候選蝴蝶個體的目標代價函數值。</li>
+                  <li><strong>x_best / x_worst：</strong>當前種群中最佳與最差適應度個體。</li>
+                  <li><strong>‖Dᵢ,ₙ‖：</strong>候選解與 Memory 中最近已存儲節點的最短距離。</li>
+                  <li><strong>‖s‖：</strong>當前演化進程的空間尺度狀態參數。</li>
+                </ul>
+              </div>
+
+              <div class="doc-section">
+                <h4>1. 記憶存儲策略 (Storage Mechanism) 雙重把關</h4>
+                <p>為避免多峰搜尋中僅記住單一峰值，演算法先透過適應度概率 <em>p</em> 將品質低於中位區間 ([0, 0.5)) 的解設為 0 並過濾；再計算候選解與現有 Memory 節點的距離概率 <em>P</em>(‖<em>D</em>ᵢ,ₙ‖, <em>s</em>)。當隨機數 <em>γ</em> 小於距離比時，代表該解位於尚未開發的新波峰，新增記憶槽 <em>M</em> = <em>g</em> + 1；若距離過近，則與最近記憶點 <em>m</em>ₙ 進行競爭（若 <em>J</em>(<em>x</em>ᵢ) &lt; <em>J</em>(<em>m</em>ₙ) 則替換更優者）。</p>
+              </div>
+
+              <div class="doc-section">
+                <h4>2. 加速檢測與提純程序 (Purification Program)</h4>
+                <p><strong>加速檢測機制</strong>利用 Memory 內已存儲的高品質局部極值引導當前種群位置更新，無需反覆盲目重搜，使實驗中的目標函數在<strong>第 5 次疊代</strong>即鎖定全域最優且不再波動。同時，<strong>提純程序</strong>會週期性掃描並消除解空間中距離過近的冗餘/重複解，確保種群持續保留多峰探索多樣性，防止早熟收斂。</p>
+              </div>
+            </article>
+          </section>
+
+          <!-- TAG 3: DIMENSION-BY-DIMENSION & NONLINEAR LOCAL SEARCH -->
+          <section class="view-panel tag-layout" id="view-tag3" aria-label="逐維搜尋與非線性局部搜尋">
+            <div class="viz-column">
+              <div class="kpi-strip">
+                <div class="kpi-tile is-primary">
+                  <span class="kpi-label">當前擾動步長因子</span>
+                  <span class="kpi-value" id="kpi-t3-decay">1.350</span>
+                  <span class="kpi-sub">exp(-5·(t/max_gen)² + 0.3)</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">初期最大探索倍率</span>
+                  <span class="kpi-value">e⁰·³ ≈ 1.35</span>
+                  <span class="kpi-sub">t = 0 時大範圍跳脫局部極值</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">末期精細開發倍率</span>
+                  <span class="kpi-value">e⁻⁴·⁷ ≈ 0.009</span>
+                  <span class="kpi-sub">t = max_gen 進行微米級收斂</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">當前搜尋維度</span>
+                  <span class="kpi-value" id="kpi-t3-dim">維度 j = 1</span>
+                  <span class="kpi-sub">固定其餘維度獨立微調</span>
+                </div>
+              </div>
+
+              <div class="viz-stack two-col">
+                <div class="card">
+                  <div class="card-head">
+                    <h3 class="card-title">逐維正交微調與螺旋收斂軌跡</h3>
+                    <span class="card-badge" id="badge-t3-step">t = 1 / 50</span>
+                  </div>
+                  <div class="canvas-wrap">
+                    <canvas id="canvas-dimsearch"></canvas>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-item"><span class="swatch swatch-blue"></span>逐維獨立探測路徑 (Dimension 1 → 2)</span>
+                    <span class="legend-item"><span class="swatch swatch-teal"></span>當前最優解 (x*ᵗ) 與收斂包絡圈</span>
+                    <span class="legend-item"><span class="swatch swatch-amber"></span>均勻隨機試探點 unifrnd(-1, 1)</span>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-head">
+                    <h3 class="card-title">非線性指數衰減包絡軌跡曲線 (Eq. 2)</h3>
+                    <span class="card-badge">二次指數衰減</span>
+                  </div>
+                  <div class="canvas-wrap">
+                    <canvas id="canvas-decay"></canvas>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-item"><span class="swatch swatch-blue"></span>衰減振幅包絡 exp(-5(t/max_gen)² + 0.3)</span>
+                    <span class="legend-item"><span class="swatch swatch-red"></span>當前疊代進度指標 t</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <article class="doc-card">
+              <div class="doc-kicker">MODULE 03｜逐維分解與非線性局部搜尋</div>
+              <h2 class="doc-title">逐維獨立微調策略與非線性衰減軌跡解析</h2>
+
+              <div class="formula-box">
+                <div class="formula-caption">
+                  <span>公式 (2) 逐維非線性局部搜尋公式</span>
+                  <span>Section III-A</span>
+                </div>
+                <div class="math-display">
+                  <span class="math-var">x</span><sub>j</sub><sup>*t'</sup> =
+                  <span class="math-var">x</span><sub>j</sub><sup>*t</sup>
+                  ( 1 + exp( −5 · (<span class="math-var">t</span> / max_gen)<sup>2</sup> + 0.3 ) · unifrnd(−1, 1) )
+                </div>
+                <ul class="var-list">
+                  <li><strong>xⱼ*ᵗ：</strong>第 t 次疊代中當前最優解的第 j 個維度分量。</li>
+                  <li><strong>xⱼ*ᵗ'：</strong>經逐維擾動後產生的第 j 維新候選分量。</li>
+                  <li><strong>t / max_gen：</strong>當前疊代次數與最大疊代上限之比值，控制進程百分比。</li>
+                  <li><strong>unifrnd(-1, 1)：</strong>區間 [-1, 1] 均勻分佈隨機數，提供雙向對稱擾動。</li>
+                </ul>
+              </div>
+
+              <div class="doc-section">
+                <h4>1. 為何要採用「逐維搜尋 (Dimension-by-Dimension)」？</h4>
+                <p>在傳統高維優化中，所有維度同時隨機變動容易產生「維度耦合退化」——某個維度變好卻被另一維度的不良步長抵消，使演算法卡在局部次優解。</p>
+                <p>逐維搜尋固定其餘維度的數值，每次僅單獨調整第 <em>j</em> 維並立即評估對整體目標函數的影響。這讓演算法能精準捕捉每個維度對效能的貢獻，加快當前最優解向全域最優解演化。</p>
+              </div>
+
+              <div class="doc-section">
+                <h4>2. 非線性衰減軌跡的三階段物理特性</h4>
+                <p>權重函數 <strong>exp(-5(t/max_gen)² + 0.3)</strong> 採用二次冪負指數曲線：在疊代初期（t/max_gen &lt; 0.3），數值維持在 1.35 至 0.86 之間的高原區，賦予蝴蝶較寬的擾動半徑以跳脫局部陷阱；進入中期（0.3–0.7）時振幅陡降，快速鎖定全域波谷；到了末期（&gt; 0.7）則平滑收斂至 0.009 以下，專注於最優點周邊的極微幅精細微調。</p>
+              </div>
+            </article>
+          </section>
+
+          <!-- TAG 4: SVM BEARING FAULT DIAGNOSIS -->
+          <section class="view-panel tag-layout" id="view-tag4" aria-label="SVM 軸承故障診斷">
+            <div class="viz-column">
+              <div class="kpi-strip">
+                <div class="kpi-tile is-primary">
+                  <span class="kpi-label">CWRU 9 類軸承準確率</span>
+                  <span class="kpi-value">&gt; 90%</span>
+                  <span class="kpi-sub">X1–X9 複雜機械故障測試集</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">Precision / Recall</span>
+                  <span class="kpi-value">0.95 / 0.95</span>
+                  <span class="kpi-sub">顯著優於 PSO(0.91) 與 CSA(0.71)</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">SVM 懲罰參數 c 範圍</span>
+                  <span class="kpi-value">[0.01, 350]</span>
+                  <span class="kpi-sub">Table 1 初始化邊界 (numVars=2)</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">RBF 核函數 g 範圍</span>
+                  <span class="kpi-value">[0.01, 100]</span>
+                  <span class="kpi-sub">結合 k-fold 交叉驗證適應度</span>
+                </div>
+              </div>
+
+              <div class="viz-stack two-col-asymmetric">
+                <div class="card">
+                  <div class="card-head">
+                    <h3 class="card-title">SVM 最佳超平面與分類間隔 (Fig. 6 &amp; Fig. 12)</h3>
+                    <div class="seg-group" role="group" aria-label="SVM 優化狀態切換">
+                      <button type="button" class="seg-btn" id="btn-svm-before" onclick="setSvmMode('before')">優化前 (BOA)</button>
+                      <button type="button" class="seg-btn is-active" id="btn-svm-after" onclick="setSvmMode('after')">優化後 (MBOA)</button>
+                    </div>
+                  </div>
+                  <div class="canvas-wrap">
+                    <canvas id="canvas-svm"></canvas>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-item"><span class="swatch swatch-blue"></span>類別 A 樣本 (實心/空心點)</span>
+                    <span class="legend-item"><span class="swatch swatch-amber"></span>類別 B 樣本與支持向量</span>
+                    <span class="legend-item"><span class="swatch swatch-red"></span>未優化誤分類樣本 (僅 BOA 模式)</span>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-head">
+                    <h3 class="card-title">CWRU 9 類軸承故障混淆矩陣 X1–X9 (Fig. 13 示意)</h3>
+                    <span class="card-badge">36 組二元超平面投票</span>
+                  </div>
+                  <div class="cm-wrap">
+                    <div class="cm-grid" id="cm-grid" role="grid" aria-label="CWRU 軸承故障 9x9 混淆矩陣"></div>
+                    <div class="cm-inspector" id="cm-inspector">
+                      <span>點擊任意矩陣格檢視類別：<strong>X1 內圈故障</strong>｜測試準確表現 &gt;90% (Precision &amp; Recall 達 0.95)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <article class="doc-card">
+              <div class="doc-kicker">MODULE 04｜支援向量機與機械故障診斷</div>
+              <h2 class="doc-title">SVM 超平面參數調優與 CWRU 多類別分類</h2>
+
+              <div class="formula-box">
+                <div class="formula-caption">
+                  <span>公式 (9)–(14) 超平面與分類評估指標</span>
+                  <span>Section III-C</span>
+                </div>
+                <div class="math-display">
+                  <span class="math-var">W</span><sup>T</sup><span class="math-var">x</span> + <span class="math-var">b</span> = 0 ，分類間隔 Margin =
+                  <span class="math-frac">
+                    <span class="num">2</span>
+                    <span class="den">‖<span class="math-var">W</span>‖</span>
+                  </span>
+                </div>
+                <div class="math-display" style="margin-top: 3px; font-size: 0.8125rem;">
+                  Precision = TP/(TP+FP) = <strong>0.95</strong> ｜ Recall = TP/(TP+FN) = <strong>0.95</strong>
+                </div>
+                <ul class="var-list">
+                  <li><strong>W / b：</strong>超平面法向量與截距，約束 yᵢ(Wᵀxᵢ+b) ≥ 1。</li>
+                  <li><strong>H₁ / H₂：</strong>平行於最佳超平面 H 的兩條支持向量邊界線。</li>
+                  <li><strong>ER = M / N：</strong>誤分類率（誤分樣本數 M / 總樣本數 N）。</li>
+                  <li><strong>m(m-1)/2：</strong>9 類故障共構建 36 個最佳二元分類超平面。</li>
+                </ul>
+              </div>
+
+              <div class="doc-section">
+                <h4>1. MBOA 如何克服傳統 SVM 參數調校瓶頸？</h4>
+                <p>SVM 分類準確度高度依賴懲罰係數 <em>c</em> ∈ [0.01, 350] 與核函數參數 <em>g</em> ∈ [0.01, 100]。本研究以佳點集初始化 50 組二維 (<em>c</em>, <em>g</em>) 候選參數，結合 <em>k</em> 折交叉驗證計算分類誤差作為適應度，透過 MBOA 尋優後在 UCI Iris 資料集 (150 筆 / 3 類) 達成全數正確分類，解決了傳統 BOA 仍存離散誤分點之問題。</p>
+              </div>
+
+              <div class="doc-section">
+                <h4>2. Case Western Reserve University (CWRU) 9 類軸承故障</h4>
+                <p>從振動信號萃取特徵後，將 9 種工況：<strong>X1 內圈故障、X2 外圈故障、X3 滾動體故障、X4 保持架故障、X5 潤滑故障、X6 異物損傷、X7 疲勞故障、X8 磨損故障、X9 電氣故障</strong>輸入優化後的多類別 SVM，測試集整體診斷準確率突破 <strong>90%</strong>，具備工業現場高可靠度。</p>
+              </div>
+            </article>
+          </section>
+
+          <!-- TAG 5: IIR FILTER & PERFORMANCE BENCHMARK -->
+          <section class="view-panel tag-layout" id="view-tag5" aria-label="IIR 濾波器與效能數據對比">
+            <div class="viz-column">
+              <div class="kpi-strip">
+                <div class="kpi-tile is-primary">
+                  <span class="kpi-label">成功求解 Epochs / 成功率</span>
+                  <span class="kpi-value">942 / 93.314%</span>
+                  <span class="kpi-sub">整週模糊度與 IIR 參數求解居冠</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">平均 / 總求解時間</span>
+                  <span class="kpi-value">0.014 s / 14.338 s</span>
+                  <span class="kpi-sub">滿足即時數位濾波系統辨識需求</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">預測誤差 RMSE / MAE</span>
+                  <span class="kpi-value">0.10–0.11 / 0.10–0.12</span>
+                  <span class="kpi-sub">均為五種對比演算法中最小</span>
+                </div>
+                <div class="kpi-tile">
+                  <span class="kpi-label">IIR 優化方差與收斂</span>
+                  <span class="kpi-value">方差 → 0 (50 代)</span>
+                  <span class="kpi-sub">極高穩定度與重複性表現</span>
+                </div>
+              </div>
+
+              <div class="viz-stack two-row">
+                <div class="viz-stack two-col">
+                  <div class="card">
+                    <div class="card-head">
+                      <h3 class="card-title">多演算法關鍵指標柱狀對比 (Figs. 9–10)</h3>
+                      <div class="seg-group" role="group" aria-label="效能指標切換">
+                        <button type="button" class="seg-btn is-active" id="btn-bench-pr" onclick="setBenchMetric('pr')">Precision &amp; Recall</button>
+                        <button type="button" class="seg-btn" id="btn-bench-err" onclick="setBenchMetric('err')">RMSE &amp; MAE 誤差</button>
+                      </div>
+                    </div>
+                    <div class="canvas-wrap">
+                      <canvas id="canvas-benchbar"></canvas>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-head">
+                      <h3 class="card-title">IIR 數位濾波器方差與收斂曲線 (Fig. 14)</h3>
+                      <span class="card-badge">方差趨近於 0</span>
+                    </div>
+                    <div class="canvas-wrap">
+                      <canvas id="canvas-iir"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-head">
+                    <h3 class="card-title">論文實證數據彙整比較表 (Tables 2–4 &amp; Figs. 9–10)</h3>
+                    <span class="card-badge">100 次獨立測試統計</span>
+                  </div>
+                  <div class="bench-table-wrap">
+                    <table class="bench-table">
+                      <thead>
+                        <tr>
+                          <th>優化演算法</th>
+                          <th class="num">Precision</th>
+                          <th class="num">Recall</th>
+                          <th class="num">RMSE 區間</th>
+                          <th class="num">MAE 區間</th>
+                          <th>IIR 與穩定度表現</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="is-highlight">
+                          <td>MBOA (DGBOA 本研究)</td>
+                          <td class="num">0.95</td>
+                          <td class="num">0.95</td>
+                          <td class="num">0.10 – 0.11</td>
+                          <td class="num">0.10 – 0.12</td>
+                          <td>942 Epochs｜成功率 93.314%｜均時 0.014 s｜方差 → 0</td>
+                        </tr>
+                        <tr>
+                          <td>PSO (粒子群優化)</td>
+                          <td class="num">0.91</td>
+                          <td class="num">0.91</td>
+                          <td class="num">0.11 – 0.13</td>
+                          <td class="num">0.12 – 0.13</td>
+                          <td>精準度次之，高維局部微調收斂慢於 MBOA</td>
+                        </tr>
+                        <tr>
+                          <td>OFA (最優覓食演算法)</td>
+                          <td class="num">0.86</td>
+                          <td class="num">0.86</td>
+                          <td class="num">0.12 – 0.13</td>
+                          <td class="num">0.12 – 0.14</td>
+                          <td>中等全局探索能力，IIR 收斂時間較長</td>
+                        </tr>
+                        <tr>
+                          <td>BAT (蝙蝠演算法)</td>
+                          <td class="num">0.78</td>
+                          <td class="num">0.78</td>
+                          <td class="num">0.12 – 0.14</td>
+                          <td class="num">0.13 – 0.14</td>
+                          <td>多峰地形易陷入局部震盪，方差波動較大</td>
+                        </tr>
+                        <tr>
+                          <td>CSA (烏鴉搜尋演算法)</td>
+                          <td class="num">0.71</td>
+                          <td class="num">0.71</td>
+                          <td class="num">0.13 – 0.14</td>
+                          <td class="num">0.13 – 0.14</td>
+                          <td>正樣本辨識與記憶引導受限，誤差最大</td>
+                        </tr>
+                        <tr>
+                          <td>FDB-BOA (適應度距離平衡)</td>
+                          <td class="num">—</td>
+                          <td class="num">—</td>
+                          <td class="num">~ 0.13</td>
+                          <td class="num">~ 0.14</td>
+                          <td>高維與大規模問題選擇機制靈活性不足</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <article class="doc-card">
+              <div class="doc-kicker">MODULE 05｜IIR 系統辨識與統計顯著性分析</div>
+              <h2 class="doc-title">IIR 數位濾波器調參實證與五種演算法比較</h2>
+
+              <div class="formula-box">
+                <div class="formula-caption">
+                  <span>Table 2–4 核心實證統計摘要</span>
+                  <span>Section IV-A &amp; IV-B</span>
+                </div>
+                <div class="math-display" style="font-size: 0.875rem;">
+                  IIR 求解成功率 = <strong>93.314%</strong> (942 Epochs) ｜ 總耗時 = <strong>14.338 s</strong> ｜ 均時 = <strong>0.014 s</strong>
+                </div>
+                <ul class="var-list single-col">
+                  <li><strong>球形測試函數 (Table 2)：</strong>MBOA 最優值 0.95、均值 0.94、標準差僅 0.01。</li>
+                  <li><strong>顯著性分析 (Table 3)：</strong>收斂步數僅 80 次顯著低於對照演算法；平均運行時間 95 秒（兼顧最高穩定性與收斂速度）。</li>
+                </ul>
+              </div>
+
+              <div class="doc-section">
+                <h4>1. IIR 無限脈衝響應數位濾波器參數優化</h4>
+                <p>IIR 系統辨識屬於高度非線性與多峰極值問題，傳統演算法常因陷入局部極值而使濾波器係數估測產生較大方差。MBOA 在約 <strong>50 次疊代</strong>內即完成 IIR 目標函數最小化，且重複測試之<strong>方差趨近於 0</strong>，同時在整週模糊度求解測試中以 0.014 秒單次均時達成 93.314% 高成功率。</p>
+              </div>
+
+              <div class="doc-section">
+                <h4>2. 跨領域應用延伸與未來展望</h4>
+                <p>除 SVM 故障分類與 IIR 濾波器外，林正旺與鄭凱文指出該框架亦可延伸至電力系統經濟調度、機械結構多目標設計、金融投資組合優化、生醫基因序列分析與醫學影像分割、交通路網流優化及環境污染物擴散模擬等複雜工程場景；未來將持續針對參數敏感性與高維計算開銷進行輕量化改進。</p>
+              </div>
+            </article>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <api-shim></api-shim>
+  <script>
+    /* ============================================================
+       MBOA-Studio State & Configuration
+       ============================================================ */
+    const APP_STATE = {
+      activeView: 'tag1',
+      isPlaying: true,
+      c: 0.50,
+      a: 0.30,
+      speed: 1.0,
+      t: 1,
+      maxGen: 50,
+      pointMode: 'split',
+      convMode: 'obj',
+      svmMode: 'after',
+      benchMetric: 'pr',
+      selectedCmCell: { row: 0, col: 0 }
+    };
+
+    const CWRU_LABELS = [
+      { id: 'X1', name: `內圈故障 (Inner Ring Fault)` },
+      { id: 'X2', name: `外圈故障 (Outer Ring Fault)` },
+      { id: 'X3', name: `滾動體故障 (Rolling Element)` },
+      { id: 'X4', name: `保持架故障 (Cage Fault)` },
+      { id: 'X5', name: `潤滑故障 (Lubrication Fault)` },
+      { id: 'X6', name: `異物損傷 (Foreign Body Damage)` },
+      { id: 'X7', name: `疲勞故障 (Fatigue Fault)` },
+      { id: 'X8', name: `磨損故障 (Wear Fault)` },
+      { id: 'X9', name: `電氣故障 (Electrical Fault)` }
+    ];
+
+    /* Representative >90% diagonal confusion matrix illustrating Fig. 13 (93.8% avg, Precision/Recall ~0.95) */
+    const CWRU_MATRIX = [
+      [48, 1, 0, 0, 1, 0, 0, 0, 0],
+      [1, 47, 1, 0, 0, 1, 0, 0, 0],
+      [0, 1, 48, 1, 0, 0, 0, 0, 0],
+      [0, 0, 1, 46, 1, 0, 1, 1, 0],
+      [1, 0, 0, 1, 47, 1, 0, 0, 0],
+      [0, 0, 1, 0, 1, 47, 1, 0, 0],
+      [0, 0, 0, 1, 0, 1, 46, 2, 0],
+      [0, 0, 0, 0, 0, 1, 1, 47, 1],
+      [0, 0, 0, 0, 0, 0, 0, 1, 49]
+    ];
+
+    /* Read Carbon tokens from CSS :root at runtime */
+    function getTokens() {
+      const cs = getComputedStyle(document.documentElement);
+      return {
+        bg: cs.getPropertyValue('--background').trim(),
+        card: cs.getPropertyValue('--surface-card').trim(),
+        surfaceLow: cs.getPropertyValue('--surface-container-low').trim(),
+        ink: cs.getPropertyValue('--on-surface').trim(),
+        inkVariant: cs.getPropertyValue('--on-surface-variant').trim(),
+        outline: cs.getPropertyValue('--outline').trim(),
+        outlineVar: cs.getPropertyValue('--outline-variant').trim(),
+        outlineSubtle: cs.getPropertyValue('--outline-subtle').trim(),
+        primary: cs.getPropertyValue('--primary').trim(),
+        primaryCont: cs.getPropertyValue('--primary-container').trim(),
+        tertiary: cs.getPropertyValue('--tertiary').trim(),
+        positive: cs.getPropertyValue('--positive').trim(),
+        warning: cs.getPropertyValue('--warning').trim(),
+        error: cs.getPropertyValue('--error').trim(),
+        d1: cs.getPropertyValue('--data-1').trim(),
+        d2: cs.getPropertyValue('--data-2').trim(),
+        d3: cs.getPropertyValue('--data-3').trim(),
+        d4: cs.getPropertyValue('--data-4').trim(),
+        d5: cs.getPropertyValue('--data-5').trim(),
+        dCtx: cs.getPropertyValue('--data-context').trim(),
+        fontLabel: cs.getPropertyValue('--font-label').trim(),
+        fontBody: cs.getPropertyValue('--font-body').trim()
+      };
+    }
+
+    let TOKENS = null;
+
+    /* ============================================================
+       Deterministic Generators (Best Point Set vs Random Points)
+       ============================================================ */
+    const BEST_POINTS = [];
+    const RAND_POINTS = [];
+    (function buildPoints() {
+      const N = 1000;
+      const p1 = 5;
+      const r1 = 2 * Math.cos((2 * Math.PI) / p1);
+      /* Halton / Good Point Set (Hua Luogeng good point set method) */
+      const r2 = Math.sqrt(2);
+      const r3 = Math.sqrt(3);
+      for (let k = 1; k <= N; k++) {
+        const x = (k * r2) % 1;
+        const y = (k * r3) % 1;
+        BEST_POINTS.push({ x, y });
+      }
+      /* Deterministic seeded PRNG for consistent Random Points visualization */
+      let seed = 42197;
+      function nextRand() {
+        seed = (seed * 1664525 + 1013904223) % 4294967296;
+        return seed / 4294967296;
+      }
+      for (let k = 0; k < N; k++) {
+        RAND_POINTS.push({ x: nextRand(), y: nextRand() });
+      }
+    })();
+
+    /* ============================================================
+       Dynamic Simulation Particles (Butterflies, Memory, DimSearch)
+       ============================================================ */
+    const PEAKS = [
+      { x: 0.72, y: 0.34, I: 1.00, label: `Global Optimum` },
+      { x: 0.28, y: 0.68, I: 0.76, label: `Local Peak A` },
+      { x: 0.30, y: 0.28, I: 0.62, label: `Local Peak B` },
+      { x: 0.76, y: 0.76, I: 0.54, label: `Local Peak C` }
+    ];
+
+    const BUTTERFLIES = [];
+    for (let i = 0; i < 36; i++) {
+      const bp = BEST_POINTS[(i * 27) % BEST_POINTS.length];
+      BUTTERFLIES.push({
+        x: bp.x,
+        y: bp.y,
+        vx: 0,
+        vy: 0,
+        mode: i % 3 === 0 ? 'local' : 'global',
+        phase: (i * 0.618) % (Math.PI * 2)
+      });
+    }
+
+    const MEMORY_NODES = [
+      { x: 0.72, y: 0.34, fitness: 0.98, age: 0, isBest: true },
+      { x: 0.28, y: 0.68, fitness: 0.84, age: 0, isBest: false },
+      { x: 0.30, y: 0.28, fitness: 0.76, age: 0, isBest: false },
+      { x: 0.76, y: 0.76, fitness: 0.71, age: 0, isBest: false },
+      { x: 0.52, y: 0.50, fitness: 0.65, age: 0, isBest: false },
+      { x: 0.16, y: 0.48, fitness: 0.61, age: 0, isBest: false }
+    ];
+
+    const CANDIDATE_SWARM = [];
+    for (let i = 0; i < 18; i++) {
+      const ang = (i / 18) * Math.PI * 2;
+      const rad = 0.18 + (i % 4) * 0.08;
+      CANDIDATE_SWARM.push({
+        x: 0.5 + Math.cos(ang) * rad,
+        y: 0.5 + Math.sin(ang) * rad,
+        ang,
+        status: i % 4 === 0 ? 'pruned' : (i % 3 === 0 ? 'accepted' : 'testing')
+      });
+    }
+
+    /* ============================================================
+       Persistence (notebookAppApi)
+       ============================================================ */
+    async function saveAppState() {
+      if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === 'function') {
+        try {
+          await window.notebookAppApi.setAppState({
+            activeView: APP_STATE.activeView,
+            c: APP_STATE.c,
+            a: APP_STATE.a,
+            speed: APP_STATE.speed,
+            pointMode: APP_STATE.pointMode,
+            convMode: APP_STATE.convMode,
+            svmMode: APP_STATE.svmMode,
+            benchMetric: APP_STATE.benchMetric
+          });
+        } catch (err) {
+          /* Ignore host persistence issues gracefully */
+        }
+      }
+    }
+
+    async function loadAppState() {
+      if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === 'function') {
+        try {
+          const saved = await window.notebookAppApi.getAppState();
+          if (saved && typeof saved === 'object') {
+            if (saved.activeView) APP_STATE.activeView = saved.activeView;
+            if (typeof saved.c === 'number') APP_STATE.c = saved.c;
+            if (typeof saved.a === 'number') APP_STATE.a = saved.a;
+            if (typeof saved.speed === 'number') APP_STATE.speed = saved.speed;
+            if (saved.pointMode) APP_STATE.pointMode = saved.pointMode;
+            if (saved.convMode) APP_STATE.convMode = saved.convMode;
+            if (saved.svmMode) APP_STATE.svmMode = saved.svmMode;
+            if (saved.benchMetric) APP_STATE.benchMetric = saved.benchMetric;
+          }
+        } catch (err) {
+          /* Fallback to defaults */
+        }
+      }
+    }
+
+    /* ============================================================
+       View & Camera Zoom Transitions
+       ============================================================ */
+    let zoomTimer = null;
+
+    function switchView(viewName) {
+      const frame = document.getElementById('camera-frame');
+      const prevView = APP_STATE.activeView;
+      if (prevView === viewName) return;
+
+      APP_STATE.activeView = viewName;
+
+      const isToPanorama = viewName === 'panorama';
+      if (frame) {
+        frame.classList.remove('is-zooming-out', 'is-zooming-in');
+        frame.classList.add(isToPanorama ? 'is-zooming-in' : 'is-zooming-out');
+      }
+
+      if (zoomTimer) clearTimeout(zoomTimer);
+      zoomTimer = setTimeout(function () {
+        applyActiveViewDOM();
+        if (frame) {
+          frame.classList.remove('is-zooming-out', 'is-zooming-in');
+        }
+        resizeAllCanvases();
+        renderActiveView();
+      }, 150);
+
+      saveAppState();
+    }
+
+    function applyActiveViewDOM() {
+      const views = ['panorama', 'tag1', 'tag2', 'tag3', 'tag4', 'tag5'];
+      views.forEach(function (v) {
+        const panel = document.getElementById(`view-${v}`);
+        const nav = document.getElementById(`nav-${v}`);
+        if (panel) {
+          if (v === APP_STATE.activeView) panel.classList.add('is-visible');
+          else panel.classList.remove('is-visible');
+        }
+        if (nav) {
+          if (v === APP_STATE.activeView) nav.classList.add('is-active');
+          else nav.classList.remove('is-active');
+        }
+      });
+    }
+
+    /* ============================================================
+       UI Event Handlers (Hoisted function declarations)
+       ============================================================ */
+    function onParamC(val) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return;
+      APP_STATE.c = num;
+      syncParamDisplays();
+      saveAppState();
+    }
+
+    function onParamA(val) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return;
+      APP_STATE.a = num;
+      syncParamDisplays();
+      saveAppState();
+    }
+
+    function onParamSpeed(val) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return;
+      APP_STATE.speed = num;
+      syncParamDisplays();
+      saveAppState();
+    }
+
+    function syncParamDisplays() {
+      const vc = document.getElementById('val-c');
+      const va = document.getElementById('val-a');
+      const vs = document.getElementById('val-speed');
+      const sc = document.getElementById('slider-c');
+      const sa = document.getElementById('slider-a');
+      const ss = document.getElementById('slider-speed');
+      const kpiF = document.getElementById('kpi-t1-f');
+      const badgeF = document.getElementById('badge-t1-field');
+
+      if (vc) vc.textContent = APP_STATE.c.toFixed(2);
+      if (va) va.textContent = APP_STATE.a.toFixed(2);
+      if (vs) vs.textContent = `${APP_STATE.speed.toFixed(1)}x`;
+      if (sc) sc.value = String(APP_STATE.c);
+      if (sa) sa.value = String(APP_STATE.a);
+      if (ss) ss.value = String(APP_STATE.speed);
+      if (kpiF) kpiF.textContent = `f = ${APP_STATE.c.toFixed(2)}·I^${APP_STATE.a.toFixed(2)}`;
+      if (badgeF) badgeF.textContent = `c=${APP_STATE.c.toFixed(2)}, a=${APP_STATE.a.toFixed(2)}`;
+    }
+
+    function togglePlay(playState) {
+      APP_STATE.isPlaying = Boolean(playState);
+      const bp = document.getElementById('btn-play');
+      const bpa = document.getElementById('btn-pause');
+      const tel = document.getElementById('tel-status');
+      if (bp) bp.classList.toggle('btn-primary', APP_STATE.isPlaying);
+      if (bpa) bpa.classList.toggle('btn-primary', !APP_STATE.isPlaying);
+      if (tel) {
+        tel.textContent = APP_STATE.isPlaying ? 'RUNNING' : 'PAUSED';
+        tel.classList.toggle('is-ok', APP_STATE.isPlaying);
+      }
+    }
+
+    function resetSimulation() {
+      APP_STATE.t = 1;
+      APP_STATE.c = 0.50;
+      APP_STATE.a = 0.30;
+      APP_STATE.speed = 1.0;
+      for (let i = 0; i < BUTTERFLIES.length; i++) {
+        const bp = BEST_POINTS[(i * 27) % BEST_POINTS.length];
+        BUTTERFLIES[i].x = bp.x;
+        BUTTERFLIES[i].y = bp.y;
+      }
+      syncParamDisplays();
+      togglePlay(true);
+      renderActiveView();
+      saveAppState();
+    }
+
+    function setPointMode(mode) {
+      APP_STATE.pointMode = mode;
+      ['split', 'best', 'rand'].forEach(function (m) {
+        const b = document.getElementById(`btn-pts-${m}`);
+        if (b) b.classList.toggle('is-active', m === mode);
+      });
+      drawPointsComparison();
+      saveAppState();
+    }
+
+    function setConvMode(mode) {
+      APP_STATE.convMode = mode;
+      ['obj', 'fit'].forEach(function (m) {
+        const b = document.getElementById(`btn-conv-${m}`);
+        if (b) b.classList.toggle('is-active', m === mode);
+      });
+      drawConvergenceChart();
+      saveAppState();
+    }
+
+    function setSvmMode(mode) {
+      APP_STATE.svmMode = mode;
+      ['before', 'after'].forEach(function (m) {
+        const b = document.getElementById(`btn-svm-${m}`);
+        if (b) b.classList.toggle('is-active', m === mode);
+      });
+      drawSvmPlot();
+      saveAppState();
+    }
+
+    function setBenchMetric(metric) {
+      APP_STATE.benchMetric = metric;
+      ['pr', 'err'].forEach(function (m) {
+        const b = document.getElementById(`btn-bench-${m}`);
+        if (b) b.classList.toggle('is-active', m === metric);
+      });
+      drawBenchBar();
+      saveAppState();
+    }
+
+    function selectCmCell(r, c) {
+      APP_STATE.selectedCmCell = { row: r, col: c };
+      const rowObj = CWRU_LABELS[r];
+      const colObj = CWRU_LABELS[c];
+      const val = CWRU_MATRIX[r][c];
+      const rowSum = CWRU_MATRIX[r].reduce(function (acc, v) { return acc + v; }, 0);
+      const rate = ((val / rowSum) * 100).toFixed(1);
+      const insp = document.getElementById('cm-inspector');
+      if (insp) {
+        if (r === c) {
+          insp.innerHTML = `<span>真實類別 <strong>${rowObj.id} ${rowObj.name}</strong> → 正確預測 ${val}/${rowSum} 筆 (${rate}%)｜總體準確率 &gt;90%</span>`;
+        } else {
+          insp.innerHTML = `<span>真實類別 <strong>${rowObj.id}</strong> 誤判為 <strong>${colObj.id} ${colObj.name}</strong>：${val}/${rowSum} 筆 (${rate}%)</span>`;
+        }
+      }
+    }
+
+    /* ============================================================
+       Build CWRU 9x9 Confusion Matrix DOM
+       ============================================================ */
+    function buildConfusionMatrix() {
+      const grid = document.getElementById('cm-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      /* Corner label */
+      const corner = document.createElement('div');
+      corner.className = 'cm-axis';
+      corner.textContent = 'T\\P';
+      grid.appendChild(corner);
+
+      /* Column headers */
+      for (let c = 0; c < 9; c++) {
+        const hdr = document.createElement('div');
+        hdr.className = 'cm-axis';
+        hdr.textContent = CWRU_LABELS[c].id;
+        grid.appendChild(hdr);
+      }
+
+      for (let r = 0; r < 9; r++) {
+        const rowHdr = document.createElement('div');
+        rowHdr.className = 'cm-axis';
+        rowHdr.textContent = CWRU_LABELS[r].id;
+        grid.appendChild(rowHdr);
+
+        for (let c = 0; c < 9; c++) {
+          const val = CWRU_MATRIX[r][c];
+          const cell = document.createElement('button');
+          cell.type = 'button';
+          cell.className = 'cm-cell';
+          cell.textContent = String(val);
+          cell.title = `${CWRU_LABELS[r].id} → ${CWRU_LABELS[c].id}: ${val}`;
+          if (r === c) {
+            cell.classList.add(val >= 48 ? 'is-diag-high' : 'is-diag-mid');
+          } else if (val > 0) {
+            cell.classList.add('is-off-low');
+          } else {
+            cell.classList.add('is-zero');
+          }
+          cell.onclick = (function (rr, cc) {
+            return function () { selectCmCell(rr, cc); };
+          })(r, c);
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    /* ============================================================
+       Canvas Helpers (HiDPI sizing)
+       ============================================================ */
+    function prepCanvas(id) {
+      const canvas = document.getElementById(id);
+      if (!canvas || !canvas.parentElement) return null;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return null;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const targetW = Math.floor(rect.width * dpr);
+      const targetH = Math.floor(rect.height * dpr);
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, w: rect.width, h: rect.height };
+    }
+
+    function resizeAllCanvases() {
+      [
+        'canvas-fragrance',
+        'canvas-points',
+        'canvas-memory',
+        'canvas-convergence',
+        'canvas-dimsearch',
+        'canvas-decay',
+        'canvas-svm',
+        'canvas-benchbar',
+        'canvas-iir'
+      ].forEach(prepCanvas);
+    }
+
+    /* ============================================================
+       TAG 1: Fragrance Field Animation & 1000 Points Comparison
+       ============================================================ */
+    function drawFragranceField(timeSec) {
+      const info = prepCanvas('canvas-fragrance');
+      if (!info) return;
+      const { ctx, w, h } = info;
+      const T = TOKENS;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      /* Subtle coordinate grid */
+      ctx.strokeStyle = T.outlineSubtle;
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 6; i++) {
+        ctx.beginPath();
+        ctx.moveTo((w / 6) * i, 0);
+        ctx.lineTo((w / 6) * i, h);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, (h / 6) * i);
+        ctx.lineTo(w, (h / 6) * i);
+        ctx.stroke();
+      }
+
+      /* Multi-modal fragrance contour rings governed by f = c * I^a */
+      const cVal = APP_STATE.c;
+      const aVal = APP_STATE.a;
+      PEAKS.forEach(function (pk, idx) {
+        const px = pk.x * w;
+        const py = pk.y * h;
+        const fragrance = cVal * Math.pow(pk.I, aVal);
+        const maxR = Math.min(w, h) * (0.16 + fragrance * 0.20);
+        const pulse = (Math.sin(timeSec * 2 + idx) + 1) * 0.5;
+
+        for (let rStep = 3; rStep >= 1; rStep--) {
+          const rad = (maxR * rStep) / 3 + pulse * 4;
+          ctx.beginPath();
+          ctx.arc(px, py, rad, 0, Math.PI * 2);
+          ctx.fillStyle = idx === 0
+            ? `rgba(15, 98, 254, ${0.06 + (4 - rStep) * 0.04})`
+            : `rgba(105, 41, 196, ${0.04 + (4 - rStep) * 0.03})`;
+          ctx.fill();
+          ctx.strokeStyle = idx === 0 ? T.d1 : T.dCtx;
+          ctx.lineWidth = idx === 0 ? 1.2 : 0.8;
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = idx === 0 ? T.d1 : T.inkVariant;
+        ctx.beginPath();
+        ctx.arc(px, py, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = `600 10px ${T.fontLabel}`;
+        ctx.fillText(`f=${fragrance.toFixed(2)}`, px + 8, py - 6);
+      });
+
+      /* Update and draw butterfly agents */
+      const dt = APP_STATE.isPlaying ? 0.016 * APP_STATE.speed * (0.6 + cVal * 0.7) : 0;
+      BUTTERFLIES.forEach(function (b, idx) {
+        if (dt > 0) {
+          /* Attract toward strongest perceived peak according to f = c*I^a */
+          let target = PEAKS[0];
+          if (b.mode === 'local') {
+            target = PEAKS[(idx % 3) + 1];
+          }
+          const dx = target.x - b.x;
+          const dy = target.y - b.y;
+          const dist = Math.hypot(dx, dy) + 0.001;
+          const pull = cVal * Math.pow(target.I, aVal) * 0.42;
+
+          if (dist < 0.035) {
+            /* Gentle orbit around peak */
+            b.x += (-dy / dist) * dt * 0.14 + Math.cos(timeSec * 3 + b.phase) * 0.002;
+            b.y += (dx / dist) * dt * 0.14 + Math.sin(timeSec * 3 + b.phase) * 0.002;
+          } else {
+            b.x += (dx / dist) * pull * dt + Math.cos(timeSec * 4 + b.phase) * 0.003;
+            b.y += (dy / dist) * pull * dt + Math.sin(timeSec * 4 + b.phase) * 0.003;
+          }
+          b.x = Math.max(0.04, Math.min(0.96, b.x));
+          b.y = Math.max(0.06, Math.min(0.94, b.y));
+        }
+
+        const bx = b.x * w;
+        const by = b.y * h;
+        const wingFlap = Math.abs(Math.sin(timeSec * 9 + b.phase)) * 3 + 2.5;
+
+        ctx.save();
+        ctx.translate(bx, by);
+        ctx.fillStyle = b.mode === 'global' ? T.d3 : T.d4;
+        /* Minimal crisp geometric butterfly wings */
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-wingFlap, -3.5);
+        ctx.lineTo(-wingFlap * 0.7, 3.5);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(wingFlap, -3.5);
+        ctx.lineTo(wingFlap * 0.7, 3.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    function drawPointsComparison() {
+      const info = prepCanvas('canvas-points');
+      if (!info) return;
+      const { ctx, w, h } = info;
+      const T = TOKENS;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const mode = APP_STATE.pointMode;
+      const pad = 16;
+
+      function renderBox(title, pts, color, x0, bw, bh, y0) {
+        ctx.strokeStyle = T.outlineVar;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x0, y0, bw, bh);
+
+        /* Faint inner grid to reveal clustering vs uniformity */
+        ctx.strokeStyle = T.outlineSubtle;
+        for (let g = 1; g < 4; g++) {
+          ctx.beginPath();
+          ctx.moveTo(x0 + (bw * g) / 4, y0);
+          ctx.lineTo(x0 + (bw * g) / 4, y0 + bh);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(x0, y0 + (bh * g) / 4);
+          ctx.lineTo(x0 + bw, y0 + (bh * g) / 4);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = color;
+        for (let i = 0; i < pts.length; i++) {
+          const px = x0 + 4 + pts[i].x * (bw - 8);
+          const py = y0 + 4 + pts[i].y * (bh - 8);
+          ctx.fillRect(px - 1, py - 1, 2.2, 2.2);
+        }
+
+        ctx.fillStyle = T.ink;
+        ctx.font = `600 11px ${T.fontLabel}`;
+        ctx.fillText(title, x0, y0 - 6);
+      }
+
+      if (mode === 'split') {
+        const gap = 14;
+        const bw = (w - pad * 2 - gap) / 2;
+        const bh = h - pad * 2 - 14;
+        renderBox(`(a) 隨機點 Random (N=1000)`, RAND_POINTS, T.d5, pad, bw, bh, pad + 12);
+        renderBox(`(b) 佳點集 Best Point (N=1000)`, BEST_POINTS, T.d1, pad + bw + gap, bw, bh, pad + 12);
+      } else if (mode === 'best') {
+        renderBox(`佳點集 Best Point Set (N=1000 均勻分佈)`, BEST_POINTS, T.d1, pad, w - pad * 2, h - pad * 2 - 12, pad + 12);
+      } else {
+        renderBox(`傳統隨機點 Random Points (N=1000 局部聚類)`, RAND_POINTS, T.d5, pad, w - pad * 2, h - pad * 2 - 12, pad + 12);
+      }
+    }
+
+    /* ============================================================
+       TAG 2: Memory & Purification + Convergence Curve
+       ============================================================ */
+    function drawMemoryViz(timeSec) {
+      const info = prepCanvas('canvas-memory');
+      if (!info) return;
+      const { ctx, w, h } = info;
+      const T = TOKENS;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      /* Split stage: Left 62% = Solution Space & Memory Rings, Right 38% = Memory Buffer Stack */
+      const spaceW = w * 0.62;
+      const panelX = spaceW + 10;
+      const panelW = w - panelX - 10;
+
+      /* Grid */
+      ctx.strokeStyle = T.outlineSubtle;
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 6; i++) {
+        ctx.beginPath();
+        ctx.moveTo((spaceW / 6) * i, 10);
+        ctx.lineTo((spaceW / 6) * i, h - 10);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = T.outlineVar;
+      ctx.strokeRect(10, 10, spaceW - 14, h - 20);
+
+      /* Draw stored memory nodes & purification exclusion radius */
+      const scanWave = ((timeSec * 0.45) % 1);
+      MEMORY_NODES.forEach(function (mn, idx) {
+        const mx = 10 + mn.x * (spaceW - 24);
+        const my = 10 + mn.y * (h - 24);
+        const radius = mn.isBest ? 34 : 26;
+
+        ctx.beginPath();
+        ctx.arc(mx, my, radius, 0, Math.PI * 2);
+        ctx.fillStyle = mn.isBest ? 'rgba(15, 98, 254, 0.12)' : 'rgba(15, 118, 110, 0.09)';
+        ctx.fill();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = mn.isBest ? T.d1 : T.d3;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = mn.isBest ? T.d1 : T.d3;
+        ctx.beginPath();
+        ctx.arc(mx, my, mn.isBest ? 6 : 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = T.ink;
+        ctx.font = `600 10px ${T.fontLabel}`;
+        ctx.fillText(mn.isBest ? `x_best` : `m${idx}`, mx + 8, my + 3);
+      });
+
+      /* Purification sweep line */
+      const sweepX = 10 + scanWave * (spaceW - 20);
+      ctx.strokeStyle = T.d5;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(sweepX, 10);
+      ctx.lineTo(sweepX, h - 10);
+      ctx.stroke();
+
+      /* Candidate butterflies tested against Memory */
+      CANDIDATE_SWARM.forEach(function (cand, idx) {
+        const cx = 10 + ((cand.x + Math.sin(timeSec * 1.2 + idx) * 0.04) * (spaceW - 24));
+        const cy = 10 + ((cand.y + Math.cos(timeSec * 1.1 + idx) * 0.04) * (h - 24));
+        ctx.fillStyle = cand.status === 'pruned' ? T.d5 : (cand.status === 'accepted' ? T.d3 : T.d4);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        if (cand.status === 'pruned') {
+          ctx.strokeStyle = T.d5;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(cx - 5, cy - 5);
+          ctx.lineTo(cx + 5, cy + 5);
+          ctx.moveTo(cx + 5, cy - 5);
+          ctx.lineTo(cx - 5, cy + 5);
+          ctx.stroke();
+        }
+      });
+
+      /* Right panel: Memory Buffer Table */
+      ctx.fillStyle = T.surfaceLow;
+      ctx.fillRect(panelX, 10, panelW, h - 20);
+      ctx.strokeStyle = T.outlineVar;
+      ctx.strokeRect(panelX, 10, panelW, h - 20);
+
+      ctx.fillStyle = T.ink;
+      ctx.font = `600 11px ${T.fontLabel}`;
+      ctx.fillText(`MEMORY ARCHIVE (M = ${MEMORY_NODES.length})`, panelX + 10, 28);
+
+      const rowH = (h - 62) / MEMORY_NODES.length;
+      MEMORY_NODES.forEach(function (mn, idx) {
+        const ry = 38 + idx * rowH;
+        ctx.fillStyle = mn.isBest ? T.primaryCont : T.card;
+        ctx.fillRect(panelX + 8, ry, panelW - 16, rowH - 5);
+        ctx.strokeStyle = mn.isBest ? T.d1 : T.outlineSubtle;
+        ctx.strokeRect(panelX + 8, ry, panelW - 16, rowH - 5);
+
+        ctx.fillStyle = T.ink;
+        ctx.font = `600 10px ${T.fontLabel}`;
+        ctx.fillText(mn.isBest ? `m0 (x_best)` : `m${idx} (local)`, panelX + 14, ry + 14);
+
+        ctx.fillStyle = T.d1;
+        ctx.fillText(`p=${mn.fitness.toFixed(2)}`, panelX + panelW - 62, ry + 14);
+
+        /* Fitness bar */
+        ctx.fillStyle = T.outlineSubtle;
+        ctx.fillRect(panelX + 14, ry + 20, panelW - 28, 4);
+        ctx.fillStyle = mn.isBest ? T.d1 : T.d3;
+        ctx.fillRect(panelX + 14, ry + 20, (panelW - 28) * mn.fitness, 4);
+      });
+
+      const prunedCount = 10 + Math.floor((APP_STATE.t / 50) * 14);
+      const prunedEl = document.getElementById('kpi-t2-pruned');
+      if (prunedEl) prunedEl.textContent = `${prunedCount} 次`;
+    }
+
+    function drawConvergenceChart() {
+      const info = prepCanvas('canvas-convergence');
+      if (!info) return;
+      const { ctx, w, h } = info;
+      const T = TOKENS;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const padL = 44, padR = 22, padT = 16, padB = 26;
+      const pw = w - padL - padR;
+      const ph = h - padT - padB;
+
+      /* Gridlines */
+      ctx.strokeStyle = T.outlineSubtle;
+      ctx.lineWidth = 1;
+      for (let g = 0; g <= 4; g++) {
+        const y = padT + (ph * g) / 4;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(padL + pw, y);
+        ctx.stroke();
+      }
+
+      /* Axes */
+      ctx.strokeStyle = T.ink;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, padT + ph);
+      ctx.lineTo(padL + pw, padT + ph);
+      ctx.stroke();
+
+      const steps = 50;
+      const curIter = Math.max(2, Math.round(APP_STATE.t));
+
+      if (APP_STATE.convMode === 'obj') {
+        /* Objective function convergence (Fig. 8: DGBOA reaches minimum at 5th iteration) */
+        const seriesList = [
+          {
+            name: 'CSA', color: T.dCtx, width: 1.4,
+            fn: function (k) { return 0.25 + 0.72 * Math.exp(-k / 24); }
+          },
+          {
+            name: 'BAT', color: T.dCtx, width: 1.4,
+            fn: function (k) { return 0.18 + 0.78 * Math.exp(-k / 17); }
+          },
+          {
+            name: 'OFA', color: T.d3, width: 1.8,
+            fn: function (k) { return 0.10 + 0.85 * Math.exp(-k / 11); }
+          },
+          {
+            name: 'PSO', color: T.d2, width: 1.8,
+            fn: function (k) { return 0.06 + 0.88 * Math.exp(-k / 8); }
+          },
+          {
+            name: 'MBOA (DGBOA)', color: T.d1, width: 2.8,
+            fn: function (k) {
+              if (k >= 5) return 0.015;
+              return 0.015 + 0.92 * Math.pow((5 - k) / 5, 1.8);
+            }
+          }
+        ];
+
+        seriesList.forEach(function (s) {
+          ctx.beginPath();
+          for (let k = 1; k <= steps; k++) {
+            const x = padL + ((k - 1) / (steps - 1)) * pw;
+            const y = padT + (1 - s.fn(k)) * ph;
+            if (k === 1) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = s.color;
+          ctx.lineWidth = s.width;
+          ctx.stroke();
+        });
+
+        /* Highlight Iteration 5 optimal marker */
+        const x5 = padL + (4 / (steps - 1)) * pw;
+        const y5 = padT + (1 - 0.015) * ph;
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = T.d1;
+        ctx.beginPath();
+        ctx.moveTo(x5, padT);
+        ctx.lineTo(x5, padT + ph);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = T.d1;
+        ctx.beginPath();
+        ctx.arc(x5, y5, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.font = `600 10px ${T.fontLabel}`;
+        ctx.fillText(`第 5 次疊代達最優值`, x5 + 6, y5 - 8);
+
+        /* Y axis labels */
+        ctx.fillStyle = T.inkVariant;
+        ctx.font = `400 10px ${T.fontLabel}`;
+        ctx.fillText(`1.0`, 10, padT + 6);
+        ctx.fillText(`0.5`, 10, padT + ph / 2 + 4);
+        ctx.fillText(`0.0`, 10, padT + ph + 2);
+      } else {
+        /* Average fitness comparison (Fig. 11: DGBOA converges to 1.44 by iter 20 vs BOA 0.98 after iter 50) */
+        const maxFit = 1.6;
+        const boaSeries = {
+          color: T.dCtx, width: 2.0,
+          fn: function (k) {
+            if (k < 40) return 0.35 + (k / 40) * 0.25;
+            return 0.60 + 0.38 * (1 - Math.exp(-(k - 40) / 4));
+          }
+        };
+        const dgboaSeries = {
+          color: T.d1, width: 2.8,
+          fn: function (k) {
+            if (k >= 20) return 1.44;
+            return 0.45 + 0.99 * (1 - Math.exp(-k / 4.5));
+          }
+        };
+
+        [boaSeries, dgboaSeries].forEach(function (s) {
+          ctx.beginPath();
+          for (let k = 1; k <= steps; k++) {
+            const x = padL + ((k - 1) / (steps - 1)) * pw;
+            const y = padT + (1 - s.fn(k) / maxFit) * ph;
+            if (k === 1) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = s.color;
+          ctx.lineWidth = s.width;
+          ctx.stroke();
+        });
+
+        ctx.fillStyle = T.d1;
+        ctx.font = `600 10px ${T.fontLabel}`;
+        ctx.fillText(`DGBOA 穩定適應度 1.44 (20代)`, padL + pw * 0.40, padT + 14);
+        ctx.fillStyle = T.inkVariant;
+        ctx.fillText(`BOA 穩定適應度 0.98 (50代)`, padL + pw * 0.44, padT + ph * 0.48);
+
+        ctx.font = `400 10px ${T.fontLabel}`;
+        ctx.fillText(`1.6`, 10, padT + 6);
+        ctx.fillText(`0.8`, 10, padT + ph / 2 + 4);
+        ctx.fillText(`0.0`, 10, padT + ph + 2);
+      }
+
+      /* Active iteration marker */
+      const xCur = padL + ((curIter - 1) / (steps - 1)) * pw;
+      ctx.strokeStyle = T.d5;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(xCur, padT);
+      ctx.lineTo(xCur, padT + ph);
+      ctx.stroke();
+
+      /* X axis ticks */
+      ctx.fillStyle = T.inkVariant;
+      ctx.font = `400 10px ${T.fontLabel}`;
+      [1, 10, 20, 30, 40, 50].forEach(function (tick) {
+        const tx = padL + ((tick - 1) / (steps - 1)) * pw;
+        ctx.fillText(String(tick), tx - 6, padT + ph + 16);
+      });
+    }
+
+    /* ============================================================
+       TAG 3: Dimension-by-Dimension Search & Nonlinear Decay
+       ============================================================ */
+    function drawDimSearch() {
+      const info = prepCanvas('canvas-dimsearch');
+      if (!info) return;
+      const { ctx, w, h } = info;
+      const T = TOKENS;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const cx = w * 0.52;
+      const cy = h * 0.50;
+
+      /* Concentric fitness contours around global optimum */
+      for (let r = 5; r >= 1; r--) {
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, r * 36, r * 24, -0.25, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(15, 98, 254, ${0.03 + (6 - r) * 0.02})`;
+        ctx.fill();
+        ctx.strokeStyle = T.outlineSubtle;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      /* Compute step trajectory from t=1..APP_STATE.t */
+      const maxGen = APP_STATE.maxGen;
+      const curT = Math.min(maxGen, Math.max(1, Math.floor(APP_STATE.t)));
+      let px = w * 0.14;
+      let py = h * 0.80;
+
+      ctx.strokeStyle = T.d1;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+
+      for (let step = 1; step <= curT; step++) {
+        const ratio = step / maxGen;
+        const decay = Math.exp(-5 * ratio * ratio + 0.3);
+        const factor = 0.22 + (1 - decay / 1.35) * 0.25;
+        if (step % 2 === 1) {
+          /* Adjust Dimension 1 (horizontal), fix Dimension 2 */
+          px = px + (cx - px) * factor;
+        } else {
+          /* Adjust Dimension 2 (vertical), fix Dimension 1 */
+          py = py + (cy - py) * factor;
+        }
+        ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      /* Perturbation Envelope Box around current optimal x*t */
+      const curRatio = curT / maxGen;
+      const curDecay = Math.exp(-5 * curRatio * curRatio + 0.3);
+      const boxR = Math.max(8, curDecay * 58);
+
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = T.d3;
+      ctx.lineWidth = 1.4;
+      ctx.strokeRect(px - boxR, py - boxR, boxR * 2, boxR * 2);
+      ctx.setLineDash([]);
+
+      /* Probes along active dimension */
+      const activeDim = curT % 2 === 1 ? 1 : 2;
+      ctx.fillStyle = T.d4;
+      for (let p = -2; p <= 2; p++) {
+        if (p === 0) continue;
+        const qx = activeDim === 1 ? px + (p / 2) * boxR : px;
+        const qy = activeDim === 2 ? py + (p / 2) * boxR : py;
+        ctx.beginPath();
+        ctx.arc(qx, qy, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      /* Current best & target */
+      ctx.fillStyle = T.d3;
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = T.d1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = `600 10px ${T.fontLabel}`;
+      ctx.fillText(`全域最優 x*`, cx + 8, cy - 4);
+      ctx.fillStyle = T.d3;
+      ctx.fillText(`x*ᵗ (t=${curT})`, px + 8, py + 12);
+
+      const kpiDecay = document.getElementById('kpi-t3-decay');
+      const kpiDim = document.getElementById('kpi-t3-dim');
+      const badgeStep = document.getElementById('badge-t3-step');
+      if (kpiDecay) kpiDecay.textContent = curDecay.toFixed(3);
+      if (kpiDim) kpiDim.textContent = `維度 j = ${activeDim}`;
+      if (badgeStep) badgeStep.textContent = `t = ${curT} / ${maxGen}`;
+    }
+
+    function drawDecayCurve() {
+      const info = prepCanvas('canvas-decay');
+      if (!info) return;
+      const { ctx, w, h } = info;
+      const T = TOKENS;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const padL = 44, padR = 20, padT = 18, padB = 28;
+      const pw = w - padL - padR;
+      const ph = h - padT - padB;
+      const maxVal = 1.5;
+
+      /* Gridlines */
+      ctx.strokeStyle = T.outlineSubtle;
+      ctx.lineWidth = 1;
+      for (let g = 0; g <= 3; g++) {
+        const y = padT + (ph * g) / 3;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(padL + pw, y);
+        ctx.stroke();
+      }
+
+      /* Axes */
+      ctx.strokeStyle = T.ink;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, padT + ph);
+      ctx.lineTo(padL + pw, padT + ph);
+      ctx.stroke();
+
+      /* Area under curve */
+      ctx.beginPath();
+      ctx.moveTo(padL, padT + ph);
+      for (let i = 0; i <= 100; i++) {
+        const ratio = i / 100;
+        const val = Math.exp(-5 * ratio * ratio + 0.3);
+        const x = padL + ratio * pw;
+        const y = padT + (1 - val / maxVal) * ph;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(padL + pw, padT + ph);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(15, 98, 254, 0.10)';
+      ctx.fill();
+
+      /* Curve stroke */
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i++) {
+        const ratio = i / 100;
+        const val = Math.exp(-5 * ratio * ratio + 0.3);
+        const x = padL + ratio * pw;
+        const y = padT + (1 - val / maxVal) * ph;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = T.d1;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      /* Current t marker */
+      const curRatio = APP_STATE.t / APP_STATE.maxGen;
+      const curVal = Math.exp(-5 * curRatio * curRatio + 0.3);
+      const cx = padL + curRatio * pw;
+      const cy = padT + (1 - curVal / maxVal) * ph;
+
+      ctx.strokeStyle = T.d5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cx, padT);
+      ctx.lineTo(cx, padT + ph);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = T.d5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = `600 10px ${T.fontLabel}`;
+      ctx.fillText(`${curVal.toFixed(3)}`, Math.min(cx + 6, w - 48), Math.max(cy - 6, padT + 12));
+
+      /* Ticks */
+      ctx.fillStyle = T.inkVariant;
+      ctx.font = `400 10px ${T.fontLabel}`;
+      ctx.fillText(`1.5`, 12, padT + 6);
+      ctx.fillText(`1.0`, 12, padT + ph * (1 - 1.0 / maxVal) + 4);
+      ctx.fillText(`0.5`, 12, padT + ph * (1 - 0.5 / maxVal) + 4);
+      ctx.fillText(`0.0`, 12, padT + ph + 3);
+      ctx.fillText(`t/max_gen = 0`, padL, padT + ph + 16);
+      ctx.fillText(`0.5`, padL + pw * 0.5 - 8, padT + ph + 16);
+      ctx.fillText(`1.0`, padL + pw - 16, padT + ph + 16);
+    }
+
+    /* ============================================================
+       TAG 4: SVM Hyperplane Visualization
+       ============================================================ */
+    function drawSvmPlot() {
+      const info = prepCanvas('canvas-svm');
+      if (!info) return;
+      const { ctx, w, h } = info;
+      const T = TOKENS;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const isAfter = APP_STATE.svmMode === 'after';
+
+      /* Subtle grid */
+      ctx.strokeStyle = T.outlineSubtle;
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 6; i++) {
+        ctx.beginPath();
+        ctx.moveTo((w / 6) * i, 0);
+        ctx.lineTo((w / 6) * i, h);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, (h / 6) * i);
+        ctx.lineTo(w, (h / 6) * i);
+        ctx.stroke();
+      }
+
+      /* Margin band between H1 and H2 */
+      const bandOffset = isAfter ? 44 : 20;
+      const slopeShift = isAfter ? 0 : 28;
+
+      function lineY(x, shift) {
+        return h * 0.85 - (x / w) * h * 0.72 + shift;
+      }
+
+      ctx.fillStyle = isAfter ? 'rgba(15, 98, 254, 0.08)' : 'rgba(220, 38, 38, 0.06)';
+      ctx.beginPath();
+      ctx.moveTo(0, lineY(0, -bandOffset + slopeShift));
+      ctx.lineTo(w, lineY(w, -bandOffset - slopeShift));
+      ctx.lineTo(w, lineY(w, bandOffset - slopeShift));
+      ctx.lineTo(0, lineY(0, bandOffset + slopeShift));
+      ctx.closePath();
+      ctx.fill();
+
+      /* H1 and H2 dashed lines */
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = T.inkVariant;
+      ctx.lineWidth = 1.2;
+      [-bandOffset, bandOffset].forEach(function (off) {
+        ctx.beginPath();
+        ctx.moveTo(0, lineY(0, off + slopeShift));
+        ctx.lineTo(w, lineY(w, off - slopeShift));
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+
+      /* Optimal Hyperplane H: W^T x + b = 0 */
+      ctx.strokeStyle = T.ink;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(0, lineY(0, slopeShift));
+      ctx.lineTo(w, lineY(w, -slopeShift));
+      ctx.stroke();
+
+      /* Samples Class A (above hyperplane) */
+      const classA = [
+        [0.18, 0.25], [0.24, 0.34], [0.32, 0.22], [0.15, 0.45],
+        [0.42, 0.28], [0.28, 0.46], [0.50, 0.18], [0.36, 0.38],
+        [0.62, 0.20], [0.46, 0.41]
+      ];
+      /* Samples Class B (below hyperplane) */
+      const classB = [
+        [0.54, 0.68], [0.68, 0.56], [0.76, 0.72], [0.84, 0.60],
+        [0.60, 0.80], [0.74, 0.46], [0.88, 0.78], [0.45, 0.76],
+        [0.70, 0.66], [0.56, 0.56]
+      ];
+
+      classA.forEach(function (pt, idx) {
+        const px = pt[0] * w;
+        const py = pt[1] * h;
+        const isMis = !isAfter && (idx === 5 || idx === 9);
+        ctx.fillStyle = isMis ? T.d5 : T.d1;
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, Math.PI * 2);
+        ctx.fill();
+        if (idx === 5 && isAfter) {
+          ctx.strokeStyle = T.ink;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+      });
+
+      classB.forEach(function (pt, idx) {
+        const px = pt[0] * w;
+        const py = pt[1] * h;
+        const isMis = !isAfter && idx === 9;
+        ctx.fillStyle = isMis ? T.d5 : T.d4;
+        ctx.fillRect(px - 4.5, py - 4.5, 9, 9);
+        if (idx === 5 && isAfter) {
+          ctx.strokeStyle = T.ink;
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(px - 4.5, py - 4.5, 9, 9);
+        }
+      });
+
+      /* Annotations */
+      ctx.fillStyle = T.ink;
+      ctx.font = `600 10px ${T.fontLabel}`;
+      ctx.fillText(`H: Wᵀx + b = 0`, w * 0.64, lineY(w * 0.64, -slopeShift * 0.3) - 10);
+      ctx.fillStyle = isAfter ? T.d1 : T.d5;
+      ctx.fillText(
+        isAfter ? `MBOA 最優間隔 Margin = 2/||W|| (Iris & 軸承完整可分)` : `優化前 BOA 間隔較窄（含散落誤分類點）`,
+        14,
+        22
+      );
+    }
+
+    /* ============================================================
+       TAG 5: Benchmark Bar Chart & IIR Variance/Convergence
+       ============================================================ */
+    function drawBenchBar() {
+      const info = prepCanvas('canvas-benchbar');
+      if (!info) return;
+      const { ctx, w, h } = info;
+      const T = TOKENS;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const padL = 42, padR = 16, padT = 24, padB = 30;
+      const pw = w - padL - padR;
+      const ph = h - padT - padB;
+
+      const algos = ['MBOA', 'PSO', 'OFA', 'BAT', 'CSA'];
+      const prVals = [0.95, 0.91, 0.86, 0.78, 0.71];
+      const rmseVals = [0.105, 0.120, 0.126, 0.132, 0.138];
+      const maeVals = [0.110, 0.125, 0.130, 0.136, 0.140];
+
+      const isPr = APP_STATE.benchMetric === 'pr';
+      const maxY = isPr ? 1.0 : 0.16;
+
+      /* Gridlines */
+      ctx.strokeStyle = T.outlineSubtle;
+      ctx.lineWidth = 1;
+      for (let g = 0; g <= 4; g++) {
+        const y = padT + (ph * g) / 4;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(padL + pw, y);
+        ctx.stroke();
+        ctx.fillStyle = T.inkVariant;
+        ctx.font = `400 10px ${T.fontLabel}`;
+        const tickV = maxY * (1 - g / 4);
+        ctx.fillText(tickV.toFixed(2), 4, y + 3);
+      }
+
+      /* Baseline */
+      ctx.strokeStyle = T.ink;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT + ph);
+      ctx.lineTo(padL + pw, padT + ph);
+      ctx.stroke();
+
+      const groupW = pw / algos.length;
+      algos.forEach(function (name, i) {
+        const gx = padL + i * groupW;
+        if (isPr) {
+          const val = prVals[i];
+          const bh = (val / maxY) * ph;
+          const bw = Math.min(34, groupW * 0.56);
+          const bx = gx + (groupW - bw) / 2;
+          const by = padT + ph - bh;
+
+          ctx.fillStyle = i === 0 ? T.d1 : T.dCtx;
+          ctx.fillRect(bx, by, bw, bh);
+
+          ctx.fillStyle = i === 0 ? T.d1 : T.ink;
+          ctx.font = `600 10px ${T.fontLabel}`;
+          ctx.fillText(val.toFixed(2), bx + 3, by - 5);
+        } else {
+          const bw = Math.min(18, groupW * 0.30);
+          const bx1 = gx + groupW * 0.18;
+          const bx2 = bx1 + bw + 3;
+          const bh1 = (rmseVals[i] / maxY) * ph;
+          const bh2 = (maeVals[i] / maxY) * ph;
+
+          ctx.fillStyle = i === 0 ? T.d1 : T.dCtx;
+          ctx.fillRect(bx1, padT + ph - bh1, bw, bh1);
+
+          ctx.fillStyle = i === 0 ? T.d3 : T.outlineVar;
+          ctx.fillRect(bx2, padT + ph - bh2, bw, bh2);
+
+          ctx.fillStyle = i === 0 ? T.d1 : T.inkVariant;
+          ctx.font = `600 9px ${T.fontLabel}`;
+          ctx.fillText(rmseVals[i].toFixed(2), bx1 - 2, padT + ph - bh1 - 4);
+        }
+
+        ctx.fillStyle = i === 0 ? T.d1 : T.ink;
+        ctx.font = i === 0 ? `600 11px ${T.fontLabel}` : `400 11px ${T.fontLabel}`;
+        ctx.fillText(name, gx + groupW / 2 - 14, padT + ph + 16);
+      });
+
+      ctx.fillStyle = T.inkVariant;
+      ctx.font = `500 10px ${T.fontLabel}`;
+      ctx.fillText(
+        isPr ? `Precision & Recall（越高越好，MBOA 達 0.95）` : `藍=RMSE / 綠=MAE（越接近 0 越好，MBOA 最小）`,
+        padL,
+        14
+      );
+    }
+
+    function drawIirChart() {
+      const info = prepCanvas('canvas-iir');
+      if (!info) return;
+      const { ctx, w, h } = info;
+      const T = TOKENS;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const padL = 42, padR = 16, padT = 22, padB = 28;
+      const pw = w - padL - padR;
+      const ph = h - padT - padB;
+
+      /* Grid */
+      ctx.strokeStyle = T.outlineSubtle;
+      ctx.lineWidth = 1;
+      for (let g = 0; g <= 4; g++) {
+        const y = padT + (ph * g) / 4;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(padL + pw, y);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = T.ink;
+      ctx.beginPath();
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, padT + ph);
+      ctx.lineTo(padL + pw, padT + ph);
+      ctx.stroke();
+
+      /* Other algorithm variance band (noisy) */
+      ctx.beginPath();
+      for (let k = 0; k <= 60; k++) {
+        const x = padL + (k / 60) * pw;
+        const v = 0.25 + 0.55 * Math.exp(-k / 28) + Math.sin(k * 0.9) * 0.05;
+        const y = padT + (1 - v) * ph;
+        if (k === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = T.dCtx;
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      /* MBOA (DGBOA) IIR curve: rapidly drops and variance approaches 0 around iteration 50 */
+      ctx.beginPath();
+      for (let k = 0; k <= 60; k++) {
+        const x = padL + (k / 60) * pw;
+        const v = k >= 50 ? 0.012 : 0.012 + 0.88 * Math.exp(-k / 9);
+        const y = padT + (1 - v) * ph;
+        if (k === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = T.d1;
+      ctx.lineWidth = 2.6;
+      ctx.stroke();
+
+      /* 50th iteration marker */
+      const x50 = padL + (50 / 60) * pw;
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = T.d3;
+      ctx.beginPath();
+      ctx.moveTo(x50, padT);
+      ctx.lineTo(x50, padT + ph);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = T.d1;
+      ctx.font = `600 10px ${T.fontLabel}`;
+      ctx.fillText(`MBOA (約 50 代收斂，方差 → 0)`, padL + pw * 0.34, padT + ph - 12);
+
+      ctx.fillStyle = T.inkVariant;
+      ctx.font = `400 10px ${T.fontLabel}`;
+      ctx.fillText(`對照演算法（收斂慢且方差波動）`, padL + 8, padT + 14);
+      ctx.fillText(`0`, padL - 12, padT + ph + 3);
+      ctx.fillText(`疊代 50`, x50 - 18, padT + ph + 16);
+      ctx.fillText(`60`, padL + pw - 14, padT + ph + 16);
+    }
+
+    /* ============================================================
+       Render Dispatcher & Animation Loop
+       ============================================================ */
+    function renderActiveView() {
+      const timeSec = performance.now() / 1000;
+      const v = APP_STATE.activeView;
+      if (v === 'tag1') {
+        drawFragranceField(timeSec);
+        drawPointsComparison();
+      } else if (v === 'tag2') {
+        drawMemoryViz(timeSec);
+        drawConvergenceChart();
+      } else if (v === 'tag3') {
+        drawDimSearch();
+        drawDecayCurve();
+      } else if (v === 'tag4') {
+        drawSvmPlot();
+      } else if (v === 'tag5') {
+        drawBenchBar();
+        drawIirChart();
+      }
+    }
+
+    let animFrameId = 0;
+    let lastTick = 0;
+
+    function tickLoop(now) {
+      if (!lastTick) lastTick = now;
+      const elapsed = now - lastTick;
+      if (APP_STATE.isPlaying && elapsed > 90) {
+        lastTick = now;
+        APP_STATE.t += 0.35 * APP_STATE.speed;
+        if (APP_STATE.t > APP_STATE.maxGen) {
+          APP_STATE.t = 1;
+        }
+        const telIter = document.getElementById('tel-iter');
+        const telFit = document.getElementById('tel-fitness');
+        const curT = Math.floor(APP_STATE.t);
+        if (telIter) telIter.textContent = `${curT} / ${APP_STATE.maxGen}`;
+        if (telFit) {
+          const fit = curT >= 20 ? 1.440 : (0.45 + 0.99 * (1 - Math.exp(-curT / 4.5)));
+          telFit.textContent = fit.toFixed(3);
+        }
+      }
+      renderActiveView();
+      animFrameId = requestAnimationFrame(tickLoop);
+    }
+
+    /* ============================================================
+       Initialization
+       ============================================================ */
+    async function initStudio() {
+      TOKENS = getTokens();
+      buildConfusionMatrix();
+      await loadAppState();
+
+      applyActiveViewDOM();
+      syncParamDisplays();
+      setPointMode(APP_STATE.pointMode);
+      setConvMode(APP_STATE.convMode);
+      setSvmMode(APP_STATE.svmMode);
+      setBenchMetric(APP_STATE.benchMetric);
+      selectCmCell(0, 0);
+      togglePlay(true);
+
+      resizeAllCanvases();
+      renderActiveView();
+
+      window.addEventListener('resize', function () {
+        resizeAllCanvases();
+        renderActiveView();
+      });
+
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      animFrameId = requestAnimationFrame(tickLoop);
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
+        window.notebookAppApi.notifyAppReady();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initStudio);
+  </script>
+</body>
+</html>

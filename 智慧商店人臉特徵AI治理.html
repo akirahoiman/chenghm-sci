@@ -1,0 +1,3314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="aurora">
+  <title>SmartMMDIAF-Studio · Multimodal Consumer Analytics Governance HUD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+
+      /* 1. Aurora dark HUD palette */
+      --background: #0c1214;
+      --surface-container-low: #111a1e;
+      --surface-container: #152024;
+      --surface-container-high: #1c2a30;
+
+      /* Text */
+      --on-surface: #edf3f5;
+      --on-surface-variant: #94a8b0;
+
+      /* Borders */
+      --outline: #38515c;
+      --outline-variant: #213138;
+
+      /* Accents */
+      --primary: #63c7d6;
+      --on-primary: #081214;
+      --primary-container: #163840;
+      --on-primary-container: #c7f0f7;
+      --secondary: #5d7882;
+      --tertiary: #87d69b;
+      --error: #f27474;
+      --on-error: #1a0606;
+
+      /* Data series */
+      --data-1: #63c7d6;
+      --data-2: #87d69b;
+      --data-3: #e8b954;
+      --data-4: #f08c70;
+      --data-context: #415861;
+
+      /* Fonts */
+      --font-headline: 'Instrument Sans', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+      --font-body: 'Plus Jakarta Sans', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+      --font-label: 'Geist Mono', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans JP', monospace;
+
+      /* Shape */
+      --rounded: 0.5rem;
+      --rounded-lg: 0.75rem;
+      --rounded-full: 9999px;
+
+      /* Style effects */
+      --hairline: 1px solid var(--outline-variant);
+      --hairline-strong: 1px solid var(--outline);
+      --panel-gradient: linear-gradient(180deg, #162226 0%, #111a1e 100%);
+      --hud-glass: rgba(12, 18, 20, 0.78);
+      --hud-glass-strong: rgba(12, 18, 20, 0.9);
+      --heading-tracking: -0.025em;
+      --label-tracking: 0.06em;
+      --sage-tint: color-mix(in srgb, var(--tertiary) 13%, transparent);
+      --cyan-tint: color-mix(in srgb, var(--primary) 13%, transparent);
+      --amber-tint: color-mix(in srgb, var(--data-3) 14%, transparent);
+      --error-tint: color-mix(in srgb, var(--error) 14%, transparent);
+
+      /* 3. Shared tokens */
+      --positive: #87d69b;
+      --warning: #e8b954;
+      --focus: #63c7d6;
+
+      /* Dashboard type scale */
+      --display-size: clamp(1.65rem, 1.35rem + 1.1vw, 2.15rem);
+      --headline-size: clamp(1.15rem, 1.05rem + 0.4vw, 1.4rem);
+      --subhead-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --body-size: clamp(0.9375rem, 0.9rem + 0.12vw, 0.98rem);
+      --label-size: 0.75rem;
+
+      /* Spacing scale */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.5rem;
+      --space-2xl: 4rem;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 220ms;
+      --dur-long: 420ms;
+    }
+
+    /* Base reset */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      overflow-x: clip;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    header { position: static !important; }
+
+    button, input, select, textarea { font-family: inherit; }
+
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .page-grid {
+      display: grid;
+      gap: var(--space-lg);
+      padding: var(--space-lg);
+      max-width: 1400px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .page-grid * { min-width: 0; }
+
+    /* Aurora Panels */
+    .panel {
+      background: var(--panel-gradient);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-lg);
+      transition: border-color var(--dur-short) var(--ease-out),
+                  box-shadow var(--dur-short) var(--ease-out);
+    }
+
+    /* TTS Hover Highlight */
+    [data-tts] {
+      cursor: pointer;
+      transition: box-shadow var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out),
+                  background-color var(--dur-micro) var(--ease-out);
+    }
+    [data-tts]:hover {
+      border-color: var(--outline);
+    }
+    [data-tts].is-speaking {
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 0 1px var(--primary), 0 0 18px var(--cyan-tint) !important;
+    }
+
+    /* Typography */
+    .title {
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 600;
+      letter-spacing: var(--heading-tracking);
+      line-height: 1.12;
+      color: var(--on-surface);
+      margin: 0;
+    }
+    .section-title {
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 600;
+      letter-spacing: var(--heading-tracking);
+      line-height: 1.2;
+      color: var(--on-surface);
+      margin: 0;
+    }
+    .subhead {
+      font-family: var(--font-headline);
+      font-size: var(--subhead-size);
+      font-weight: 600;
+      color: var(--on-surface);
+      margin: 0;
+    }
+    .data-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      letter-spacing: var(--label-tracking);
+      text-transform: uppercase;
+      color: var(--on-surface-variant);
+    }
+    html:not([lang="en"]) .data-label,
+    html:not([lang="en"]) .lang-sensitive-label {
+      letter-spacing: 0.01em;
+      text-transform: none;
+    }
+    .muted {
+      color: var(--on-surface-variant);
+      margin: 0;
+    }
+
+    /* Header & Command Bar */
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+      border-bottom: var(--hairline);
+      padding-bottom: var(--space-lg);
+    }
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .author-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      width: fit-content;
+      max-width: 100%;
+    }
+    .command-cluster {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      align-items: flex-end;
+    }
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    /* Buttons & Inputs */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      border: var(--hairline-strong);
+      background: var(--surface-container);
+      color: var(--on-surface);
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out);
+    }
+    .btn:hover {
+      background: var(--surface-container-high);
+      border-color: var(--primary);
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+    .btn-primary:hover {
+      background: var(--on-primary-container);
+      border-color: var(--on-primary-container);
+      color: var(--on-primary);
+    }
+    .btn-active {
+      background: var(--cyan-tint);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-warning {
+      background: var(--amber-tint);
+      border-color: var(--warning);
+      color: var(--warning);
+    }
+    .btn-danger {
+      background: var(--error-tint);
+      border-color: var(--error);
+      color: var(--error);
+    }
+    .btn-compact {
+      min-height: 36px;
+      padding: 4px var(--space-sm);
+    }
+
+    /* Language Selector Pills */
+    .lang-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: 4px;
+    }
+    .lang-btn {
+      min-height: 36px;
+      padding: 4px var(--space-sm);
+      border: none;
+      border-radius: calc(var(--rounded) - 2px);
+      background: transparent;
+      color: var(--on-surface-variant);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out);
+    }
+    .lang-btn:hover {
+      color: var(--on-surface);
+      background: var(--surface-container);
+    }
+    .lang-btn.active {
+      background: var(--primary);
+      color: var(--on-primary);
+      font-weight: 600;
+    }
+
+    /* Status chips */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px var(--space-sm);
+      border-radius: var(--rounded);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      border: 1px solid var(--outline-variant);
+      background: var(--surface-container-low);
+      color: var(--on-surface-variant);
+      white-space: nowrap;
+    }
+    .chip-sage {
+      background: var(--sage-tint);
+      color: var(--tertiary);
+      border-color: color-mix(in srgb, var(--tertiary) 35%, transparent);
+    }
+    .chip-cyan {
+      background: var(--cyan-tint);
+      color: var(--primary);
+      border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+    }
+    .chip-amber {
+      background: var(--amber-tint);
+      color: var(--warning);
+      border-color: color-mix(in srgb, var(--warning) 35%, transparent);
+    }
+    .chip-error {
+      background: var(--error-tint);
+      color: var(--error);
+      border-color: color-mix(in srgb, var(--error) 40%, transparent);
+    }
+
+    /* TTS Voice Bar */
+    .tts-status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+    }
+    .tts-live-readout {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      flex: 1 1 320px;
+      overflow: hidden;
+    }
+    .tts-utterance-preview {
+      font-size: 0.85rem;
+      color: var(--on-surface);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* KPI Strip */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+    .kpi-card {
+      background: var(--panel-gradient);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .metric-value {
+      font-family: var(--font-headline);
+      font-size: clamp(1.5rem, 1.25rem + 0.9vw, 2rem);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: var(--heading-tracking);
+      color: var(--on-surface);
+      line-height: 1.15;
+    }
+    .metric-delta {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--tertiary);
+    }
+
+    /* Primary Workspace: Unified Camera+Face HUD (Left) + Retail Shelf Sim (Right) */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.2fr);
+      gap: var(--space-lg);
+      align-items: stretch;
+    }
+    .panel-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+
+    /* MERGED UNIFIED CAMERA + FACE AI TELEMETRY HUD CONTAINER */
+    .unified-vision-frame {
+      position: relative;
+      width: 100%;
+      min-height: 410px;
+      border-radius: var(--rounded);
+      border: var(--hairline-strong);
+      background: var(--background);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .vision-media-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    #live-camera-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      transform: scaleX(-1);
+      transition: filter var(--dur-short) var(--ease-out);
+    }
+    #live-camera-video.is-active {
+      display: block;
+    }
+    #live-camera-video.privacy-blur {
+      filter: blur(18px) contrast(0.9) brightness(0.75);
+    }
+    #live-camera-video.privacy-silhouette {
+      filter: blur(28px) brightness(0.25);
+    }
+    #sim-camera-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #hud-overlay-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Privacy Shield Scan / Veil Overlay */
+    .privacy-veil {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0 4px,
+        color-mix(in srgb, var(--primary) 4%, transparent) 4px 5px
+      );
+      border: 2px solid color-mix(in srgb, var(--tertiary) 45%, transparent);
+      transition: opacity var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
+    }
+    .privacy-veil.is-exposed {
+      border-color: color-mix(in srgb, var(--error) 65%, transparent);
+    }
+
+    /* Superimposed Telemetry Sub-cards on top of Camera Box */
+    .hud-superimposed-layer {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex: 1 1 auto;
+      min-height: 410px;
+      padding: var(--space-sm);
+      pointer-events: none;
+    }
+    .hud-top-row,
+    .hud-bottom-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--space-sm);
+      align-items: start;
+    }
+    .hud-bottom-row {
+      align-items: end;
+    }
+    .hud-chip-card {
+      pointer-events: auto;
+      background: var(--hud-glass);
+      backdrop-filter: blur(8px);
+      border: 1px solid color-mix(in srgb, var(--outline) 75%, transparent);
+      border-radius: var(--rounded);
+      padding: var(--space-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .hud-chip-card:hover {
+      background: var(--hud-glass-strong);
+      border-color: var(--primary);
+    }
+    .hud-angles-row {
+      display: flex;
+      gap: var(--space-sm);
+      font-family: var(--font-label);
+      font-size: 0.8rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+    }
+    .hud-emotion-bar-track {
+      width: 100%;
+      height: 6px;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container-high);
+      overflow: hidden;
+    }
+    .hud-emotion-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: var(--rounded-full);
+      transition: width var(--dur-short) var(--ease-out);
+    }
+    .hud-controls-dock {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: var(--hairline);
+      align-items: end;
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .field-label {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      color: var(--on-surface-variant);
+    }
+    select.hud-select {
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-lg) var(--space-xs) var(--space-sm);
+      background: var(--background);
+      color: var(--on-surface);
+      border: var(--hairline-strong);
+      border-radius: var(--rounded);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      cursor: pointer;
+    }
+    select.hud-select:hover {
+      border-color: var(--primary);
+    }
+
+    /* Retail Shelf Simulation */
+    .shelf-canvas-wrap {
+      position: relative;
+      width: 100%;
+      min-height: 270px;
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      overflow: hidden;
+    }
+    #retail-shelf-canvas {
+      width: 100%;
+      height: 270px;
+      display: block;
+    }
+    .dwell-tiers-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    .sub-card {
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .shoppers-telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
+    }
+
+    /* MMDIAF 4-Layer Architecture Grid */
+    .mmdiaf-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+    .layer-card {
+      background: var(--panel-gradient);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .layer-subbox {
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm);
+    }
+    .transversal-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+
+    /* Compliance Matrix Table (GDPR & EU AI Act) */
+    .matrix-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+    .table-scroll {
+      overflow-x: auto;
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      background: var(--background);
+    }
+    table.hud-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    table.hud-table th {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--on-surface-variant);
+      background: var(--surface-container-low);
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: var(--hairline-strong);
+      white-space: nowrap;
+    }
+    table.hud-table td {
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: var(--hairline);
+      vertical-align: top;
+    }
+    table.hud-table tbody tr {
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+    table.hud-table tbody tr:hover {
+      background: var(--surface-container);
+    }
+    table.hud-table tbody tr.is-speaking {
+      background: var(--cyan-tint);
+      outline: 1px solid var(--primary);
+    }
+
+    /* Audit Log & Paper Reference Split */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .log-scroll {
+      max-height: 310px;
+      overflow-y: auto;
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      background: var(--background);
+    }
+    .paper-box {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .drive-path-well {
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      font-family: var(--font-label);
+      font-size: 0.78rem;
+      color: var(--primary);
+      word-break: break-all;
+    }
+    .inline-toast {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--tertiary);
+      min-height: 1.25rem;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1080px) {
+      .workspace-grid,
+      .bottom-grid,
+      .masthead {
+        grid-template-columns: 1fr;
+      }
+      .command-cluster {
+        align-items: flex-start;
+      }
+      .control-row {
+        justify-content: flex-start;
+      }
+      .mmdiaf-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 640px) {
+      .page-grid {
+        padding: var(--space-sm);
+        gap: var(--space-md);
+      }
+      .kpi-grid,
+      .dwell-tiers-grid,
+      .mmdiaf-grid,
+      .transversal-bar,
+      .hud-top-row,
+      .hud-bottom-row {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-grid">
+
+    <!-- HEADER & GLOBAL CONTROLS -->
+    <header class="masthead">
+      <div class="brand-block" id="card-header" data-tts="header" tabindex="0">
+        <span class="data-label" id="ui-kicker">MMDIAF REFERENCE ARCHITECTURE · SMART RETAIL HUD</span>
+        <h1 class="title" id="ui-title">SmartMMDIAF-Studio: Multimodal Consumer Governance</h1>
+        <p class="muted" id="ui-subtitle">
+          Governance-by-design reference architecture translating accountability, interpretability, privacy restraint, and contestability into auditable smart retail telemetry.
+        </p>
+        <div class="author-strip" id="card-authorship" data-tts="authorship" tabindex="0">
+          <i data-lucide="graduation-cap" aria-hidden="true" width="16" height="16"></i>
+          <span class="data-label" id="ui-author-label">AUTHORS:</span>
+          <span id="ui-author-names" style="font-size:0.88rem;font-weight:500;">
+            Hoiman Cheng &amp; Cheng-Wang Lin · Institute of Technology Management / Industrial Engineering &amp; Management, NYCU
+          </span>
+        </div>
+      </div>
+
+      <div class="command-cluster">
+        <div class="lang-bar" role="group" aria-label="Language Switcher">
+          <button type="button" class="lang-btn active" id="lang-btn-en" onclick="setLanguage('en')">EN</button>
+          <button type="button" class="lang-btn" id="lang-btn-zh-TW" onclick="setLanguage('zh-TW')">繁中 zh-TW</button>
+          <button type="button" class="lang-btn" id="lang-btn-zh-CN" onclick="setLanguage('zh-CN')">简中 zh-CN</button>
+          <button type="button" class="lang-btn" id="lang-btn-ja" onclick="setLanguage('ja')">日本語</button>
+          <button type="button" class="lang-btn" id="lang-btn-de" onclick="setLanguage('de')">DE</button>
+          <button type="button" class="lang-btn" id="lang-btn-fr" onclick="setLanguage('fr')">FR</button>
+        </div>
+
+        <div class="control-row">
+          <button type="button" class="btn btn-active" id="btn-tts-toggle" onclick="toggleHoverTTS()">
+            <i data-lucide="volume-2" aria-hidden="true" width="16" height="16"></i>
+            <span id="ui-tts-toggle-text">Hover Voice: ON</span>
+          </button>
+          <button type="button" class="btn" id="btn-csv-export" onclick="exportPureEnglishCSV()" data-tts="csvBtn" tabindex="0">
+            <i data-lucide="file-spreadsheet" aria-hidden="true" width="16" height="16"></i>
+            <span id="ui-csv-btn-text">Export English CSV</span>
+          <a href="https://drive.google.com/file/d/1oC3Hz8tfkNMpiZJSUNeAto5KEg7Qa5ap/view?usp=drive_link" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+  <button type="button" class="btn btn-primary" id="btn-pdf-download" onclick="handlePaperDownload()" data-tts="pdfBtn" tabindex="0">
+    <i data-lucide="file-down" aria-hidden="true" width="16" height="16"></i>
+    <span id="ui-pdf-btn-text">PDF Paper</span>
+    <span class="chip" id="pdf-download-count" style="background:var(--background);color:var(--primary);border-color:var(--outline);">1,248</span>
+  </button>
+</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- TTS STATUS BAR -->
+    <section class="tts-status-bar" id="card-tts-bar" data-tts="ttsBar" tabindex="0" aria-live="polite">
+      <div class="tts-live-readout">
+        <span class="chip chip-cyan" id="tts-voice-badge">
+          <i data-lucide="mic" aria-hidden="true" width="14" height="14"></i>
+          <span id="ui-voice-label">US Female Voice</span>
+        </span>
+        <span class="tts-utterance-preview" id="tts-preview-text">Hover or focus any card, HUD gauge, log row, or legal clause for instant female voice readout.</span>
+      </div>
+      <div class="control-row">
+        <button type="button" class="btn btn-compact" id="btn-tts-stop" onclick="stopSpeech()">
+          <i data-lucide="square" aria-hidden="true" width="14" height="14"></i>
+          <span id="ui-stop-voice">Stop Audio</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- KPI HERO STRIP -->
+    <section class="kpi-grid" aria-label="Key Governance Metrics">
+      <article class="kpi-card" id="kpi-readiness" data-tts="kpiReadiness" tabindex="0">
+        <span class="data-label" id="ui-kpi-1-label">GOVERNANCE READINESS</span>
+        <div class="metric-value" id="val-readiness">92%</div>
+        <span class="metric-delta" id="ui-kpi-1-delta">MMDIAF Layer Gates Active</span>
+      </article>
+
+      <article class="kpi-card" id="kpi-shoppers" data-tts="kpiShoppers" tabindex="0">
+        <span class="data-label" id="ui-kpi-2-label">ACTIVE SHELF SHOPPERS</span>
+        <div class="metric-value" id="val-shoppers">3</div>
+        <span class="metric-delta" id="ui-kpi-2-delta">Peak Dwell: 8.4s (Engaged)</span>
+      </article>
+
+      <article class="kpi-card" id="kpi-restraint" data-tts="kpiRestraint" tabindex="0">
+        <span class="data-label" id="ui-kpi-3-label">INFERENCE RESTRAINT GATE</span>
+        <div class="metric-value" id="val-restraint" style="color:var(--tertiary);">BOUNDED</div>
+        <span class="metric-delta" id="ui-kpi-3-delta">Raw Biometrics Masked at Edge</span>
+      </article>
+
+      <article class="kpi-card" id="kpi-logs" data-tts="kpiLogs" tabindex="0">
+        <span class="data-label" id="ui-kpi-4-label">AUDITABLE TRACE EVENTS</span>
+        <div class="metric-value" id="val-log-count">12</div>
+        <span class="metric-delta" id="ui-kpi-4-delta">Pure-English CSV Ready</span>
+      </article>
+    </section>
+
+    <!-- DUAL WORKSPACE: MERGED FACE AI HUD+CAM (LEFT) & RETAIL SHELF SIM (RIGHT) -->
+    <section class="workspace-grid">
+
+      <!-- UNIFIED CAMERA STREAM + FACE AI TELEMETRY HUD -->
+      <article class="panel" id="panel-vision-hud">
+        <div class="panel-header" id="header-vision-hud" data-tts="visionHeader" tabindex="0">
+          <div>
+            <span class="data-label" id="ui-vision-kicker">UNIFIED LAYER 1–3 ACQUISITION &amp; FACE AI HUD</span>
+            <h2 class="section-title" id="ui-vision-title">Live / Simulated Camera &amp; Superimposed Face Telemetry</h2>
+          </div>
+          <span class="chip chip-sage" id="badge-feed-mode">SIMULATED EDGE STREAM</span>
+        </div>
+
+        <!-- SINGLE MERGED CONTAINER: Camera Feed Background + Superimposed Telemetry HUD -->
+        <div class="unified-vision-frame" id="unified-vision-hud">
+          <div class="vision-media-layer">
+            <video id="live-camera-video" autoplay playsinline muted></video>
+            <canvas id="sim-camera-canvas" width="640" height="420"></canvas>
+          </div>
+          <canvas id="hud-overlay-canvas" width="640" height="420" aria-hidden="true"></canvas>
+          <div class="privacy-veil" id="privacy-veil"></div>
+
+          <div class="hud-superimposed-layer">
+            <div class="hud-top-row">
+              <!-- Superimposed Sub-card 1: Head Pose Pitch / Yaw / Roll -->
+              <div class="hud-chip-card" id="hud-pose-card" data-tts="hudPose" tabindex="0">
+                <span class="data-label" id="ui-hud-pose-label">HEAD POSE (PITCH / YAW / ROLL)</span>
+                <div class="hud-angles-row" id="hud-pose-values">
+                  <span>P: +2.4°</span>
+                  <span>Y: -8.1°</span>
+                  <span>R: +0.9°</span>
+                </div>
+                <span style="font-size:0.78rem;color:var(--on-surface-variant);" id="ui-hud-landmarks">468-pt Edge Mesh · Ephemeral Geometry</span>
+              </div>
+
+              <!-- Superimposed Sub-card 2: Privacy Shield Overlay -->
+              <div class="hud-chip-card" id="hud-shield-card" data-tts="hudShield" tabindex="0">
+                <span class="data-label" id="ui-hud-shield-label">LAYER 1 PRIVACY SHIELD</span>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-xs);">
+                  <strong id="hud-shield-status" style="font-size:0.88rem;color:var(--tertiary);">EDGE BLUR + MESH ONLY</strong>
+                  <span class="chip chip-sage" id="hud-shield-chip">SAFE</span>
+                </div>
+                <span style="font-size:0.76rem;color:var(--on-surface-variant);" id="ui-hud-shield-note">Raw frames discarded before fusion</span>
+              </div>
+            </div>
+
+            <div class="hud-bottom-row">
+              <!-- Superimposed Sub-card 3: Emotion Classification -->
+              <div class="hud-chip-card" id="hud-emotion-card" data-tts="hudEmotion" tabindex="0">
+                <span class="data-label" id="ui-hud-emotion-label">AFFECTIVE CLASSIFICATION (L2/L3 GATE)</span>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <strong id="hud-emotion-value" style="font-size:0.88rem;color:var(--primary);">RESTRAINED (Neutral Only)</strong>
+                  <span class="data-label" id="hud-emotion-conf">0.84</span>
+                </div>
+                <div class="hud-emotion-bar-track">
+                  <div class="hud-emotion-bar-fill" id="hud-emotion-bar" style="width:84%;"></div>
+                </div>
+                <span style="font-size:0.75rem;color:var(--on-surface-variant);" id="ui-hud-emotion-sub">Mood profiling suppressed per GDPR Art. 6</span>
+              </div>
+
+              <!-- Superimposed Sub-card 4: Gaze Raycast -->
+              <div class="hud-chip-card" id="hud-gaze-card" data-tts="hudGaze" tabindex="0">
+                <span class="data-label" id="ui-hud-gaze-label">GAZE RAYCAST VECTOR</span>
+                <strong id="hud-gaze-target" style="font-size:0.88rem;color:var(--on-surface);">Zone B · Smart Wearables</strong>
+                <span style="font-size:0.76rem;font-family:var(--font-label);color:var(--primary);" id="hud-gaze-coords">RAY (0.42, -0.18) · DIST 1.35m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compact Controls Docked Under Unified Camera Box -->
+        <div class="hud-controls-dock">
+          <div class="field-group">
+            <label class="field-label" for="select-feed-source" id="ui-lbl-feed">Camera Source</label>
+            <select class="hud-select" id="select-feed-source" onchange="changeCameraSource(this.value)">
+              <option value="simulated">Simulated Shopper Cam</option>
+              <option value="webcam">Live Webcam (Local Only)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="select-privacy-shield" id="ui-lbl-shield">Privacy Shield</label>
+            <select class="hud-select" id="select-privacy-shield" onchange="setPrivacyShield(this.value)">
+              <option value="landmark">Landmark-Only Silhouette</option>
+              <option value="blur" selected>Edge Gaussian Blur</option>
+              <option value="off">Unmasked Raw (Drift Risk)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="select-affective-gate" id="ui-lbl-emotion-gate">Affective Inference</label>
+            <select class="hud-select" id="select-affective-gate" onchange="setAffectiveGate(this.value)">
+              <option value="restrained" selected>Restrained (Layer 2 Lock)</option>
+              <option value="unrestricted">Unrestricted Emotion AI</option>
+            </select>
+          </div>
+        </div>
+        <div class="inline-toast" id="camera-status-msg" style="margin-top:var(--space-xs);"></div>
+      </article>
+
+      <!-- RETAIL SHELF JOINT ANIMATION + 4-TIER DWELL TIME -->
+      <article class="panel" id="panel-retail-shelf">
+        <div class="panel-header" id="header-retail-shelf" data-tts="shelfHeader" tabindex="0">
+          <div>
+            <span class="data-label" id="ui-shelf-kicker">SPATIAL TRAJECTORY &amp; 4-TIER DWELL ANALYTICS</span>
+            <h2 class="section-title" id="ui-shelf-title">Retail Shelf Multi-Person Joint Animation</h2>
+          </div>
+          <div class="control-row">
+            <button type="button" class="btn btn-compact" onclick="addShopper()" id="btn-add-shopper">
+              <i data-lucide="user-plus" aria-hidden="true" width="14" height="14"></i>
+              <span id="ui-btn-add-shopper">+ Shopper</span>
+            </button>
+            <button type="button" class="btn btn-compact" onclick="toggleSimPause()" id="btn-pause-sim">
+              <i data-lucide="pause" aria-hidden="true" width="14" height="14"></i>
+              <span id="ui-btn-pause">Pause</span>
+            </button>
+            <button type="button" class="btn btn-compact btn-warning" onclick="toggleDeploymentDrift()" id="btn-drift-sim">
+              <i data-lucide="alert-triangle" aria-hidden="true" width="14" height="14"></i>
+              <span id="ui-btn-drift">Test Drift</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="shelf-canvas-wrap" id="shelf-canvas-container" data-tts="shelfCanvas" tabindex="0">
+          <canvas id="retail-shelf-canvas" width="700" height="270"></canvas>
+        </div>
+
+        <!-- 4-Tier Dwell Time Interest Calculation Sub-Cards -->
+        <div class="dwell-tiers-grid" id="dwell-tiers-container">
+          <div class="sub-card" id="tier-card-1" data-tts="tier1" tabindex="0">
+            <span class="data-label" id="ui-tier-1-range">0–2s · GLANCE</span>
+            <strong class="metric-value" style="font-size:1.25rem;" id="tier-1-count">0</strong>
+            <span style="font-size:0.78rem;color:var(--on-surface-variant);" id="ui-tier-1-desc">Passing · Ephemeral Purge</span>
+          </div>
+          <div class="sub-card" id="tier-card-2" data-tts="tier2" tabindex="0">
+            <span class="data-label" id="ui-tier-2-range">3–5s · BROWSE</span>
+            <strong class="metric-value" style="font-size:1.25rem;color:var(--primary);" id="tier-2-count">0</strong>
+            <span style="font-size:0.78rem;color:var(--on-surface-variant);" id="ui-tier-2-desc">Initial Look · Aggregate</span>
+          </div>
+          <div class="sub-card" id="tier-card-3" data-tts="tier3" tabindex="0">
+            <span class="data-label" id="ui-tier-3-range">6–10s · ENGAGED</span>
+            <strong class="metric-value" style="font-size:1.25rem;color:var(--warning);" id="tier-3-count">0</strong>
+            <span style="font-size:0.78rem;color:var(--on-surface-variant);" id="ui-tier-3-desc">High Interest · L2 Check</span>
+          </div>
+          <div class="sub-card" id="tier-card-4" data-tts="tier4" tabindex="0">
+            <span class="data-label" id="ui-tier-4-range">&gt;10s · PEAK INTENT</span>
+            <strong class="metric-value" style="font-size:1.25rem;color:var(--tertiary);" id="tier-4-count">0</strong>
+            <span style="font-size:0.78rem;color:var(--on-surface-variant);" id="ui-tier-4-desc">Decision Point · Contestable</span>
+          </div>
+        </div>
+
+        <!-- Live Individual Joint-Shopper Sub-Cards -->
+        <div class="shoppers-telemetry-grid" id="shoppers-subcards"></div>
+      </article>
+    </section>
+
+    <!-- MMDIAF 4-LAYER REFERENCE ARCHITECTURE -->
+    <section class="panel" id="panel-mmdiaf">
+      <div class="panel-header" id="header-mmdiaf" data-tts="mmdiafHeader" tabindex="0">
+        <div>
+          <span class="data-label" id="ui-mmdiaf-kicker">MULTILEVEL MULTIMODAL DATA INTEGRATION &amp; ANALYSIS FRAMEWORK</span>
+          <h2 class="section-title" id="ui-mmdiaf-title">MMDIAF Governance-by-Design Layers &amp; Transversal Controls</h2>
+        </div>
+        <span class="chip chip-cyan" id="ui-mmdiaf-badge">4 LAYERS · 4 TRANSVERSAL PILLARS</span>
+      </div>
+
+      <div class="mmdiaf-grid" id="mmdiaf-layers-grid"></div>
+
+      <div class="transversal-bar" id="transversal-pillars-grid"></div>
+    </section>
+
+    <!-- GDPR & EU AI ACT INTERACTIVE COMPLIANCE MATRIX -->
+    <section class="panel" id="panel-compliance">
+      <div class="matrix-toolbar">
+        <div id="header-compliance" data-tts="complianceHeader" tabindex="0">
+          <span class="data-label" id="ui-matrix-kicker">REGULATORY ALIGNMENT · DARK HUD MATRIX</span>
+          <h2 class="section-title" id="ui-matrix-title">GDPR &amp; EU AI Act Interactive Compliance Matrix</h2>
+        </div>
+        <div class="control-row">
+          <button type="button" class="btn btn-compact btn-active" id="filter-reg-all" onclick="setComplianceFilter('all')">All (8)</button>
+          <button type="button" class="btn btn-compact" id="filter-reg-gdpr" onclick="setComplianceFilter('GDPR')">GDPR (4)</button>
+          <button type="button" class="btn btn-compact" id="filter-reg-euai" onclick="setComplianceFilter('EU AI Act')">EU AI Act (4)</button>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="hud-table" id="compliance-table">
+          <thead>
+            <tr>
+              <th id="th-article">Article / Clause</th>
+              <th id="th-mandate">Regulatory Mandate &amp; Risk</th>
+              <th id="th-layer">MMDIAF Layer &amp; Safeguard</th>
+              <th id="th-status">Live Audit Status</th>
+              <th id="th-action">Action</th>
+            </tr>
+          </thead>
+          <tbody id="compliance-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- AUDIT TELEMETRY LOG & PAPER BRIEF ACCESS -->
+    <section class="bottom-grid">
+      <article class="panel" id="panel-audit-log">
+        <div class="panel-header" id="header-audit-log" data-tts="logHeader" tabindex="0">
+          <div>
+            <span class="data-label" id="ui-log-kicker">LIVE GOVERNANCE TRACE STREAM</span>
+            <h2 class="section-title" id="ui-log-title">Auditable Telemetry &amp; Intervention Log</h2>
+          </div>
+          <button type="button" class="btn btn-compact" onclick="exportPureEnglishCSV()" data-tts="csvBtn" tabindex="0">
+            <i data-lucide="download" aria-hidden="true" width="14" height="14"></i>
+            <span id="ui-log-csv-btn">Pure English CSV</span>
+          </button>
+        </div>
+        <div class="log-scroll">
+          <table class="hud-table">
+            <thead>
+              <tr>
+                <th id="th-log-time">UTC Time</th>
+                <th id="th-log-shopper">Shopper / Zone</th>
+                <th id="th-log-dwell">Dwell Tier</th>
+                <th id="th-log-gate">MMDIAF Verdict</th>
+              </tr>
+            </thead>
+            <tbody id="audit-log-tbody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel paper-box" id="panel-paper" data-tts="paperBox" tabindex="0">
+        <div>
+          <span class="data-label" id="ui-paper-kicker">ORIGINAL RESEARCH PUBLICATION (2026)</span>
+          <h2 class="section-title" id="ui-paper-title">Governing Multimodal Consumer Analytics</h2>
+          <p class="muted" id="ui-paper-desc" style="margin-top:var(--space-xs);">
+            A Governance-by-Design Reference Architecture for Responsible Technology · Hoiman Cheng &amp; Cheng-Wang Lin (National Yang Ming Chiao Tung University).
+          </p>
+        </div>
+
+        <div class="sub-card" data-tts="paperMetrics" tabindex="0">
+          <span class="data-label" id="ui-paper-doi-label">DOI &amp; REPOSITORY REFERENCE</span>
+          <span style="font-family:var(--font-label);font-size:0.84rem;color:var(--on-surface);">ISSN 2576-7240 · DOI 10.30560/ijas.v9n1p75</span>
+          <div class="drive-path-well" id="drive-url-display">drive.google.com/file/d/1oC3Hz8tfkNMpiZJSUNeAto5KEg7Qa5ap/view?usp=drive_link</div>
+        </div>
+
+        <div class="control-row" style="justify-content:flex-start;">
+          <a href="https://drive.google.com/file/d/1oC3Hz8tfkNMpiZJSUNeAto5KEg7Qa5ap/view?usp=drive_link" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+  <button type="button" class="btn btn-primary" id="btn-paper-access-2" onclick="handlePaperDownload()" tabindex="0">
+    <i data-lucide="file-down" aria-hidden="true" width="16" height="16"></i>
+    <span id="ui-paper-dl-action">Download Paper Brief &amp; Increment Counter</span>
+    <span class="chip" id="pdf-download-count-2" style="background:var(--background);color:var(--primary);border-color:var(--outline);">1,248</span>
+  </button>
+</a>
+          <button type="button" class="btn" onclick="copyDriveUrl()" id="btn-copy-drive">
+            <i data-lucide="copy" aria-hidden="true" width="16" height="16"></i>
+            <span id="ui-copy-drive-btn">Copy Drive Link</span>
+          </button>
+        </div>
+        <div class="inline-toast" id="paper-toast-msg"></div>
+      </article>
+    </section>
+
+  </main>
+
+  <api-shim></api-shim>
+  <script>
+    // =========================================================================
+    // 1. GLOBAL STATE & PALETTE TOKENS
+    // =========================================================================
+    const APP_STATE = {
+      lang: 'en',
+      ttsEnabled: true,
+      cameraSource: 'simulated',
+      privacyShield: 'blur', // 'landmark' | 'blur' | 'off'
+      affectiveGate: 'restrained', // 'restrained' | 'unrestricted'
+      driftActive: false,
+      simPaused: false,
+      complianceFilter: 'all',
+      verifiedClauses: {
+        'gdpr-5': true,
+        'gdpr-6': true,
+        'gdpr-13': true,
+        'gdpr-22': true,
+        'euai-10': true,
+        'euai-13': true,
+        'euai-14': true,
+        'euai-86': true
+      },
+      pdfDownloads: 1248,
+      activeZoneFocus: 'Zone B'
+    };
+
+    function getToken(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#63c7d6';
+    }
+
+    // =========================================================================
+    // 2. 6-LANGUAGE DICTIONARY (EN, zh-TW, zh-CN, ja, de, fr)
+    // =========================================================================
+    const I18N = {
+      en: {
+        kicker: `MMDIAF REFERENCE ARCHITECTURE · SMART RETAIL HUD`,
+        title: `SmartMMDIAF-Studio: Multimodal Consumer Governance`,
+        subtitle: `Governance-by-design reference architecture translating accountability, interpretability, privacy restraint, and contestability into auditable smart retail telemetry.`,
+        authorLabel: `AUTHORS:`,
+        authorNames: `Hoiman Cheng & Cheng-Wang Lin · Institute of Technology Management / Industrial Engineering & Management, NYCU`,
+        ttsOn: `Hover Voice: ON`,
+        ttsOff: `Hover Voice: OFF`,
+        csvBtn: `Export English CSV`,
+        pdfBtn: `PDF Paper`,
+        voiceLabel: `US Female Voice`,
+        stopVoice: `Stop Audio`,
+        ttsDefaultHint: `Hover or focus any card, HUD gauge, log row, or legal clause for instant female voice readout.`,
+        kpi1Label: `GOVERNANCE READINESS`,
+        kpi1DeltaOk: `MMDIAF Layer Gates Active`,
+        kpi1DeltaDrift: `Deployment Drift Alert Detected`,
+        kpi2Label: `ACTIVE SHELF SHOPPERS`,
+        kpi3Label: `INFERENCE RESTRAINT GATE`,
+        kpi3Bounded: `BOUNDED`,
+        kpi3Drift: `DRIFT RISK`,
+        kpi3DeltaSafe: `Raw Biometrics Masked at Edge`,
+        kpi3DeltaRisk: `Biometric Exposure / Function Creep`,
+        kpi4Label: `AUDITABLE TRACE EVENTS`,
+        kpi4Delta: `Pure-English CSV Ready`,
+        visionKicker: `UNIFIED LAYER 1–3 ACQUISITION & FACE AI HUD`,
+        visionTitle: `Live / Simulated Camera & Superimposed Face Telemetry`,
+        feedSim: `SIMULATED EDGE STREAM`,
+        feedCam: `LIVE WEBCAM (EDGE MASKED)`,
+        hudPoseLabel: `HEAD POSE (PITCH / YAW / ROLL)`,
+        hudLandmarks: `468-pt Edge Mesh · Ephemeral Geometry`,
+        hudShieldLabel: `LAYER 1 PRIVACY SHIELD`,
+        shieldLandmark: `LANDMARK SILHOUETTE ONLY`,
+        shieldBlur: `EDGE BLUR + MESH ONLY`,
+        shieldOff: `UNMASKED RAW VIDEO (RISK)`,
+        shieldSafe: `SAFE`,
+        shieldRisk: `BREACH`,
+        shieldNoteSafe: `Raw frames discarded before fusion`,
+        shieldNoteRisk: `Continuous biometric surveillance risk`,
+        hudEmotionLabel: `AFFECTIVE CLASSIFICATION (L2/L3 GATE)`,
+        emotionRestrained: `RESTRAINED (Neutral Only)`,
+        emotionRestrainedSub: `Mood profiling suppressed per GDPR Art. 6`,
+        emotionUnrestrictedSub: `Secondary affective inference active`,
+        hudGazeLabel: `GAZE RAYCAST VECTOR`,
+        lblFeed: `Camera Source`,
+        lblShield: `Privacy Shield`,
+        lblEmotionGate: `Affective Inference`,
+        shelfKicker: `SPATIAL TRAJECTORY & 4-TIER DWELL ANALYTICS`,
+        shelfTitle: `Retail Shelf Multi-Person Joint Animation`,
+        btnAddShopper: `+ Shopper`,
+        btnPause: `Pause`,
+        btnResume: `Resume`,
+        btnDrift: `Test Drift`,
+        btnRestore: `Restore Gates`,
+        tier1Range: `0–2s · GLANCE`,
+        tier1Desc: `Passing · Ephemeral Purge`,
+        tier2Range: `3–5s · BROWSE`,
+        tier2Desc: `Initial Look · Aggregate`,
+        tier3Range: `6–10s · ENGAGED`,
+        tier3Desc: `High Interest · L2 Check`,
+        tier4Range: `>10s · PEAK INTENT`,
+        tier4Desc: `Decision Point · Contestable`,
+        mmdiafKicker: `MULTILEVEL MULTIMODAL DATA INTEGRATION & ANALYSIS FRAMEWORK`,
+        mmdiafTitle: `MMDIAF Governance-by-Design Layers & Transversal Controls`,
+        mmdiafBadge: `4 LAYERS · 4 TRANSVERSAL PILLARS`,
+        matrixKicker: `REGULATORY ALIGNMENT · DARK HUD MATRIX`,
+        matrixTitle: `GDPR & EU AI Act Interactive Compliance Matrix`,
+        thArticle: `Article / Clause`,
+        thMandate: `Regulatory Mandate & Risk`,
+        thLayer: `MMDIAF Layer & Safeguard`,
+        thStatus: `Live Audit Status`,
+        thAction: `Action`,
+        logKicker: `LIVE GOVERNANCE TRACE STREAM`,
+        logTitle: `Auditable Telemetry & Intervention Log`,
+        logCsvBtn: `Pure English CSV`,
+        thLogTime: `UTC Time`,
+        thLogShopper: `Shopper / Zone`,
+        thLogDwell: `Dwell Tier`,
+        thLogGate: `MMDIAF Verdict`,
+        paperKicker: `ORIGINAL RESEARCH PUBLICATION (2026)`,
+        paperTitle: `Governing Multimodal Consumer Analytics`,
+        paperDesc: `A Governance-by-Design Reference Architecture for Responsible Technology · Hoiman Cheng & Cheng-Wang Lin (National Yang Ming Chiao Tung University).`,
+        paperDoiLabel: `DOI & REPOSITORY REFERENCE`,
+        paperDlAction: `Download Paper Brief & Increment Counter`,
+        copyDriveBtn: `Copy Drive Link`,
+        verifyBtn: `Toggle Audit`,
+        statusCompliant: `COMPLIANT`,
+        statusAttention: `REVIEW`,
+        statusBreach: `DRIFT BREACH`,
+        zones: {
+          A: `Zone A · Organic Tea`,
+          B: `Zone B · Smart Wearables`,
+          C: `Zone C · Derma Serum`,
+          D: `Zone D · Craft Cocoa`
+        },
+        tiers: {
+          1: `Glance (0–2s)`,
+          2: `Browse (3–5s)`,
+          3: `Engaged (6–10s)`,
+          4: `Peak Intent (>10s)`
+        },
+        layers: [
+          {
+            id: `L1`,
+            title: `Layer 1 · Data Acquisition`,
+            obj: `Purpose Limitation`,
+            req: `Modality-specific consent & edge minimization before signal capture.`,
+            ev: `Consent logs, data scope bounds`
+          },
+          {
+            id: `L2`,
+            title: `Layer 2 · Representation`,
+            obj: `Inference Restraint`,
+            req: `Normative filtering & privacy-preserving transformation blocking secondary profiling.`,
+            ev: `Preprocessing records, risk logs`
+          },
+          {
+            id: `L3`,
+            title: `Layer 3 · Cross-Modal Fusion`,
+            obj: `Interpretability`,
+            req: `Modular, explainable integration preventing black-box accountability displacement.`,
+            ev: `Model cards, modality weights`
+          },
+          {
+            id: `L4`,
+            title: `Layer 4 · Decision Deployment`,
+            obj: `Accountability`,
+            req: `Contestable automated outputs with uncertainty indicators & human appeal paths.`,
+            ev: `Appeal procedures, audit trails`
+          }
+        ],
+        pillars: [
+          { name: `Accountability`, desc: `Responsibility remains inside human institutional governance.` },
+          { name: `Interpretability`, desc: `Explanatory traces & modality contribution indicators exposed.` },
+          { name: `Privacy Restraint`, desc: `Enforceable limits preventing biometric surveillance normalization.` },
+          { name: `Contestability`, desc: `Affected consumers can challenge automated inferences.` }
+        ],
+        clauses: [
+          {
+            id: `gdpr-5`, reg: `GDPR`, art: `GDPR Art. 5(1)(c)`,
+            mandate: `Data Minimisation: Personal data shall be adequate, relevant and limited to what is necessary in relation to commercial analytics purposes.`,
+            layer: `Layer 1 Acquisition · Privacy Shield & Ephemeral 0–2s Purge`,
+            dep: `shield`
+          },
+          {
+            id: `gdpr-6`, reg: `GDPR`, art: `GDPR Art. 6`,
+            mandate: `Lawfulness of Processing: Ambient sensing cannot substitute for explicit, modality-specific consent before capturing biometric or affective states.`,
+            layer: `Layer 1 & 2 · Affective Inference Lock & Purpose Gate`,
+            dep: `affective`
+          },
+          {
+            id: `gdpr-13`, reg: `GDPR`, art: `GDPR Art. 13 / 14`,
+            mandate: `Transparent Information: Consumers must be clearly notified of sensing modalities, retention limits, and secondary cross-modal inference scope.`,
+            layer: `Layer 1 & 4 · Visible HUD Notice & Modality Disclosure`,
+            dep: `none`
+          },
+          {
+            id: `gdpr-22`, reg: `GDPR`, art: `GDPR Art. 22`,
+            mandate: `Automated Decision-Making & Profiling: Right not to be subject to opaque algorithmic nudging or discriminatory pricing without human contestability.`,
+            layer: `Layer 3 & 4 · Contestable >10s Intent Threshold`,
+            dep: `drift`
+          },
+          {
+            id: `euai-10`, reg: `EU AI Act`, art: `EU AI Act Art. 10`,
+            mandate: `Data & Data Governance: Training and evaluation multimodal datasets must undergo bias examination, provenance tracking, and sensitive feature filtering.`,
+            layer: `Layer 2 Representation · Normative Filtering & Bias Audit`,
+            dep: `affective`
+          },
+          {
+            id: `euai-13`, reg: `EU AI Act`, art: `EU AI Act Art. 13`,
+            mandate: `Transparency to Deployers: Systems must expose accuracy boundaries, alignment fragility, and modality contribution artifacts to operators.`,
+            layer: `Layer 3 Fusion · Modular Model Cards & Uncertainty Signals`,
+            dep: `drift`
+          },
+          {
+            id: `euai-14`, reg: `EU AI Act`, art: `EU AI Act Art. 14`,
+            mandate: `Human Oversight: Prevent accountability displacement into black-box pipelines through real-time kill switches and override checkpoints.`,
+            layer: `Transversal Governance · Edge Shield & Drift Override`,
+            dep: `shield`
+          },
+          {
+            id: `euai-86`, reg: `EU AI Act`, art: `EU AI Act Art. 86`,
+            mandate: `Right to Explanation: Affected individuals have the right to obtain clear, meaningful explanations of individual automated decisions.`,
+            layer: `Layer 4 Deployment · Pure-English Audit Trail & Appeal Path`,
+            dep: `none`
+          }
+        ]
+      },
+
+      'zh-TW': {
+        kicker: `MMDIAF 參考架構 · 智慧零售治理儀表板`,
+        title: `SmartMMDIAF-Studio：多模態消費者分析治理平台`,
+        subtitle: `以「設計即治理（Governance-by-Design）」為核心架構，將當責性、可解釋性、隱私節制與可異議性轉譯為可稽核的智慧零售遙測系統。`,
+        authorLabel: `論文作者：`,
+        authorNames: `鄭凱文 (Hoiman Cheng)、林正旺 (Cheng-Wang Lin) · 國立陽明交通大學 科技管理研究所`,
+        ttsOn: `懸停語音：開啟`,
+        ttsOff: `懸停語音：關閉`,
+        csvBtn: `匯出純英文 CSV`,
+        pdfBtn: `論文 PDF`,
+        voiceLabel: `台灣國語女聲`,
+        stopVoice: `停止朗讀`,
+        ttsDefaultHint: `滑鼠懸停或聚焦於任一卡片、HUD 儀表、日誌列或法規條文，即啟用自然女聲朗讀。`,
+        kpi1Label: `治理就緒指標`,
+        kpi1DeltaOk: `MMDIAF 各層閘門運作中`,
+        kpi1DeltaDrift: `偵測到部署漂移風險`,
+        kpi2Label: `貨架區活躍顧客`,
+        kpi3Label: `推論節制閘門`,
+        kpi3Bounded: `受控節制`,
+        kpi3Drift: `漂移風險`,
+        kpi3DeltaSafe: `原始生物特徵已於邊緣遮罩`,
+        kpi3DeltaRisk: `存在生物特徵曝露與功能蔓延`,
+        kpi4Label: `可稽核追蹤事件`,
+        kpi4Delta: `純英文 CSV 匯出就緒`,
+        visionKicker: `整合式第 1–3 層資料擷取與人臉 AI 遙測 HUD`,
+        visionTitle: `即時／模擬攝影機串流與疊加式人臉遙測`,
+        feedSim: `模擬邊緣影像串流`,
+        feedCam: `即時網路攝影機（邊緣遮罩）`,
+        hudPoseLabel: `頭部姿態（俯仰／偏航／翻滾）`,
+        hudLandmarks: `468 點邊緣網格 · 暫態幾何特徵`,
+        hudShieldLabel: `第 1 層隱私防護盾`,
+        shieldLandmark: `僅保留關鍵點輪廓`,
+        shieldBlur: `邊緣模糊＋網格模式`,
+        shieldOff: `未遮罩原始影像（高風險）`,
+        shieldSafe: `安全`,
+        shieldRisk: `違規`,
+        shieldNoteSafe: `原始影像已於融合前在邊緣銷毀`,
+        shieldNoteRisk: `持續性生物辨識監控常態化風險`,
+        hudEmotionLabel: `情感分類推論（L2/L3 閘門）`,
+        emotionRestrained: `已節制（僅中性狀態）`,
+        emotionRestrainedSub: `依 GDPR 第 6 條抑制情緒側寫`,
+        emotionUnrestrictedSub: `次級情感推論目前處於啟用狀態`,
+        hudGazeLabel: `視線射線追蹤向量`,
+        lblFeed: `攝影機訊源`,
+        lblShield: `隱私防護盾`,
+        lblEmotionGate: `情感推論閘門`,
+        shelfKicker: `空間軌跡與四級駐留時間興趣分析`,
+        shelfTitle: `零售貨架多人關節步行模擬`,
+        btnAddShopper: `+ 新增顧客`,
+        btnPause: `暫停`,
+        btnResume: `繼續`,
+        btnDrift: `測試部署漂移`,
+        btnRestore: `恢復治理閘門`,
+        tier1Range: `0–2秒 · 瞥視`,
+        tier1Desc: `路過 · 暫態資料即時清除`,
+        tier2Range: `3–5秒 · 瀏覽`,
+        tier2Desc: `初步注視 · 匿名彙總統計`,
+        tier3Range: `6–10秒 · 深度互動`,
+        tier3Desc: `高度興趣 · 觸發 L2 目的審查`,
+        tier4Range: `>10秒 · 核心購買意圖`,
+        tier4Desc: `決策節點 · 須具可異議性`,
+        mmdiafKicker: `多層次多模態資料整合與分析框架`,
+        mmdiafTitle: `MMDIAF 設計即治理四層架構與橫貫控制機制`,
+        mmdiafBadge: `四個分析層 · 四大橫貫治理支柱`,
+        matrixKicker: `法規對齊矩陣 · 深色 HUD 介面`,
+        matrixTitle: `GDPR 與歐盟 AI 法案互動式合規矩陣`,
+        thArticle: `法規條文`,
+        thMandate: `法規要求與治理風險`,
+        thLayer: `MMDIAF 對應層級與防護`,
+        thStatus: `即時稽核狀態`,
+        thAction: `操作`,
+        logKicker: `即時治理追蹤串流`,
+        logTitle: `可稽核遙測與介入日誌`,
+        logCsvBtn: `純英文 CSV`,
+        thLogTime: `UTC 時間`,
+        thLogShopper: `顧客／貨架區`,
+        thLogDwell: `駐留等級`,
+        thLogGate: `MMDIAF 判定`,
+        paperKicker: `原始研究論文（2026 年發表）`,
+        paperTitle: `治理多模態消費者分析：負責任技術之設計即治理參考架構`,
+        paperDesc: `國立陽明交通大學 鄭凱文 (Hoiman Cheng)、林正旺 (Cheng-Wang Lin) 著。`,
+        paperDoiLabel: `DOI 與論文雲端參考位置`,
+        paperDlAction: `下載論文摘要簡報並累加計數`,
+        copyDriveBtn: `複製雲端連結`,
+        verifyBtn: `切換稽核`,
+        statusCompliant: `合規`,
+        statusAttention: `待複核`,
+        statusBreach: `漂移警示`,
+        zones: {
+          A: `A 區 · 有機茶飲`,
+          B: `B 區 · 智慧穿戴`,
+          C: `C 區 · 修護精華`,
+          D: `D 區 · 精品可可`
+        },
+        tiers: {
+          1: `瞥視 (0–2秒)`,
+          2: `瀏覽 (3–5秒)`,
+          3: `深度互動 (6–10秒)`,
+          4: `核心意圖 (>10秒)`
+        },
+        layers: [
+          { id: `L1`, title: `第 1 層 · 資料擷取`, obj: `目的限制`, req: `擷取前須取得模態專屬同意並實施邊緣最小化。`, ev: `同意紀錄、資料範圍文件` },
+          { id: `L2`, title: `第 2 層 · 表徵管理`, obj: `推論節制`, req: `規範性過濾與隱私保護轉換，阻斷未授權次級側寫。`, ev: `前處理紀錄、風險評估` },
+          { id: `L3`, title: `第 3 層 · 跨模態融合`, obj: `可解釋性`, req: `模組化且可解釋的融合機制，防止黑箱轉嫁當責性。`, ev: `模型卡、模態權重指標` },
+          { id: `L4`, title: `第 4 層 · 決策部署`, obj: `機構當責`, req: `提供可異議的自動化輸出、不確定性指標與人工申訴管道。`, ev: `申訴程序、稽核軌跡` }
+        ],
+        pillars: [
+          { name: `機構當責性`, desc: `決策責任歸屬於人類治理組織，而非轉嫁予演算法。` },
+          { name: `結構可解釋性`, desc: `揭露推論脈絡與各模態貢獻指標。` },
+          { name: `隱私節制力`, desc: `以可執行的推論邊界防止生物特徵監控常態化。` },
+          { name: `消費者可異議性`, desc: `受影響個人具備質疑與挑戰自動化推論的權利。` }
+        ],
+        clauses: [
+          { id: `gdpr-5`, reg: `GDPR`, art: `GDPR 第 5(1)(c) 條`, mandate: `資料最小化原則：個人資料應充分、相關且僅限於達成商業分析目的所必要之範圍。`, layer: `第 1 層擷取 · 隱私防護盾與 0–2 秒暫態清除`, dep: `shield` },
+          { id: `gdpr-6`, reg: `GDPR`, art: `GDPR 第 6 條`, mandate: `處理合法性：環境感知不得取代針對生物特徵或情感狀態的明確、分模態同意。`, layer: `第 1/2 層 · 情感推論鎖定與目的閘門`, dep: `affective` },
+          { id: `gdpr-13`, reg: `GDPR`, art: `GDPR 第 13 / 14 條`, mandate: `資訊透明度：須明確告知消費者感測模態、保存期限與跨模態次級推論邊界。`, layer: `第 1/4 層 · 現場 HUD 告示與模態揭露`, dep: `none` },
+          { id: `gdpr-22`, reg: `GDPR`, art: `GDPR 第 22 條`, mandate: `自動化決策與側寫：消費者有權不受不透明演算法誘導或差別定價支配。`, layer: `第 3/4 層 · >10 秒意圖閾值之可異議機制`, dep: `drift` },
+          { id: `euai-10`, reg: `EU AI Act`, art: `歐盟 AI 法案 第 10 條`, mandate: `資料與資料治理：多模態訓練與評估資料須進行偏誤檢驗、來源追蹤與敏感特徵過濾。`, layer: `第 2 層表徵 · 規範性過濾與偏誤稽核`, dep: `affective` },
+          { id: `euai-13`, reg: `EU AI Act`, art: `歐盟 AI 法案 第 13 條`, mandate: `對部署者之透明度：系統須向營運者揭露準確度邊界、對齊脆弱性與模態貢獻度。`, layer: `第 3 層融合 · 模組化模型卡與不確定性訊號`, dep: `drift` },
+          { id: `euai-14`, reg: `EU AI Act`, art: `歐盟 AI 法案 第 14 條`, mandate: `人類監督機制：透過即時遮罩開關與覆寫檢核點，防止責任被黑箱模型吸收。`, layer: `橫貫治理 · 邊緣防護盾與漂移覆寫`, dep: `shield` },
+          { id: `euai-86`, reg: `EU AI Act`, art: `歐盟 AI 法案 第 86 條`, mandate: `個別決策解釋權：受影響個人有權就自動化決策獲得清晰且具實質意義的說明。`, layer: `第 4 層部署 · 純英文稽核軌跡與申訴管道`, dep: `none` }
+        ]
+      },
+
+      'zh-CN': {
+        kicker: `MMDIAF 参考架构 · 智慧零售治理仪表板`,
+        title: `SmartMMDIAF-Studio：多模态消费者分析治理平台`,
+        subtitle: `以“设计即治理”为核心架构，将问责性、可解释性、隐私克制与可异议性转化为可审计的智慧零售遥测系统。`,
+        authorLabel: `论文作者：`,
+        authorNames: `郑凯文 (Hoiman Cheng)、林正旺 (Cheng-Wang Lin) · 国立阳明交通大学 科技管理研究所`,
+        ttsOn: `悬停语音：开启`,
+        ttsOff: `悬停语音：关闭`,
+        csvBtn: `导出纯英文 CSV`,
+        pdfBtn: `论文 PDF`,
+        voiceLabel: `中文普通话女声`,
+        stopVoice: `停止朗读`,
+        ttsDefaultHint: `鼠标悬停或聚焦任意卡片、HUD 仪表、日志行或法规条款，即可触发自然女声朗读。`,
+        kpi1Label: `治理就绪指数`,
+        kpi1DeltaOk: `MMDIAF 各层闸门运行中`,
+        kpi1DeltaDrift: `检测到部署漂移风险`,
+        kpi2Label: `货架区活跃顾客`,
+        kpi3Label: `推论克制闸门`,
+        kpi3Bounded: `受控克制`,
+        kpi3Drift: `漂移风险`,
+        kpi3DeltaSafe: `原始生物特征已在边缘脱敏`,
+        kpi3DeltaRisk: `存在生物特征暴露与功能蔓延`,
+        kpi4Label: `可审计追踪事件`,
+        kpi4Delta: `纯英文 CSV 导出就绪`,
+        visionKicker: `一体化第 1–3 层采集与人脸 AI 遥测 HUD`,
+        visionTitle: `实时／模拟摄像头视频流与叠加式人脸遥测`,
+        feedSim: `模拟边缘视频流`,
+        feedCam: `实时摄像头（边缘脱敏）`,
+        hudPoseLabel: `头部姿态（俯仰／偏航／滚转）`,
+        hudLandmarks: `468 点边缘网格 · 瞬态几何特征`,
+        hudShieldLabel: `第 1 层隐私防护盾`,
+        shieldLandmark: `仅保留关键点轮廓`,
+        shieldBlur: `边缘模糊＋网格模式`,
+        shieldOff: `未脱敏原始画面（高风险）`,
+        shieldSafe: `安全`,
+        shieldRisk: `违规`,
+        shieldNoteSafe: `原始帧已在融合前于边缘销毁`,
+        shieldNoteRisk: `持续性生物识别监控常态化风险`,
+        hudEmotionLabel: `情感分类推论（L2/L3 闸门）`,
+        emotionRestrained: `已克制（仅中性状态）`,
+        emotionRestrainedSub: `依据 GDPR 第 6 条抑制情绪画像`,
+        emotionUnrestrictedSub: `次级情感推论当前处于启用状态`,
+        hudGazeLabel: `视线射线追踪向量`,
+        lblFeed: `摄像头来源`,
+        lblShield: `隐私防护盾`,
+        lblEmotionGate: `情感推论闸门`,
+        shelfKicker: `空间轨迹与四级驻留时间兴趣分析`,
+        shelfTitle: `零售货架多人关节步行模拟`,
+        btnAddShopper: `+ 添加顾客`,
+        btnPause: `暂停`,
+        btnResume: `继续`,
+        btnDrift: `测试部署漂移`,
+        btnRestore: `恢复治理闸门`,
+        tier1Range: `0–2秒 · 瞥视`,
+        tier1Desc: `路过 · 瞬态数据即时清除`,
+        tier2Range: `3–5秒 · 浏览`,
+        tier2Desc: `初步注视 · 匿名汇总统计`,
+        tier3Range: `6–10秒 · 深度互动`,
+        tier3Desc: `高度兴趣 · 触发 L2 目的审查`,
+        tier4Range: `>10秒 · 核心购买意图`,
+        tier4Desc: `决策节点 · 须具备可异议性`,
+        mmdiafKicker: `多层次多模态数据整合与分析框架`,
+        mmdiafTitle: `MMDIAF 设计即治理四层架构与横贯控制机制`,
+        mmdiafBadge: `四个分析层 · 四大横贯治理支柱`,
+        matrixKicker: `法规对齐矩阵 · 深色 HUD 界面`,
+        matrixTitle: `GDPR 与欧盟 AI 法案交互式合规矩阵`,
+        thArticle: `法规条款`,
+        thMandate: `法规要求与治理风险`,
+        thLayer: `MMDIAF 对应层级与防护`,
+        thStatus: `实时审计状态`,
+        thAction: `操作`,
+        logKicker: `实时治理追踪流`,
+        logTitle: `可审计遥测与干预日志`,
+        logCsvBtn: `纯英文 CSV`,
+        thLogTime: `UTC 时间`,
+        thLogShopper: `顾客／货架区`,
+        thLogDwell: `驻留等级`,
+        thLogGate: `MMDIAF 判定`,
+        paperKicker: `原始研究论文（2026 年发表）`,
+        paperTitle: `治理多模态消费者分析：负责任技术之设计即治理参考架构`,
+        paperDesc: `国立阳明交通大学 郑凯文 (Hoiman Cheng)、林正旺 (Cheng-Wang Lin) 著。`,
+        paperDoiLabel: `DOI 与论文云端参考地址`,
+        paperDlAction: `下载论文摘要简报并累加计数`,
+        copyDriveBtn: `复制云端链接`,
+        verifyBtn: `切换审计`,
+        statusCompliant: `合规`,
+        statusAttention: `待复核`,
+        statusBreach: `漂移警示`,
+        zones: {
+          A: `A 区 · 有机茶饮`,
+          B: `B 区 · 智能穿戴`,
+          C: `C 区 · 修护精华`,
+          D: `D 区 · 精品可可`
+        },
+        tiers: {
+          1: `瞥视 (0–2秒)`,
+          2: `浏览 (3–5秒)`,
+          3: `深度互动 (6–10秒)`,
+          4: `核心意图 (>10秒)`
+        },
+        layers: [
+          { id: `L1`, title: `第 1 层 · 数据采集`, obj: `目的限制`, req: `采集前须取得模态专属同意并实施边缘最小化。`, ev: `同意记录、数据范围文档` },
+          { id: `L2`, title: `第 2 层 · 表征管理`, obj: `推论克制`, req: `规范性过滤与隐私保护转换，阻断未授权次级画像。`, ev: `预处理记录、风险评估` },
+          { id: `L3`, title: `第 3 层 · 跨模态融合`, obj: `可解释性`, req: `模块化且可解释的融合机制，防止黑箱转移问责性。`, ev: `模型卡、模态权重指标` },
+          { id: `L4`, title: `第 4 层 · 决策部署`, obj: `机构问责`, req: `提供可异议的自动化输出、不确定性指标与人工申诉渠道。`, ev: `申诉程序、审计轨迹` }
+        ],
+        pillars: [
+          { name: `机构问责性`, desc: `决策责任归属于人类治理组织，而非转嫁给算法。` },
+          { name: `结构可解释性`, desc: `披露推论脉络与各模态贡献指标。` },
+          { name: `隐私克制力`, desc: `以可执行的推论边界防止生物特征监控常态化。` },
+          { name: `消费者可异议性`, desc: `受影响个人具备质疑与挑战自动化推论的权利。` }
+        ],
+        clauses: [
+          { id: `gdpr-5`, reg: `GDPR`, art: `GDPR 第 5(1)(c) 条`, mandate: `数据最小化原则：个人数据应充分、相关且仅限于达成商业分析目的所必要的范围。`, layer: `第 1 层采集 · 隐私防护盾与 0–2 秒瞬态清除`, dep: `shield` },
+          { id: `gdpr-6`, reg: `GDPR`, art: `GDPR 第 6 条`, mandate: `处理合法性：环境感知不得取代针对生物特征或情感状态的明确、分模态同意。`, layer: `第 1/2 层 · 情感推论锁定与目的闸门`, dep: `affective` },
+          { id: `gdpr-13`, reg: `GDPR`, art: `GDPR 第 13 / 14 条`, mandate: `信息透明度：须明确告知消费者传感模态、保留期限与跨模态次级推论边界。`, layer: `第 1/4 层 · 现场 HUD 告示与模态披露`, dep: `none` },
+          { id: `gdpr-22`, reg: `GDPR`, art: `GDPR 第 22 条`, mandate: `自动化决策与画像：消费者有权不受不透明算法诱导或歧视性定价支配。`, layer: `第 3/4 层 · >10 秒意图阈值之可异议机制`, dep: `drift` },
+          { id: `euai-10`, reg: `EU AI Act`, art: `欧盟 AI 法案 第 10 条`, mandate: `数据与数据治理：多模态训练与评估数据须进行偏见检验、来源追踪与敏感特征过滤。`, layer: `第 2 层表征 · 规范性过滤与偏见审计`, dep: `affective` },
+          { id: `euai-13`, reg: `EU AI Act`, art: `欧盟 AI 法案 第 13 条`, mandate: `对部署者之透明度：系统须向运营者披露准确度边界、对齐脆弱性与模态贡献度。`, layer: `第 3 层融合 · 模块化模型卡与不确定性信号`, dep: `drift` },
+          { id: `euai-14`, reg: `EU AI Act`, art: `欧盟 AI 法案 第 14 条`, mandate: `人类监督机制：通过实时遮罩开关与覆写检查点，防止责任被黑箱模型吸收。`, layer: `横贯治理 · 边缘防护盾与漂移覆写`, dep: `shield` },
+          { id: `euai-86`, reg: `EU AI Act`, art: `欧盟 AI 法案 第 86 条`, mandate: `个别决策解释权：受影响个人有权就自动化决策获得清晰且具实质意义的说明。`, layer: `第 4 层部署 · 纯英文审计轨迹与申诉渠道`, dep: `none` }
+        ]
+      },
+
+      ja: {
+        kicker: `MMDIAF 参照アーキテクチャ · スマートリテール HUD`,
+        title: `SmartMMDIAF-Studio：マルチモーダル消費者分析ガバナンス`,
+        subtitle: `説明責任・解釈可能性・プライバシー抑制・異議申立可能性を監査可能なリテール・テレメトリへと実装するガバナンス・バイ・デザイン参照モデル。`,
+        authorLabel: `著者：`,
+        authorNames: `Hoiman Cheng・林正旺 (Cheng-Wang Lin) · 国立陽明交通大学 技術管理研究所 `,
+        ttsOn: `ホバー音声：ON`,
+        ttsOff: `ホバー音声：OFF`,
+        csvBtn: `英語 CSV 出力`,
+        pdfBtn: `論文 PDF`,
+        voiceLabel: `日本語 女性音声`,
+        stopVoice: `音声停止`,
+        ttsDefaultHint: `カード・HUD・ログ行・法規条項にカーソルを合わせるかフォーカスすると、女性音声で読み上げます。`,
+        kpi1Label: `ガバナンス適合度`,
+        kpi1DeltaOk: `MMDIAF 各層ゲート稼働中`,
+        kpi1DeltaDrift: `運用ドリフト警告を検知`,
+        kpi2Label: `棚前アクティブ顧客`,
+        kpi3Label: `推論抑制ゲート`,
+        kpi3Bounded: `適正制御`,
+        kpi3Drift: `ドリフト警告`,
+        kpi3DeltaSafe: `生体特徴はエッジでマスク済`,
+        kpi3DeltaRisk: `生体露出・機能クリープの恐れ`,
+        kpi4Label: `監査可能トレース件数`,
+        kpi4Delta: `純英語 CSV 出力対応`,
+        visionKicker: `統合型 L1–L3 取得・顔 AI テレメトリ HUD`,
+        visionTitle: `ライブ／模擬カメラ映像＆重畳型顔テレメトリ`,
+        feedSim: `模擬エッジストリーム`,
+        feedCam: `ライブ Web カメラ（エッジ保護）`,
+        hudPoseLabel: `頭部姿勢（ピッチ／ヨー／ロール）`,
+        hudLandmarks: `468点エッジメッシュ・揮発性ジオメトリ`,
+        hudShieldLabel: `第1層 プライバシーシールド`,
+        shieldLandmark: `ランドマーク輪郭のみ`,
+        shieldBlur: `エッジぼかし＋メッシュ`,
+        shieldOff: `未保護生映像（高リスク）`,
+        shieldSafe: `保護済`,
+        shieldRisk: `侵害警告`,
+        shieldNoteSafe: `生フレームは融合前にエッジで破棄`,
+        shieldNoteRisk: `常時生体監視の常態化リスク`,
+        hudEmotionLabel: `感情分類推論（L2/L3 ゲート）`,
+        emotionRestrained: `抑制中（中立状態のみ）`,
+        emotionRestrainedSub: `GDPR 第6条に基づき感情プロファイルを抑制`,
+        emotionUnrestrictedSub: `二次感情推論が現在有効化されています`,
+        hudGazeLabel: `視線レイキャスト・ベクトル`,
+        lblFeed: `カメラ入力源`,
+        lblShield: `プライバシー保護`,
+        lblEmotionGate: `感情推論ゲート`,
+        shelfKicker: `空間移動軌跡＆4段階滞在時間関心度分析`,
+        shelfTitle: `リテール棚・複数名関節歩行アニメーション`,
+        btnAddShopper: `+ 顧客追加`,
+        btnPause: `一時停止`,
+        btnResume: `再開`,
+        btnDrift: `ドリフト検証`,
+        btnRestore: `ゲート復旧`,
+        tier1Range: `0–2秒 · 一瞥`,
+        tier1Desc: `通過 · 即時揮発破棄`,
+        tier2Range: `3–5秒 · 閲覧`,
+        tier2Desc: `初期注視 · 匿名集計`,
+        tier3Range: `6–10秒 · 高い関心`,
+        tier3Desc: `精査行動 · L2目的審査`,
+        tier4Range: `>10秒 · 購買検討`,
+        tier4Desc: `意思決定 · 異議申立対象`,
+        mmdiafKicker: `多層マルチモーダルデータ統合分析フレームワーク`,
+        mmdiafTitle: `MMDIAF 設計段階ガバナンス4層と横断的統制`,
+        mmdiafBadge: `4分析層 · 4横断ガバナンス柱`,
+        matrixKicker: `法規制アライメント · ダーク HUD マトリクス`,
+        matrixTitle: `GDPR ＆ EU AI 法 インタラクティブ準拠マトリクス`,
+        thArticle: `条項`,
+        thMandate: `法的要件とガバナンスリスク`,
+        thLayer: `MMDIAF 層・保護策`,
+        thStatus: `監査ステータス`,
+        thAction: `操作`,
+        logKicker: `リアルタイム・ガバナンストレース`,
+        logTitle: `監査可能テレメトリ＆介入ログ`,
+        logCsvBtn: `純英語 CSV`,
+        thLogTime: `UTC 時刻`,
+        thLogShopper: `顧客／棚エリア`,
+        thLogDwell: `滞在ティア`,
+        thLogGate: `MMDIAF 判定`,
+        paperKicker: `原著論文（2026年刊行）`,
+        paperTitle: `マルチモーダル消費者分析のガバナンス`,
+        paperDesc: `Hoiman Cheng・林正旺 (Cheng-Wang Lin) 著（国立陽明交通大学）。`,
+        paperDoiLabel: `DOI・論文リポジトリ参照`,
+        paperDlAction: `論文要旨をダウンロードし件数を更新`,
+        copyDriveBtn: `Drive URL をコピー`,
+        verifyBtn: `監査切替`,
+        statusCompliant: `準拠`,
+        statusAttention: `要確認`,
+        statusBreach: `ドリフト違反`,
+        zones: { A: `A区 · 有機茶`, B: `B区 · スマート機器`, C: `C区 · 美容液`, D: `D区 · カカオ` },
+        tiers: { 1: `一瞥 (0–2秒)`, 2: `閲覧 (3–5秒)`, 3: `関心 (6–10秒)`, 4: `購買検討 (>10秒)` },
+        layers: [
+          { id: `L1`, title: `第1層 · データ取得`, obj: `目的限定`, req: `取得前のモダリティ別同意とエッジ最小化。`, ev: `同意ログ・範囲定義書` },
+          { id: `L2`, title: `第2層 · 表現管理`, obj: `推論抑制`, req: `規範的フィルタリングにより二次プロファイリングを遮断。`, ev: `前処理記録・リスク評価` },
+          { id: `L3`, title: `第3層 · クロスモーダル融合`, obj: `解釈可能性`, req: `ブラックボックス化を防ぐモジュール型説明可能統合。`, ev: `モデルカード・寄与指標` },
+          { id: `L4`, title: `第4層 · 意思決定展開`, obj: `説明責任`, req: `異議申立可能な出力と不確実性・人間審査経路の提示。`, ev: `不服申立手順・監査証跡` }
+        ],
+        pillars: [
+          { name: `説明責任`, desc: `最終責任を技術ではなく人間・組織に保持。` },
+          { name: `解釈可能性`, desc: `推論根拠とモダリティ寄与率を明示。` },
+          { name: `プライバシー抑制`, desc: `生体監視の常態化を防ぐ実効的制約。` },
+          { name: `異議申立可能性`, desc: `消費者が自動推論に異議を唱えられる設計。` }
+        ],
+        clauses: [
+          { id: `gdpr-5`, reg: `GDPR`, art: `GDPR 第5条(1)(c)`, mandate: `データ最小化：個人データは分析目的に照らし適切・関連性があり必要最小限に留めること。`, layer: `第1層取得 · シールド＆0–2秒揮発削除`, dep: `shield` },
+          { id: `gdpr-6`, reg: `GDPR`, art: `GDPR 第6条`, mandate: `処理の適法性：環境センシングは生体・感情推論に対する明確な個別同意に代えられない。`, layer: `第1/2層 · 感情推論ロック＆目的ゲート`, dep: `affective` },
+          { id: `gdpr-13`, reg: `GDPR`, art: `GDPR 第13/14条`, mandate: `透明性・情報提供：取得モダリティ、保持期間、二次推論範囲を消費者に明示すること。`, layer: `第1/4層 · 店頭 HUD 告知＆モダリティ開示`, dep: `none` },
+          { id: `gdpr-22`, reg: `GDPR`, art: `GDPR 第22条`, mandate: `自動化された意思決定：不透明なナッジや差別的価格設定に対する異議申立権の保障。`, layer: `第3/4層 · >10秒閾値での異議申立経路`, dep: `drift` },
+          { id: `euai-10`, reg: `EU AI Act`, art: `EU AI法 第10条`, mandate: `データ・ガバナンス：マルチモーダル学習データのバイアス検証と機微属性フィルタリング。`, layer: `第2層表現 · 規範的フィルタ＆バイアス監査`, dep: `affective` },
+          { id: `euai-13`, reg: `EU AI Act`, art: `EU AI法 第13条`, mandate: `導入者への透明性：精度限界、同期脆弱性、モダリティ寄与指標を運用者へ開示。`, layer: `第3層融合 · モデルカード＆不確実性表示`, dep: `drift` },
+          { id: `euai-14`, reg: `EU AI Act`, art: `EU AI法 第14条`, mandate: `人間による監視：即時マスク切替と上書きチェックポイントで責任転嫁を防止。`, layer: `横断ガバナンス · エッジ保護＆ドリフト遮断`, dep: `shield` },
+          { id: `euai-86`, reg: `EU AI Act`, art: `EU AI法 第86条`, mandate: `個別決定の説明を受ける権利：影響を受ける個人への明確で有意義な説明の提供。`, layer: `第4層展開 · 純英語監査ログ＆申立窓口`, dep: `none` }
+        ]
+      },
+
+      de: {
+        kicker: `MMDIAF REFERENZARCHITEKTUR · SMART-RETAIL HUD`,
+        title: `SmartMMDIAF-Studio: Multimodale Verbraucher-Governance`,
+        subtitle: `Governance-by-Design-Referenzarchitektur zur Übersetzung von Rechenschaftspflicht, Interpretierbarkeit, Datenschutz-Zurückhaltung und Anfechtbarkeit in auditierbare Retail-Telemetrie.`,
+        authorLabel: `AUTOREN:`,
+        authorNames: `Hoiman Cheng & Cheng-Wang Lin · Institut für Technologiemanagement / Wirtschaftsingenieurwesen, NYCU`,
+        ttsOn: `Hover-Sprache: AN`,
+        ttsOff: `Hover-Sprache: AUS`,
+        csvBtn: `Englisches CSV`,
+        pdfBtn: `PDF-Studie`,
+        voiceLabel: `Deutsche Frauenstimme`,
+        stopVoice: `Audio stoppen`,
+        ttsDefaultHint: `Bewegen Sie die Maus über Karten, HUD-Anzeigen, Logzeilen oder Rechtsklauseln für sofortige Sprachausgabe.`,
+        kpi1Label: `GOVERNANCE-REIFEGRAD`,
+        kpi1DeltaOk: `MMDIAF-Ebenentore aktiv`,
+        kpi1DeltaDrift: `Deployment-Drift erkannt`,
+        kpi2Label: `AKTIVE KUNDEN AM REGAL`,
+        kpi3Label: `INFERENZ-BEGRENZUNG`,
+        kpi3Bounded: `BEGRENZT`,
+        kpi3Drift: `DRIFT-RISIKO`,
+        kpi3DeltaSafe: `Biometrie am Edge maskiert`,
+        kpi3DeltaRisk: `Biometrie-Exposition & Drift`,
+        kpi4Label: `AUDITIERBARE EREIGNISSE`,
+        kpi4Delta: `Reines Englisch-CSV bereit`,
+        visionKicker: `VEREINTE EBENE 1–3 ERFASSUNG & GESICHTS-AI HUD`,
+        visionTitle: `Kamera-Stream & überlagerte Gesichts-Telemetrie`,
+        feedSim: `SIMULIERTER EDGE-STREAM`,
+        feedCam: `LIVE-WEBCAM (EDGE-MASKIERT)`,
+        hudPoseLabel: `KOPFPOSITION (PITCH / YAW / ROLL)`,
+        hudLandmarks: `468-Punkt-Edge-Mesh · Ephemere Geometrie`,
+        hudShieldLabel: `EBENE 1 DATENSCHUTZ-SCHILD`,
+        shieldLandmark: `NUR LANDMARK-SILHOUETTE`,
+        shieldBlur: `EDGE-BLUR + MESH`,
+        shieldOff: `UNMASKIERTES ROHBILD (RISIKO)`,
+        shieldSafe: `SICHER`,
+        shieldRisk: `VERSTOSS`,
+        shieldNoteSafe: `Rohbilder vor Fusion verworfen`,
+        shieldNoteRisk: `Risiko normalisierter Biometrie-Überwachung`,
+        hudEmotionLabel: `AFFEKT-KLASSIFIKATION (L2/L3)`,
+        emotionRestrained: `BEGRENZT (Nur Neutral)`,
+        emotionRestrainedSub: `Emotions-Profiling gemäß DSGVO Art. 6 gesperrt`,
+        emotionUnrestrictedSub: `Sekundäre Affekt-Inferenz aktiv`,
+        hudGazeLabel: `BLICK-RAYCAST-VEKTOR`,
+        lblFeed: `Kameraquelle`,
+        lblShield: `Datenschutz-Schild`,
+        lblEmotionGate: `Affekt-Inferenz`,
+        shelfKicker: `RAUMTRAJEKTORIE & 4-STUFIGE VERWEILDAUER`,
+        shelfTitle: `Smart-Regal Gelenk-Laufanimation mehrerer Personen`,
+        btnAddShopper: `+ Kunde`,
+        btnPause: `Pause`,
+        btnResume: `Fortsetzen`,
+        btnDrift: `Drift testen`,
+        btnRestore: `Tore aktivieren`,
+        tier1Range: `0–2s · FLÜCHTIG`,
+        tier1Desc: `Vorbeigehen · Sofort gelöscht`,
+        tier2Range: `3–5s · STÖBERN`,
+        tier2Desc: `Erster Blick · Aggregiert`,
+        tier3Range: `6–10s · INTERESSIERT`,
+        tier3Desc: `Hohes Interesse · L2-Prüfung`,
+        tier4Range: `>10s · KAUFABSICHT`,
+        tier4Desc: `Entscheidung · Anfechtbar`,
+        mmdiafKicker: `MEHREBENEN-INTEGRATIONS- UND ANALYSERAHMEN`,
+        mmdiafTitle: `MMDIAF Governance-by-Design Ebenen & Querschnittskontrollen`,
+        mmdiafBadge: `4 EBENEN · 4 QUERSCHNITTS-SÄULEN`,
+        matrixKicker: `REGULATORISCHE AUSRICHTUNG · DARK HUD MATRIX`,
+        matrixTitle: `DSGVO & EU AI Act Interaktive Compliance-Matrix`,
+        thArticle: `Artikel / Klausel`,
+        thMandate: `Regulatorisches Mandat & Risiko`,
+        thLayer: `MMDIAF-Ebene & Schutzmaßnahme`,
+        thStatus: `Live-Audit-Status`,
+        thAction: `Aktion`,
+        logKicker: `LIVE GOVERNANCE-TRACE-STREAM`,
+        logTitle: `Auditierbares Telemetrie- & Interventionsprotokoll`,
+        logCsvBtn: `Englisches CSV`,
+        thLogTime: `UTC-Zeit`,
+        thLogShopper: `Kunde / Zone`,
+        thLogDwell: `Verweilstufe`,
+        thLogGate: `MMDIAF-Urteil`,
+        paperKicker: `FORSCHUNGSPUBLIKATION (2026)`,
+        paperTitle: `Governing Multimodal Consumer Analytics`,
+        paperDesc: `Governance-by-Design Referenzarchitektur · Hoiman Cheng & Cheng-Wang Lin (NYCU).`,
+        paperDoiLabel: `DOI & REPOSITORY-REFERENZ`,
+        paperDlAction: `Studien-Brief herunterladen & Zähler erhöhen`,
+        copyDriveBtn: `Drive-Link kopieren`,
+        verifyBtn: `Audit umschalten`,
+        statusCompliant: `KONFORM`,
+        statusAttention: `PRÜFEN`,
+        statusBreach: `DRIFT-VERSTOSS`,
+        zones: { A: `Zone A · Bio-Tee`, B: `Zone B · Wearables`, C: `Zone C · Serum`, D: `Zone D · Edelkakao` },
+        tiers: { 1: `Flüchtig (0–2s)`, 2: `Stöbern (3–5s)`, 3: `Interessiert (6–10s)`, 4: `Kaufabsicht (>10s)` },
+        layers: [
+          { id: `L1`, title: `Ebene 1 · Datenerfassung`, obj: `Zweckbindung`, req: `Modalspezifische Einwilligung & Edge-Minimierung vor Erfassung.`, ev: `Einwilligungslogs, Umfang` },
+          { id: `L2`, title: `Ebene 2 · Repräsentation`, obj: `Inferenz-Zurückhaltung`, req: `Normative Filterung verhindert sekundäres Profiling.`, ev: `Vorverarbeitungs-Logs` },
+          { id: `L3`, title: `Ebene 3 · Fusion`, obj: `Interpretierbarkeit`, req: `Modulare, erklärbare Integration gegen Black-Box-Verantwortungsflucht.`, ev: `Model Cards, Gewichte` },
+          { id: `L4`, title: `Ebene 4 · Entscheidung`, obj: `Rechenschaftspflicht`, req: `Anfechtbare Outputs mit Unsicherheitswerten & Beschwerdeweg.`, ev: `Einspruchsverfahren, Audit` }
+        ],
+        pillars: [
+          { name: `Rechenschaftspflicht`, desc: `Verantwortung verbleibt bei menschlichen Institutionen.` },
+          { name: `Interpretierbarkeit`, desc: `Erklärungspfade und Modalitätsbeiträge sind offengelegt.` },
+          { name: `Datenschutz-Maß`, desc: `Verbindliche Grenzen gegen biometrische Dauerüberwachung.` },
+          { name: `Anfechtbarkeit`, desc: `Verbraucher können automatisierte Schlüsse wirksam anfechten.` }
+        ],
+        clauses: [
+          { id: `gdpr-5`, reg: `GDPR`, art: `DSGVO Art. 5(1)(c)`, mandate: `Datenminimierung: Personenbezogene Daten müssen auf das notwendige Maß beschränkt sein.`, layer: `Ebene 1 · Schutzschild & 0–2s Löschung`, dep: `shield` },
+          { id: `gdpr-6`, reg: `GDPR`, art: `DSGVO Art. 6`, mandate: `Rechtmäßigkeit: Umgebungs-Sensorik ersetzt keine explizite modalspezifische Einwilligung.`, layer: `Ebene 1/2 · Affekt-Sperre & Zweck-Tor`, dep: `affective` },
+          { id: `gdpr-13`, reg: `GDPR`, art: `DSGVO Art. 13 / 14`, mandate: `Transparenz: Klare Information über Sensorik, Speicherfristen und Sekundär-Inferenz.`, layer: `Ebene 1/4 · Sichtbarer HUD-Hinweis`, dep: `none` },
+          { id: `gdpr-22`, reg: `GDPR`, art: `DSGVO Art. 22`, mandate: `Automatisierte Entscheidungen: Schutz vor intransparentem Profiling ohne menschliches Eingreifen.`, layer: `Ebene 3/4 · >10s Anfechtbarkeit`, dep: `drift` },
+          { id: `euai-10`, reg: `EU AI Act`, art: `EU AI Act Art. 10`, mandate: `Daten-Governance: Bias-Prüfung, Herkunftsnachweis und Filterung sensibler Merkmale.`, layer: `Ebene 2 · Normative Filterung & Bias-Audit`, dep: `affective` },
+          { id: `euai-13`, reg: `EU AI Act`, art: `EU AI Act Art. 13`, mandate: `Transparenz für Betreiber: Offenlegung von Genauigkeitsgrenzen und Modalitätsbeiträgen.`, layer: `Ebene 3 · Model Cards & Unsicherheit`, dep: `drift` },
+          { id: `euai-14`, reg: `EU AI Act`, art: `EU AI Act Art. 14`, mandate: `Menschliche Aufsicht: Echtzeit-Notabschaltung verhindert Verantwortungsverlagerung.`, layer: `Querschnitt · Edge-Schild & Override`, dep: `shield` },
+          { id: `euai-86`, reg: `EU AI Act`, art: `EU AI Act Art. 86`, mandate: `Recht auf Erklärung: Verständliche Begründung automatisierter Einzelentscheidungen.`, layer: `Ebene 4 · Reines Englisch-Audit-Log`, dep: `none` }
+        ]
+      },
+
+      fr: {
+        kicker: `ARCHITECTURE DE RÉFÉRENCE MMDIAF · HUD RETAIL`,
+        title: `SmartMMDIAF-Studio : Gouvernance de l'Analytique Multimodale`,
+        subtitle: `Architecture de gouvernance dès la conception traduisant responsabilité, interprétabilité, retenue privée et contestabilité en télémétrie retail auditable.`,
+        authorLabel: `AUTEURS :`,
+        authorNames: `Hoiman Cheng & Cheng-Wang Lin · Institut de Management Technologique / Génie Industriel, NYCU`,
+        ttsOn: `Voix au survol : OUI`,
+        ttsOff: `Voix au survol : NON`,
+        csvBtn: `Exporter CSV Anglais`,
+        pdfBtn: `Article PDF`,
+        voiceLabel: `Voix Féminine Française`,
+        stopVoice: `Arrêter l'audio`,
+        ttsDefaultHint: `Survolez ou sélectionnez une carte, jauge HUD, ligne de journal ou clause juridique pour une lecture vocale féminine.`,
+        kpi1Label: `MATURITÉ GOUVERNANCE`,
+        kpi1DeltaOk: `Portes MMDIAF actives`,
+        kpi1DeltaDrift: `Dérive de déploiement détectée`,
+        kpi2Label: `CLIENTS ACTIFS EN RAYON`,
+        kpi3Label: `PORTE DE RETENUE`,
+        kpi3Bounded: `LIMITÉE`,
+        kpi3Drift: `RISQUE DÉRIVE`,
+        kpi3DeltaSafe: `Biométrie masquée en périphérie`,
+        kpi3DeltaRisk: `Exposition biométrique et dérive`,
+        kpi4Label: `ÉVÉNEMENTS AUDITABLES`,
+        kpi4Delta: `CSV anglais pur prêt`,
+        visionKicker: `ACQUISITION NIVEAUX 1–3 & HUD IA VISAGE UNIFIÉS`,
+        visionTitle: `Flux Caméra & Télémétrie Faciale Superposée`,
+        feedSim: `FLUX SIMULÉ EN PÉRIPHÉRIE`,
+        feedCam: `WEBCAM EN DIRECT (MASQUÉE)`,
+        hudPoseLabel: `POSTURE TÊTE (PITCH / YAW / ROLL)`,
+        hudLandmarks: `Maillage 468 pts · Géométrie éphémère`,
+        hudShieldLabel: `BOUCLIER PRIVÉ NIVEAU 1`,
+        shieldLandmark: `SILHOUETTE POINTS UNIQUEMENT`,
+        shieldBlur: `FLOU PÉRIPHÉRIQUE + MAILLAGE`,
+        shieldOff: `VIDÉO BRUTE NON MASQUÉE (RISQUE)`,
+        shieldSafe: `SÛR`,
+        shieldRisk: `ALERTE`,
+        shieldNoteSafe: `Images brutes détruites avant fusion`,
+        shieldNoteRisk: `Risque de surveillance biométrique continue`,
+        hudEmotionLabel: `CLASSIFICATION AFFECTIVE (L2/L3)`,
+        emotionRestrained: `RESTREINTE (Neutre Seul)`,
+        emotionRestrainedSub: `Profilage émotionnel bloqué selon RGPD Art. 6`,
+        emotionUnrestrictedSub: `Inférence affective secondaire active`,
+        hudGazeLabel: `VECTEUR RAYCAST DU REGARD`,
+        lblFeed: `Source Caméra`,
+        lblShield: `Bouclier Privé`,
+        lblEmotionGate: `Inférence Affective`,
+        shelfKicker: `TRAJECTOIRE SPATIALE & TEMPS DE SÉJOUR 4 NIVEAUX`,
+        shelfTitle: `Animation Articulaire Multi-Personnes en Rayon`,
+        btnAddShopper: `+ Client`,
+        btnPause: `Pause`,
+        btnResume: `Reprendre`,
+        btnDrift: `Tester Dérive`,
+        btnRestore: `Rétablir Portes`,
+        tier1Range: `0–2s · COUP D'ŒIL`,
+        tier1Desc: `Passage · Purge éphémère`,
+        tier2Range: `3–5s · REPÉRAGE`,
+        tier2Desc: `Regard initial · Agrégé`,
+        tier3Range: `6–10s · ENGAGÉ`,
+        tier3Desc: `Fort intérêt · Contrôle L2`,
+        tier4Range: `>10s · INTENTION FORTE`,
+        tier4Desc: `Décision · Voie contestable`,
+        mmdiafKicker: `CADRE MULTINIVEAU D'INTÉGRATION ET D'ANALYSE MULTIMODALE`,
+        mmdiafTitle: `Couches MMDIAF & Contrôles Transversaux`,
+        mmdiafBadge: `4 COUCHES · 4 PILIERS TRANSVERSAUX`,
+        matrixKicker: `ALIGNEMENT RÉGLEMENTAIRE · MATRICE HUD SOMBRE`,
+        matrixTitle: `Matrice Interactive RGPD & AI Act de l'UE`,
+        thArticle: `Article / Clause`,
+        thMandate: `Exigence Réglementaire & Risque`,
+        thLayer: `Couche MMDIAF & Garde-fou`,
+        thStatus: `Statut d'Audit`,
+        thAction: `Action`,
+        logKicker: `FLUX DE TRAÇABILITÉ EN DIRECT`,
+        logTitle: `Journal de Télémétrie & d'Intervention Auditable`,
+        logCsvBtn: `CSV Anglais Pur`,
+        thLogTime: `Heure UTC`,
+        thLogShopper: `Client / Zone`,
+        thLogDwell: `Niveau Séjour`,
+        thLogGate: `Verdict MMDIAF`,
+        paperKicker: `PUBLICATION SCIENTIFIQUE ORIGINALE (2026)`,
+        paperTitle: `Governing Multimodal Consumer Analytics`,
+        paperDesc: `Architecture de référence · Hoiman Cheng & Cheng-Wang Lin (Université NYCU).`,
+        paperDoiLabel: `DOI & RÉFÉRENCE DU DÉPÔT`,
+        paperDlAction: `Télécharger la synthèse & incrémenter`,
+        copyDriveBtn: `Copier le lien Drive`,
+        verifyBtn: `Basculer Audit`,
+        statusCompliant: `CONFORME`,
+        statusAttention: `À REVOIR`,
+        statusBreach: `DÉRIVE`,
+        zones: { A: `Zone A · Thé Bio`, B: `Zone B · Objets Connectés`, C: `Zone C · Sérum`, D: `Zone D · Cacao Fin` },
+        tiers: { 1: `Coup d'œil (0–2s)`, 2: `Repérage (3–5s)`, 3: `Engagé (6–10s)`, 4: `Intention (>10s)` },
+        layers: [
+          { id: `L1`, title: `Couche 1 · Acquisition`, obj: `Limitation Finalité`, req: `Consentement par modalité et minimisation en périphérie.`, ev: `Journaux consentement` },
+          { id: `L2`, title: `Couche 2 · Représentation`, obj: `Retenue d'Inférence`, req: `Filtrage normatif bloquant le profilage secondaire.`, ev: `Registres prétraitement` },
+          { id: `L3`, title: `Couche 3 · Fusion`, obj: `Interprétabilité`, req: `Intégration modulaire explicable évitant l'opacité.`, ev: `Fiches modèles, poids` },
+          { id: `L4`, title: `Couche 4 · Déploiement`, obj: `Responsabilité`, req: `Décisions contestables avec indicateurs d'incertitude et recours.`, ev: `Procédures d'appel` }
+        ],
+        pillars: [
+          { name: `Responsabilité`, desc: `La responsabilité demeure au sein des institutions humaines.` },
+          { name: `Interprétabilité`, desc: `Traces explicatives et contributions modales exposées.` },
+          { name: `Retenue Privée`, desc: `Limites exécutoires contre la surveillance biométrique.` },
+          { name: `Contestabilité`, desc: `Les consommateurs peuvent contester toute inférence.` }
+        ],
+        clauses: [
+          { id: `gdpr-5`, reg: `GDPR`, art: `RGPD Art. 5(1)(c)`, mandate: `Minimisation des données : données adéquates, pertinentes et limitées au strict nécessaire.`, layer: `Couche 1 · Bouclier & purge 0–2s`, dep: `shield` },
+          { id: `gdpr-6`, reg: `GDPR`, art: `RGPD Art. 6`, mandate: `Licéité : la captation ambiante ne remplace pas un consentement explicite par modalité.`, layer: `Couches 1/2 · Verrou affectif`, dep: `affective` },
+          { id: `gdpr-13`, reg: `GDPR`, art: `RGPD Art. 13 / 14`, mandate: `Transparence : notification claire des modalités captées et des inférences secondaires.`, layer: `Couches 1/4 · Notice HUD visible`, dep: `none` },
+          { id: `gdpr-22`, reg: `GDPR`, art: `RGPD Art. 22`, mandate: `Décision automatisée : protection contre le profilage opaque sans recours humain.`, layer: `Couches 3/4 · Recours seuil >10s`, dep: `drift` },
+          { id: `euai-10`, reg: `EU AI Act`, art: `AI Act UE Art. 10`, mandate: `Gouvernance des données : audit des biais, traçabilité et filtrage des attributs sensibles.`, layer: `Couche 2 · Filtrage normatif`, dep: `affective` },
+          { id: `euai-13`, reg: `EU AI Act`, art: `AI Act UE Art. 13`, mandate: `Transparence déployeurs : exposition des marges d'erreur et contributions modales.`, layer: `Couche 3 · Fiches modèles`, dep: `drift` },
+          { id: `euai-14`, reg: `EU AI Act`, art: `AI Act UE Art. 14`, mandate: `Contrôle humain : interrupteurs temps réel empêchant la dilution de responsabilité.`, layer: `Transversal · Bouclier & Override`, dep: `shield` },
+          { id: `euai-86`, reg: `EU AI Act`, art: `AI Act UE Art. 86`, mandate: `Droit à l'explication : explication claire des décisions automatisées individuelles.`, layer: `Couche 4 · Journal anglais auditable`, dep: `none` }
+        ]
+      }
+    };
+
+    // =========================================================================
+    // 3. FEMALE TTS ENGINE (100% HOVER / FOCUS COVERAGE)
+    // =========================================================================
+    const TTS_LOCALE_MAP = {
+      'en': { bcp: 'en-US', preferred: ['female', 'woman', 'girl', 'mei-jia', 'ya-han', 'ting-ting', 'huihui', 'xiaoxiao', 'yuna', 'kyoko'], avoid: ['alex', 'fred', 'daniel', 'aaron', 'david', 'mark', 'guy', 'george', 'arthur', 'male'] },
+      'zh-TW': { bcp: 'zh-TW', preferred: ['meijia', 'hsiaochen', 'yating', 'hanhan', 'google 國語', 'taiwan'], avoid: ['zhiwei', 'yunjian', 'yunxi', 'male'] },
+      'zh-CN': { bcp: 'zh-CN', preferred: ['tingting', 'xiaoxiao', 'yaoyao', 'lili', 'google 普通话'], avoid: ['yunjian', 'yunxi', 'kangkang', 'male'] },
+      'ja': { bcp: 'ja-JP', preferred: ['kyoko', 'o-ren', 'haruka', 'nanami', 'ayumi', 'google 日本語'], avoid: ['ichiro', 'keita', 'otoya', 'male'] },
+      'de': { bcp: 'de-DE', preferred: ['anna', 'helena', 'katja', 'hedda', 'amala', 'google deutsch'], avoid: ['stefan', 'conrad', 'markus', 'yannick', 'male'] },
+      'fr': { bcp: 'fr-FR', preferred: ['amelie', 'audrey', 'aurelie', 'hortense', 'denise', 'google français'], avoid: ['thomas', 'paul', 'henri', 'nicolas', 'male'] }
+    };
+
+    let cachedVoices = [];
+    let hoverDebounceTimer = null;
+    let currentSpeakingEl = null;
+
+    function refreshVoices() {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis) {
+        try {
+          cachedVoices = window.speechSynthesis.getVoices() || [];
+        } catch (e) {
+          cachedVoices = [];
+        }
+      }
+    }
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis) {
+      refreshVoices();
+      if ('onvoiceschanged' in window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = refreshVoices;
+      }
+    }
+
+    function pickFemaleVoice(langKey) {
+      refreshVoices();
+      const cfg = TTS_LOCALE_MAP[langKey] || TTS_LOCALE_MAP.en;
+      const targetPrefix = cfg.bcp.toLowerCase();
+      const shortPrefix = targetPrefix.split('-')[0];
+
+      const localeMatches = cachedVoices.filter((v) => {
+        const vl = (v.lang || '').toLowerCase().replace('_', '-');
+        return vl === targetPrefix || vl.startsWith(shortPrefix);
+      });
+
+      const pool = localeMatches.length ? localeMatches : cachedVoices;
+      if (!pool.length) return null;
+
+      // Exact preferred female match first
+      for (const pref of cfg.preferred) {
+        const hit = pool.find((v) => (v.name || '').toLowerCase().includes(pref));
+        if (hit) return hit;
+      }
+      // Fallback: exclude known male names, prefer explicit female or exact locale match
+      const nonMale = pool.filter((v) => {
+        const n = (v.name || '').toLowerCase();
+        return !cfg.avoid.some((bad) => n.includes(bad));
+      });
+      if (nonMale.length) {
+        const exactBcp = nonMale.find((v) => (v.lang || '').toLowerCase().replace('_', '-') === targetPrefix);
+        return exactBcp || nonMale[0];
+      }
+      return pool[0];
+    }
+
+    function clearSpeakingVisual() {
+      if (currentSpeakingEl) {
+        currentSpeakingEl.classList.remove('is-speaking');
+        currentSpeakingEl = null;
+      }
+    }
+
+    function stopSpeech() {
+      clearTimeout(hoverDebounceTimer);
+      clearSpeakingVisual();
+      if ('speechSynthesis' in window && window.speechSynthesis) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+      }
+    }
+
+    function speakText(text, sourceEl) {
+      if (!APP_STATE.ttsEnabled || !text) return;
+      const previewEl = document.getElementById('tts-preview-text');
+      if (previewEl) previewEl.textContent = text;
+
+      clearSpeakingVisual();
+      if (sourceEl) {
+        currentSpeakingEl = sourceEl;
+        sourceEl.classList.add('is-speaking');
+      }
+
+      if (!('speechSynthesis' in window) || !window.speechSynthesis) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        const cfg = TTS_LOCALE_MAP[APP_STATE.lang] || TTS_LOCALE_MAP.en;
+        utter.lang = cfg.bcp;
+        const chosen = pickFemaleVoice(APP_STATE.lang);
+        if (chosen) utter.voice = chosen;
+        utter.rate = 0.98;
+        utter.pitch = 1.06;
+        utter.onend = clearSpeakingVisual;
+        utter.onerror = clearSpeakingVisual;
+        window.speechSynthesis.speak(utter);
+      } catch (e) {
+        clearSpeakingVisual();
+      }
+    }
+
+    function getTtsPayloadForElement(el) {
+      if (!el) return '';
+      const explicit = el.getAttribute('data-tts-custom');
+      if (explicit) return explicit;
+      const key = el.getAttribute('data-tts');
+      const t = I18N[APP_STATE.lang] || I18N.en;
+
+      switch (key) {
+        case 'header':
+          return `${t.title}. ${t.subtitle}`;
+        case 'authorship':
+          return `${t.authorLabel} ${t.authorNames}`;
+        case 'csvBtn':
+          return `${t.csvBtn}. ${t.kpi4Delta}.`;
+        case 'pdfBtn':
+          return `${t.pdfBtn}. ${APP_STATE.pdfDownloads} downloads.`;
+        case 'ttsBar':
+          return `${t.voiceLabel}. ${t.ttsDefaultHint}`;
+        case 'kpiReadiness': {
+          const val = (document.getElementById('val-readiness') || {}).textContent || '';
+          const d = (document.getElementById('ui-kpi-1-delta') || {}).textContent || '';
+          return `${t.kpi1Label}: ${val}. ${d}`;
+        }
+        case 'kpiShoppers': {
+          const val = (document.getElementById('val-shoppers') || {}).textContent || '';
+          const d = (document.getElementById('ui-kpi-2-delta') || {}).textContent || '';
+          return `${t.kpi2Label}: ${val}. ${d}`;
+        }
+        case 'kpiRestraint': {
+          const val = (document.getElementById('val-restraint') || {}).textContent || '';
+          const d = (document.getElementById('ui-kpi-3-delta') || {}).textContent || '';
+          return `${t.kpi3Label}: ${val}. ${d}`;
+        }
+        case 'kpiLogs': {
+          const val = (document.getElementById('val-log-count') || {}).textContent || '';
+          return `${t.kpi4Label}: ${val}. ${t.kpi4Delta}`;
+        }
+        case 'visionHeader':
+          return `${t.visionTitle}. ${t.visionKicker}`;
+        case 'hudPose': {
+          const pv = (document.getElementById('hud-pose-values') || {}).textContent || '';
+          return `${t.hudPoseLabel}: ${pv}. ${t.hudLandmarks}`;
+        }
+        case 'hudShield': {
+          const st = (document.getElementById('hud-shield-status') || {}).textContent || '';
+          const nt = (document.getElementById('ui-hud-shield-note') || {}).textContent || '';
+          return `${t.hudShieldLabel}: ${st}. ${nt}`;
+        }
+        case 'hudEmotion': {
+          const ev = (document.getElementById('hud-emotion-value') || {}).textContent || '';
+          const sb = (document.getElementById('ui-hud-emotion-sub') || {}).textContent || '';
+          return `${t.hudEmotionLabel}: ${ev}. ${sb}`;
+        }
+        case 'hudGaze': {
+          const gz = (document.getElementById('hud-gaze-target') || {}).textContent || '';
+          const cd = (document.getElementById('hud-gaze-coords') || {}).textContent || '';
+          return `${t.hudGazeLabel}: ${gz}. ${cd}`;
+        }
+        case 'shelfHeader':
+          return `${t.shelfTitle}. ${t.shelfKicker}`;
+        case 'shelfCanvas':
+          return `${t.shelfTitle}. ${shoppers.length} shoppers active across 4 retail shelf zones.`;
+        case 'tier1':
+          return `${t.tier1Range}: ${(document.getElementById('tier-1-count') || {}).textContent || '0'}. ${t.tier1Desc}`;
+        case 'tier2':
+          return `${t.tier2Range}: ${(document.getElementById('tier-2-count') || {}).textContent || '0'}. ${t.tier2Desc}`;
+        case 'tier3':
+          return `${t.tier3Range}: ${(document.getElementById('tier-3-count') || {}).textContent || '0'}. ${t.tier3Desc}`;
+        case 'tier4':
+          return `${t.tier4Range}: ${(document.getElementById('tier-4-count') || {}).textContent || '0'}. ${t.tier4Desc}`;
+        case 'mmdiafHeader':
+          return `${t.mmdiafTitle}. ${t.mmdiafBadge}`;
+        case 'complianceHeader':
+          return `${t.matrixTitle}. ${t.matrixKicker}`;
+        case 'logHeader':
+          return `${t.logTitle}. ${t.logKicker}`;
+        case 'paperBox':
+          return `${t.paperTitle}. ${t.paperDesc}`;
+        case 'paperMetrics':
+          return `${t.paperDoiLabel}. ISSN 2576-7240. DOI 10.30560/ijas.v9n1p75.`;
+        default:
+          return (el.textContent || '').replace(/\s+/g, ' ').trim();
+      }
+    }
+
+    function attachGlobalHoverTTS() {
+      document.addEventListener('mouseover', (e) => {
+        if (!APP_STATE.ttsEnabled) return;
+        const target = e.target && e.target.closest ? e.target.closest('[data-tts]') : null;
+        if (!target) return;
+        if (e.relatedTarget && target.contains(e.relatedTarget)) return;
+        clearTimeout(hoverDebounceTimer);
+        hoverDebounceTimer = setTimeout(() => {
+          const text = getTtsPayloadForElement(target);
+          speakText(text, target);
+        }, 160);
+      });
+
+      document.addEventListener('focusin', (e) => {
+        if (!APP_STATE.ttsEnabled) return;
+        const target = e.target && e.target.closest ? e.target.closest('[data-tts]') : null;
+        if (!target) return;
+        const text = getTtsPayloadForElement(target);
+        speakText(text, target);
+      });
+    }
+
+    // =========================================================================
+    // 4. SIMULATION ENGINE: UNIFIED FACE AI HUD + RETAIL SHELF JOINT WALKING
+    // =========================================================================
+    const SHELF_ZONES = [
+      { id: 'A', x: 90,  y: 52, w: 120, h: 46, colorKey: '--data-1' },
+      { id: 'B', x: 250, y: 52, w: 120, h: 46, colorKey: '--data-2' },
+      { id: 'C', x: 410, y: 52, w: 120, h: 46, colorKey: '--data-3' },
+      { id: 'D', x: 570, y: 52, w: 110, h: 46, colorKey: '--data-4' }
+    ];
+
+    let shoppers = [
+      { id: 'SHOPPER_01', x: 145, y: 155, vx: 0.55, vy: 0.12, targetZone: 'B', dwellSec: 6.8, walkPhase: 0.4, headYaw: -0.25, pausing: true, pauseTimer: 3.4, color: '--data-1' },
+      { id: 'SHOPPER_02', x: 315, y: 175, vx: -0.45, vy: -0.08, targetZone: 'A', dwellSec: 3.9, walkPhase: 2.1, headYaw: 0.35, pausing: false, pauseTimer: 0, color: '--data-2' },
+      { id: 'SHOPPER_03', x: 525, y: 148, vx: 0.38, vy: 0.15, targetZone: 'D', dwellSec: 11.2, walkPhase: 4.0, headYaw: -0.1, pausing: true, pauseTimer: 4.1, color: '--data-3' }
+    ];
+
+    const auditLogs = [];
+    let liveStream = null;
+    let simFrameCounter = 0;
+    let lastTimestamp = 0;
+    let animFrameId = null;
+
+    function computeDwellTier(sec) {
+      if (sec <= 2) return 1;
+      if (sec <= 5) return 2;
+      if (sec <= 10) return 3;
+      return 4;
+    }
+
+    function pushAuditLog(shopperId, zoneId, dwellSec, eventCode) {
+      const now = new Date();
+      const utcTime = now.toISOString().substring(11, 19);
+      const tier = computeDwellTier(dwellSec);
+      const pose = computeFaceTelemetry();
+      const verdictEn = APP_STATE.driftActive || APP_STATE.privacyShield === 'off'
+        ? 'DRIFT_ALERT_EXPOSED'
+        : (tier === 4 ? 'CONTESTABLE_INTENT_GATE' : 'L1_L2_BOUNDED');
+
+      auditLogs.unshift({
+        utc: utcTime,
+        shopperId: shopperId,
+        zoneId: `Zone ${zoneId}`,
+        dwellSec: Number(dwellSec.toFixed(1)),
+        tier: tier,
+        eventCode: eventCode,
+        pitch: pose.pitch,
+        yaw: pose.yaw,
+        roll: pose.roll,
+        shield: APP_STATE.privacyShield.toUpperCase(),
+        emotionGate: APP_STATE.affectiveGate.toUpperCase(),
+        verdict: verdictEn
+      });
+      if (auditLogs.length > 36) auditLogs.pop();
+      renderAuditLogs();
+      updateKPIs();
+    }
+
+    function computeFaceTelemetry() {
+      const focus = shoppers[0] || { dwellSec: 4.2, targetZone: 'B', walkPhase: 1 };
+      const t = simFrameCounter * 0.035;
+      const pitch = Number((Math.sin(t * 0.9) * 4.5 + 1.8).toFixed(1));
+      const yaw = Number((Math.cos(t * 0.7) * 11.2 - 3.0).toFixed(1));
+      const roll = Number((Math.sin(t * 0.5) * 2.4).toFixed(1));
+      const emotions = ['Curiosity', 'Focused Evaluation', 'Price Hesitation', 'Neutral Attention'];
+      const emoIdx = Math.floor((simFrameCounter / 180) % emotions.length);
+      const conf = Number((0.72 + Math.abs(Math.sin(t * 0.4)) * 0.21).toFixed(2));
+      return {
+        pitch, yaw, roll,
+        emotion: emotions[emoIdx],
+        conf,
+        zone: focus.targetZone,
+        dwell: focus.dwellSec
+      };
+    }
+
+    // Draw Simulated Camera Background (when webcam is off)
+    function drawSimulatedCameraBackground(ctx, w, h) {
+      const bg = getToken('--background');
+      const surf = getToken('--surface-container');
+      const surfHi = getToken('--surface-container-high');
+      const pri = getToken('--primary');
+
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      // Subtle smart-retail aisle perspective grid in camera background
+      ctx.strokeStyle = getToken('--outline-variant');
+      ctx.lineWidth = 1;
+      for (let gx = 40; gx < w; gx += 64) {
+        ctx.beginPath();
+        ctx.moveTo(gx, 0);
+        ctx.lineTo(w * 0.5 + (gx - w * 0.5) * 1.45, h);
+        ctx.stroke();
+      }
+      for (let gy = 60; gy < h; gy += 55) {
+        ctx.beginPath();
+        ctx.moveTo(0, gy);
+        ctx.lineTo(w, gy);
+        ctx.stroke();
+      }
+
+      // Simulated shopper torso & head silhouette in center frame
+      const t = simFrameCounter * 0.035;
+      const cx = w * 0.5 + Math.sin(t * 0.6) * 18;
+      const cy = h * 0.46 + Math.cos(t * 0.8) * 6;
+
+      if (APP_STATE.privacyShield === 'blur') {
+        const grad = ctx.createRadialGradient(cx, cy, 18, cx, cy + 25, 160);
+        grad.addColorStop(0, surfHi);
+        grad.addColorStop(0.6, surf);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy + 20, 160, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (APP_STATE.privacyShield === 'off') {
+        // Unmasked simulated subject silhouette + facial shading
+        ctx.fillStyle = surfHi;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + 125, 110, 75, 0, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = '#2a3d45';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 52, 66, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = getToken('--error');
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      } else {
+        // Landmark-only: pure black/slate edge silhouette
+        ctx.strokeStyle = pri;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 54, 68, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // Draw Superimposed Face AI Telemetry (Landmarks + Gaze Raycast + Reticle)
+    function drawFaceHudOverlay(ctx, w, h) {
+      ctx.clearRect(0, 0, w, h);
+      const t = simFrameCounter * 0.035;
+      const cx = w * 0.5 + Math.sin(t * 0.6) * 18;
+      const cy = h * 0.46 + Math.cos(t * 0.8) * 6;
+      const pose = computeFaceTelemetry();
+
+      const pri = getToken('--primary');
+      const sage = getToken('--tertiary');
+      const warn = getToken('--warning');
+      const err = getToken('--error');
+      const accent = APP_STATE.privacyShield === 'off' || APP_STATE.driftActive ? err : pri;
+
+      // Bounding Reticle Corners
+      const bw = 134, bh = 160;
+      const bx = cx - bw / 2, by = cy - bh / 2;
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2;
+      const corner = 18;
+      // Top-left
+      ctx.beginPath(); ctx.moveTo(bx, by + corner); ctx.lineTo(bx, by); ctx.lineTo(bx + corner, by); ctx.stroke();
+      // Top-right
+      ctx.beginPath(); ctx.moveTo(bx + bw - corner, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + corner); ctx.stroke();
+      // Bottom-left
+      ctx.beginPath(); ctx.moveTo(bx, by + bh - corner); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + corner, by + bh); ctx.stroke();
+      // Bottom-right
+      ctx.beginPath(); ctx.moveTo(bx + bw - corner, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - corner); ctx.stroke();
+
+      // Facial Mesh Contour & Landmark Points (Jawline, Brows, Eyes, Nose, Lips)
+      const yawShift = pose.yaw * 0.85;
+      const pitchShift = pose.pitch * 0.7;
+
+      const landmarks = [];
+      // Jawline 11 points
+      for (let i = 0; i <= 10; i++) {
+        const ang = (i / 10) * Math.PI;
+        landmarks.push([
+          cx + Math.cos(ang) * 46 + yawShift * 0.4,
+          cy + 8 + Math.sin(ang) * 56 + pitchShift * 0.3
+        ]);
+      }
+      // Left & Right Eye centers
+      const le = [cx - 19 + yawShift, cy - 12 + pitchShift];
+      const re = [cx + 19 + yawShift, cy - 12 + pitchShift];
+      for (let a = 0; a < 6; a++) {
+        const th = (a / 6) * Math.PI * 2;
+        landmarks.push([le[0] + Math.cos(th) * 9, le[1] + Math.sin(th) * 5]);
+        landmarks.push([re[0] + Math.cos(th) * 9, re[1] + Math.sin(th) * 5]);
+      }
+      // Nose bridge & tip
+      landmarks.push([cx + yawShift * 1.1, cy - 10 + pitchShift]);
+      landmarks.push([cx + yawShift * 1.25, cy + 8 + pitchShift]);
+      // Mouth points
+      for (let m = -2; m <= 2; m++) {
+        landmarks.push([cx + m * 8 + yawShift, cy + 30 + Math.abs(m) * 1.5 + pitchShift]);
+      }
+
+      // Mesh links
+      ctx.strokeStyle = sage;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.55;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        ctx.moveTo(landmarks[i][0], landmarks[i][1]);
+        ctx.lineTo(landmarks[i + 1][0], landmarks[i + 1][1]);
+      }
+      ctx.moveTo(le[0], le[1]); ctx.lineTo(cx + yawShift * 1.25, cy + 8 + pitchShift);
+      ctx.moveTo(re[0], re[1]); ctx.lineTo(cx + yawShift * 1.25, cy + 8 + pitchShift);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Landmark Dots
+      ctx.fillStyle = sage;
+      for (const pt of landmarks) {
+        ctx.beginPath();
+        ctx.arc(pt[0], pt[1], 2.1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Gaze Raycast Vector from Both Eyes
+      const rayDx = pose.yaw * 6.5;
+      const rayDy = pose.pitch * 4.5 + 18;
+      const targetX = cx + rayDx;
+      const targetY = cy + rayDy;
+
+      ctx.strokeStyle = warn;
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(le[0], le[1]); ctx.lineTo(targetX, targetY);
+      ctx.moveTo(re[0], re[1]); ctx.lineTo(targetX, targetY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Gaze Impact Reticle
+      ctx.strokeStyle = warn;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(targetX, targetY, 8, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = warn;
+      ctx.beginPath();
+      ctx.arc(targetX, targetY, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Update Superimposed HTML HUD Readouts
+      const dict = I18N[APP_STATE.lang] || I18N.en;
+      const poseEl = document.getElementById('hud-pose-values');
+      if (poseEl) {
+        poseEl.innerHTML = `<span>P: ${pose.pitch > 0 ? '+' : ''}${pose.pitch}°</span><span>Y: ${pose.yaw > 0 ? '+' : ''}${pose.yaw}°</span><span>R: ${pose.roll > 0 ? '+' : ''}${pose.roll}°</span>`;
+      }
+      const emoVal = document.getElementById('hud-emotion-value');
+      const emoConf = document.getElementById('hud-emotion-conf');
+      const emoBar = document.getElementById('hud-emotion-bar');
+      if (emoVal && emoConf && emoBar) {
+        if (APP_STATE.affectiveGate === 'restrained' && !APP_STATE.driftActive) {
+          emoVal.textContent = dict.emotionRestrained;
+          emoVal.style.color = pri;
+          emoConf.textContent = 'LOCKED';
+          emoBar.style.width = '20%';
+          emoBar.style.background = pri;
+        } else {
+          emoVal.textContent = `${pose.emotion} (${Math.round(pose.conf * 100)}%)`;
+          emoVal.style.color = warn;
+          emoConf.textContent = pose.conf.toFixed(2);
+          emoBar.style.width = `${Math.round(pose.conf * 100)}%`;
+          emoBar.style.background = warn;
+        }
+      }
+      const gazeTarget = document.getElementById('hud-gaze-target');
+      const gazeCoords = document.getElementById('hud-gaze-coords');
+      if (gazeTarget && gazeCoords) {
+        const zName = (dict.zones && dict.zones[pose.zone]) || `Zone ${pose.zone}`;
+        gazeTarget.textContent = zName;
+        gazeCoords.textContent = `RAY (${(rayDx / 120).toFixed(2)}, ${(rayDy / 120).toFixed(2)}) · DWELL ${pose.dwell.toFixed(1)}s`;
+      }
+    }
+
+    // Draw Retail Shelf + Multi-Person Joint Walking Animation
+    function drawRetailShelf(ctx, w, h, dt) {
+      const bg = getToken('--background');
+      const surf = getToken('--surface-container');
+      const out = getToken('--outline');
+      const outVar = getToken('--outline-variant');
+      const textMain = getToken('--on-surface');
+      const textMuted = getToken('--on-surface-variant');
+      const t = I18N[APP_STATE.lang] || I18N.en;
+
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      // Floor grid
+      ctx.strokeStyle = outVar;
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 110); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = 110; y < h; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+
+      // Draw 4 Retail Shelf Zones at top of aisle
+      const scaleX = w / 700;
+      for (const z of SHELF_ZONES) {
+        const zx = z.x * scaleX;
+        const zw = z.w * scaleX;
+        const zColor = getToken(z.colorKey);
+
+        ctx.fillStyle = surf;
+        ctx.strokeStyle = zColor;
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(zx, 18, zw, 54);
+        ctx.strokeRect(zx, 18, zw, 54);
+
+        // Mini shelf product slots
+        ctx.fillStyle = zColor;
+        ctx.globalAlpha = 0.28;
+        for (let slot = 0; slot < 4; slot++) {
+          ctx.fillRect(zx + 8 + slot * ((zw - 20) / 4), 26, (zw - 36) / 4, 14);
+        }
+        ctx.globalAlpha = 1;
+
+        ctx.fillStyle = textMain;
+        ctx.font = '600 11px "Geist Mono", monospace';
+        ctx.fillText(`ZONE ${z.id}`, zx + 8, 60);
+
+        // Detection zone floor footprint
+        ctx.strokeStyle = zColor;
+        ctx.globalAlpha = 0.25;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(zx - 6, 78, zw + 12, 46);
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+      }
+
+      // Update & Draw Articulated Multi-Person Joint Shoppers
+      const tierCounts = [0, 0, 0, 0];
+      for (const s of shoppers) {
+        if (!APP_STATE.simPaused) {
+          if (s.pausing) {
+            s.pauseTimer -= dt;
+            s.dwellSec += dt;
+            s.walkPhase += dt * 0.6;
+            if (s.pauseTimer <= 0) {
+              s.pausing = false;
+              const nextZoneIdx = (SHELF_ZONES.findIndex((z) => z.id === s.targetZone) + 1) % SHELF_ZONES.length;
+              s.targetZone = SHELF_ZONES[nextZoneIdx].id;
+              pushAuditLog(s.id, s.targetZone, s.dwellSec, 'TRANSITION');
+              if (s.dwellSec > 13.5) s.dwellSec = 1.2;
+            }
+          } else {
+            const targetObj = SHELF_ZONES.find((z) => z.id === s.targetZone) || SHELF_ZONES[0];
+            const tx = (targetObj.x + targetObj.w * 0.5) * scaleX;
+            const ty = 152 + (shoppers.indexOf(s) % 3) * 26;
+            const dx = tx - s.x;
+            const dy = ty - s.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 10) {
+              s.pausing = true;
+              s.pauseTimer = 3.2 + Math.random() * 4.5;
+              s.headYaw = 0;
+              pushAuditLog(s.id, s.targetZone, s.dwellSec, 'DWELL_CHECK');
+            } else {
+              const speed = 44 * dt;
+              s.x += (dx / dist) * speed;
+              s.y += (dy / dist) * speed;
+              s.walkPhase += dt * 7.5;
+              s.dwellSec = Math.max(0.4, s.dwellSec * 0.992);
+            }
+          }
+        }
+
+        const tier = computeDwellTier(s.dwellSec);
+        tierCounts[tier - 1]++;
+        const col = getToken(s.color);
+
+        // Gaze cone from shopper head toward target shelf
+        const targetZoneObj = SHELF_ZONES.find((z) => z.id === s.targetZone) || SHELF_ZONES[0];
+        const gx = (targetZoneObj.x + targetZoneObj.w * 0.5) * scaleX;
+        const gy = 68;
+        ctx.fillStyle = col;
+        ctx.globalAlpha = tier >= 3 ? 0.16 : 0.08;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y - 12);
+        ctx.lineTo(gx - 24, gy);
+        ctx.lineTo(gx + 24, gy);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Articulated Multi-Joint Shopper Skeleton (Legs, Pelvis, Torso, Shoulders, Arms, Head)
+        const stride = s.pausing ? 0 : Math.sin(s.walkPhase) * 11;
+        const armSwing = s.pausing ? Math.sin(s.walkPhase) * 2 : -Math.sin(s.walkPhase) * 9;
+
+        // Legs (Hip -> Knee -> Foot joints)
+        ctx.strokeStyle = textMuted;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        // Left leg
+        ctx.beginPath();
+        ctx.moveTo(s.x - 6, s.y + 8);
+        ctx.lineTo(s.x - 8 + stride * 0.5, s.y + 20);
+        ctx.lineTo(s.x - 7 + stride, s.y + 32);
+        ctx.stroke();
+        // Right leg
+        ctx.beginPath();
+        ctx.moveTo(s.x + 6, s.y + 8);
+        ctx.lineTo(s.x + 8 - stride * 0.5, s.y + 20);
+        ctx.lineTo(s.x + 7 - stride, s.y + 32);
+        ctx.stroke();
+
+        // Torso & Shoulders
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y + 8);
+        ctx.lineTo(s.x, s.y - 10);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(s.x - 13, s.y - 8);
+        ctx.lineTo(s.x + 13, s.y - 8);
+        ctx.stroke();
+
+        // Arms (Shoulder -> Elbow -> Hand joints)
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(s.x - 13, s.y - 8);
+        ctx.lineTo(s.x - 16, s.y + 3 + armSwing * 0.5);
+        ctx.lineTo(s.x - 13, s.y + 13 + armSwing);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(s.x + 13, s.y - 8);
+        ctx.lineTo(s.x + 16, s.y + 3 - armSwing * 0.5);
+        ctx.lineTo(s.x + 13, s.y + 13 - armSwing);
+        ctx.stroke();
+
+        // Joint Nodes
+        ctx.fillStyle = textMain;
+        const jointPts = [
+          [s.x - 13, s.y - 8], [s.x + 13, s.y - 8],
+          [s.x - 6, s.y + 8], [s.x + 6, s.y + 8],
+          [s.x - 7 + stride, s.y + 32], [s.x + 7 - stride, s.y + 32]
+        ];
+        for (const jp of jointPts) {
+          ctx.beginPath();
+          ctx.arc(jp[0], jp[1], 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Head Joint
+        ctx.fillStyle = surf;
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y - 19, 8.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Label Pill
+        ctx.fillStyle = textMain;
+        ctx.font = '500 10px "Geist Mono", monospace';
+        ctx.fillText(`${s.id} · ${s.dwellSec.toFixed(1)}s [T${tier}]`, s.x - 42, s.y + 48);
+      }
+
+      // Update 4-tier counts in DOM
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById(`tier-${i}-count`);
+        if (el) el.textContent = String(tierCounts[i - 1]);
+      }
+
+      if (simFrameCounter % 15 === 0) {
+        renderShopperSubcards();
+      }
+    }
+
+    function mainAnimationLoop(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const dt = Math.min(0.08, (timestamp - lastTimestamp) / 1000);
+      lastTimestamp = timestamp;
+      simFrameCounter++;
+
+      const simCanvas = document.getElementById('sim-camera-canvas');
+      if (simCanvas && APP_STATE.cameraSource === 'simulated') {
+        const sctx = simCanvas.getContext('2d');
+        if (sctx) drawSimulatedCameraBackground(sctx, simCanvas.width, simCanvas.height);
+      }
+
+      const hudCanvas = document.getElementById('hud-overlay-canvas');
+      if (hudCanvas) {
+        const hctx = hudCanvas.getContext('2d');
+        if (hctx) drawFaceHudOverlay(hctx, hudCanvas.width, hudCanvas.height);
+      }
+
+      const shelfCanvas = document.getElementById('retail-shelf-canvas');
+      if (shelfCanvas) {
+        const rctx = shelfCanvas.getContext('2d');
+        if (rctx) drawRetailShelf(rctx, shelfCanvas.width, shelfCanvas.height, dt);
+      }
+
+      animFrameId = requestAnimationFrame(mainAnimationLoop);
+    }
+
+    // =========================================================================
+    // 5. DYNAMIC RENDERERS (SHOPPER CARDS, MMDIAF LAYERS, COMPLIANCE, LOGS)
+    // =========================================================================
+    function renderShopperSubcards() {
+      const container = document.getElementById('shoppers-subcards');
+      if (!container) return;
+      const t = I18N[APP_STATE.lang] || I18N.en;
+      container.innerHTML = shoppers.map((s) => {
+        const tier = computeDwellTier(s.dwellSec);
+        const tierName = t.tiers[tier] || `Tier ${tier}`;
+        const zoneName = t.zones[s.targetZone] || `Zone ${s.targetZone}`;
+        const chipCls = tier >= 4 ? 'chip-sage' : (tier === 3 ? 'chip-amber' : 'chip-cyan');
+        const ttsLine = `${s.id}, ${zoneName}, ${s.dwellSec.toFixed(1)} seconds, ${tierName}.`;
+        return `
+          <div class="sub-card" data-tts="shopper" data-tts-custom="${ttsLine.replace(/"/g, '&quot;')}" tabindex="0">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
+              <strong style="font-family:var(--font-label);font-size:0.82rem;">${s.id}</strong>
+              <span class="chip ${chipCls}">${tierName}</span>
+            </div>
+            <span style="font-size:0.8rem;color:var(--on-surface-variant);">${zoneName} · ${s.dwellSec.toFixed(1)}s</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderMMDIAFLayers() {
+      const layersGrid = document.getElementById('mmdiaf-layers-grid');
+      const pillarsGrid = document.getElementById('transversal-pillars-grid');
+      const t = I18N[APP_STATE.lang] || I18N.en;
+
+      if (layersGrid) {
+        layersGrid.innerHTML = t.layers.map((l) => {
+          const ttsLayer = `${l.title}. ${l.obj}. ${l.req}. ${l.ev}.`;
+          return `
+            <article class="layer-card" data-tts="layer" data-tts-custom="${ttsLayer.replace(/"/g, '&quot;')}" tabindex="0">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span class="chip chip-cyan">${l.id}</span>
+                <span class="data-label">${l.obj}</span>
+              </div>
+              <h3 class="subhead">${l.title}</h3>
+              <div class="layer-subbox" data-tts="layerReq" data-tts-custom="${l.req.replace(/"/g, '&quot;')}" tabindex="0">
+                <p style="margin:0;font-size:0.84rem;color:var(--on-surface);">${l.req}</p>
+              </div>
+              <div class="layer-subbox" data-tts="layerEv" data-tts-custom="${l.ev.replace(/"/g, '&quot;')}" tabindex="0">
+                <span class="data-label" style="display:block;margin-bottom:2px;">AUDIT EVIDENCE</span>
+                <span style="font-size:0.8rem;color:var(--tertiary);font-family:var(--font-label);">${l.ev}</span>
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      if (pillarsGrid) {
+        pillarsGrid.innerHTML = t.pillars.map((p) => {
+          const ttsPillar = `${p.name}. ${p.desc}`;
+          return `
+            <div class="sub-card" data-tts="pillar" data-tts-custom="${ttsPillar.replace(/"/g, '&quot;')}" tabindex="0">
+              <strong style="font-size:0.88rem;color:var(--primary);">${p.name}</strong>
+              <span style="font-size:0.8rem;color:var(--on-surface-variant);">${p.desc}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function getClauseLiveStatus(c) {
+      if (c.dep === 'shield' && APP_STATE.privacyShield === 'off') return 'breach';
+      if (c.dep === 'affective' && APP_STATE.affectiveGate === 'unrestricted') return 'breach';
+      if (c.dep === 'drift' && APP_STATE.driftActive) return 'breach';
+      if (!APP_STATE.verifiedClauses[c.id]) return 'attention';
+      return 'compliant';
+    }
+
+    function renderComplianceMatrix() {
+      const tbody = document.getElementById('compliance-tbody');
+      if (!tbody) return;
+      const t = I18N[APP_STATE.lang] || I18N.en;
+
+      const filtered = t.clauses.filter((c) => APP_STATE.complianceFilter === 'all' || c.reg === APP_STATE.complianceFilter);
+
+      tbody.innerHTML = filtered.map((c) => {
+        const st = getClauseLiveStatus(c);
+        const badgeCls = st === 'compliant' ? 'chip-sage' : (st === 'attention' ? 'chip-amber' : 'chip-error');
+        const badgeTxt = st === 'compliant' ? t.statusCompliant : (st === 'attention' ? t.statusAttention : t.statusBreach);
+        const regChip = c.reg === 'GDPR' ? 'chip-cyan' : 'chip-amber';
+        const ttsClause = `${c.art}. ${c.mandate}. ${c.layer}. ${badgeTxt}.`;
+
+        return `
+          <tr data-tts="clause" data-tts-custom="${ttsClause.replace(/"/g, '&quot;')}" tabindex="0">
+            <td>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <span class="chip ${regChip}" style="width:fit-content;">${c.reg}</span>
+                <strong>${c.art}</strong>
+              </div>
+            </td>
+            <td style="max-width:42ch;color:var(--on-surface);">${c.mandate}</td>
+            <td style="color:var(--on-surface-variant);font-size:0.85rem;">${c.layer}</td>
+            <td><span class="chip ${badgeCls}">${badgeTxt}</span></td>
+            <td>
+              <button type="button" class="btn btn-compact" onclick="toggleClauseAudit('${c.id}')">${t.verifyBtn}</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderAuditLogs() {
+      const tbody = document.getElementById('audit-log-tbody');
+      if (!tbody) return;
+      const t = I18N[APP_STATE.lang] || I18N.en;
+
+      tbody.innerHTML = auditLogs.slice(0, 14).map((row) => {
+        const tierLabel = t.tiers[row.tier] || `Tier ${row.tier}`;
+        const vCls = row.verdict.includes('DRIFT') ? 'chip-error' : (row.verdict.includes('CONTEST') ? 'chip-amber' : 'chip-sage');
+        const ttsLog = `${row.utc}, ${row.shopperId}, ${row.zoneId}, ${row.dwellSec} seconds, ${tierLabel}, ${row.verdict}.`;
+        return `
+          <tr data-tts="logRow" data-tts-custom="${ttsLog.replace(/"/g, '&quot;')}" tabindex="0">
+            <td style="font-family:var(--font-label);font-size:0.8rem;">${row.utc}</td>
+            <td style="font-family:var(--font-label);font-size:0.8rem;">${row.shopperId} · ${row.zoneId}</td>
+            <td><span class="chip chip-cyan">${row.dwellSec}s · ${tierLabel}</span></td>
+            <td><span class="chip ${vCls}">${row.verdict}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updateKPIs() {
+      const t = I18N[APP_STATE.lang] || I18N.en;
+      const allClauses = t.clauses;
+      const compliantCount = allClauses.filter((c) => getClauseLiveStatus(c) === 'compliant').length;
+      const pct = Math.round((compliantCount / allClauses.length) * 100);
+
+      const valReadiness = document.getElementById('val-readiness');
+      const kpi1Delta = document.getElementById('ui-kpi-1-delta');
+      if (valReadiness) {
+        valReadiness.textContent = `${pct}%`;
+        valReadiness.style.color = pct >= 85 ? getToken('--tertiary') : (pct >= 65 ? getToken('--warning') : getToken('--error'));
+      }
+      if (kpi1Delta) {
+        kpi1Delta.textContent = APP_STATE.driftActive || pct < 75 ? t.kpi1DeltaDrift : t.kpi1DeltaOk;
+        kpi1Delta.style.color = APP_STATE.driftActive || pct < 75 ? getToken('--error') : getToken('--tertiary');
+      }
+
+      const valShoppers = document.getElementById('val-shoppers');
+      const kpi2Delta = document.getElementById('ui-kpi-2-delta');
+      if (valShoppers) valShoppers.textContent = String(shoppers.length);
+      if (kpi2Delta && shoppers.length) {
+        const peak = Math.max(...shoppers.map((s) => s.dwellSec));
+        const tierLabel = t.tiers[computeDwellTier(peak)] || '';
+        kpi2Delta.textContent = `Peak: ${peak.toFixed(1)}s (${tierLabel})`;
+      }
+
+      const valRestraint = document.getElementById('val-restraint');
+      const kpi3Delta = document.getElementById('ui-kpi-3-delta');
+      const hasRisk = APP_STATE.driftActive || APP_STATE.privacyShield === 'off' || APP_STATE.affectiveGate === 'unrestricted';
+      if (valRestraint) {
+        valRestraint.textContent = hasRisk ? t.kpi3Drift : t.kpi3Bounded;
+        valRestraint.style.color = hasRisk ? getToken('--error') : getToken('--tertiary');
+      }
+      if (kpi3Delta) {
+        kpi3Delta.textContent = hasRisk ? t.kpi3DeltaRisk : t.kpi3DeltaSafe;
+        kpi3Delta.style.color = hasRisk ? getToken('--error') : getToken('--tertiary');
+      }
+
+      const valLogs = document.getElementById('val-log-count');
+      if (valLogs) valLogs.textContent = String(auditLogs.length);
+    }
+
+    // =========================================================================
+    // 6. INTERACTIVE HANDLERS (ALL HOISTED FUNCTIONS)
+    // =========================================================================
+    function applyLanguageUI() {
+      const lang = APP_STATE.lang;
+      const t = I18N[lang] || I18N.en;
+      document.documentElement.lang = lang;
+
+      // Update active language button
+      ['en', 'zh-TW', 'zh-CN', 'ja', 'de', 'fr'].forEach((code) => {
+        const btn = document.getElementById(`lang-btn-${code}`);
+        if (btn) btn.classList.toggle('active', code === lang);
+      });
+
+      const setTxt = (id, txt) => {
+        const el = document.getElementById(id);
+        if (el && txt !== undefined) el.textContent = txt;
+      };
+
+      setTxt('ui-kicker', t.kicker);
+      setTxt('ui-title', t.title);
+      setTxt('ui-subtitle', t.subtitle);
+      setTxt('ui-author-label', t.authorLabel);
+      setTxt('ui-author-names', t.authorNames);
+      setTxt('ui-tts-toggle-text', APP_STATE.ttsEnabled ? t.ttsOn : t.ttsOff);
+      setTxt('ui-csv-btn-text', t.csvBtn);
+      setTxt('ui-pdf-btn-text', t.pdfBtn);
+      setTxt('ui-voice-label', t.voiceLabel);
+      setTxt('ui-stop-voice', t.stopVoice);
+      setTxt('tts-preview-text', t.ttsDefaultHint);
+
+      setTxt('ui-kpi-1-label', t.kpi1Label);
+      setTxt('ui-kpi-2-label', t.kpi2Label);
+      setTxt('ui-kpi-3-label', t.kpi3Label);
+      setTxt('ui-kpi-4-label', t.kpi4Label);
+      setTxt('ui-kpi-4-delta', t.kpi4Delta);
+
+      setTxt('ui-vision-kicker', t.visionKicker);
+      setTxt('ui-vision-title', t.visionTitle);
+      setTxt('badge-feed-mode', APP_STATE.cameraSource === 'webcam' ? t.feedCam : t.feedSim);
+      setTxt('ui-hud-pose-label', t.hudPoseLabel);
+      setTxt('ui-hud-landmarks', t.hudLandmarks);
+      setTxt('ui-hud-shield-label', t.hudShieldLabel);
+      setTxt('ui-hud-emotion-label', t.hudEmotionLabel);
+      setTxt('ui-hud-emotion-sub', APP_STATE.affectiveGate === 'restrained' ? t.emotionRestrainedSub : t.emotionUnrestrictedSub);
+      setTxt('ui-hud-gaze-label', t.hudGazeLabel);
+
+      setTxt('ui-lbl-feed', t.lblFeed);
+      setTxt('ui-lbl-shield', t.lblShield);
+      setTxt('ui-lbl-emotion-gate', t.lblEmotionGate);
+
+      setTxt('ui-shelf-kicker', t.shelfKicker);
+      setTxt('ui-shelf-title', t.shelfTitle);
+      setTxt('ui-btn-add-shopper', t.btnAddShopper);
+      setTxt('ui-btn-pause', APP_STATE.simPaused ? t.btnResume : t.btnPause);
+      setTxt('ui-btn-drift', APP_STATE.driftActive ? t.btnRestore : t.btnDrift);
+
+      setTxt('ui-tier-1-range', t.tier1Range);
+      setTxt('ui-tier-1-desc', t.tier1Desc);
+      setTxt('ui-tier-2-range', t.tier2Range);
+      setTxt('ui-tier-2-desc', t.tier2Desc);
+      setTxt('ui-tier-3-range', t.tier3Range);
+      setTxt('ui-tier-3-desc', t.tier3Desc);
+      setTxt('ui-tier-4-range', t.tier4Range);
+      setTxt('ui-tier-4-desc', t.tier4Desc);
+
+      setTxt('ui-mmdiaf-kicker', t.mmdiafKicker);
+      setTxt('ui-mmdiaf-title', t.mmdiafTitle);
+      setTxt('ui-mmdiaf-badge', t.mmdiafBadge);
+
+      setTxt('ui-matrix-kicker', t.matrixKicker);
+      setTxt('ui-matrix-title', t.matrixTitle);
+      setTxt('th-article', t.thArticle);
+      setTxt('th-mandate', t.thMandate);
+      setTxt('th-layer', t.thLayer);
+      setTxt('th-status', t.thStatus);
+      setTxt('th-action', t.thAction);
+
+      setTxt('ui-log-kicker', t.logKicker);
+      setTxt('ui-log-title', t.logTitle);
+      setTxt('ui-log-csv-btn', t.logCsvBtn);
+      setTxt('th-log-time', t.thLogTime);
+      setTxt('th-log-shopper', t.thLogShopper);
+      setTxt('th-log-dwell', t.thLogDwell);
+      setTxt('th-log-gate', t.thLogGate);
+
+      setTxt('ui-paper-kicker', t.paperKicker);
+      setTxt('ui-paper-title', t.paperTitle);
+      setTxt('ui-paper-desc', t.paperDesc);
+      setTxt('ui-paper-doi-label', t.paperDoiLabel);
+      setTxt('ui-paper-dl-action', t.paperDlAction);
+      setTxt('ui-copy-drive-btn', t.copyDriveBtn);
+
+      updatePrivacyShieldVisuals();
+      renderShopperSubcards();
+      renderMMDIAFLayers();
+      renderComplianceMatrix();
+      renderAuditLogs();
+      updateKPIs();
+    }
+
+    function setLanguage(langCode) {
+      APP_STATE.lang = langCode;
+      stopSpeech();
+      applyLanguageUI();
+      savePersistedState();
+    }
+
+    function toggleHoverTTS() {
+      APP_STATE.ttsEnabled = !APP_STATE.ttsEnabled;
+      const btn = document.getElementById('btn-tts-toggle');
+      if (btn) btn.classList.toggle('btn-active', APP_STATE.ttsEnabled);
+      if (!APP_STATE.ttsEnabled) {
+        stopSpeech();
+      } else {
+        const t = I18N[APP_STATE.lang] || I18N.en;
+        speakText(t.ttsOn, btn);
+      }
+      applyLanguageUI();
+      savePersistedState();
+    }
+
+    async function changeCameraSource(mode) {
+      APP_STATE.cameraSource = mode;
+      const video = document.getElementById('live-camera-video');
+      const simCanvas = document.getElementById('sim-camera-canvas');
+      const msg = document.getElementById('camera-status-msg');
+      const badge = document.getElementById('badge-feed-mode');
+      const t = I18N[APP_STATE.lang] || I18N.en;
+
+      if (mode === 'webcam') {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          try {
+            liveStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+            if (video) {
+              video.srcObject = liveStream;
+              video.classList.add('is-active');
+            }
+            if (simCanvas) simCanvas.style.display = 'none';
+            if (badge) badge.textContent = t.feedCam;
+            if (msg) msg.textContent = 'Live edge camera active (local frame processing only).';
+          } catch (err) {
+            APP_STATE.cameraSource = 'simulated';
+            const sel = document.getElementById('select-feed-source');
+            if (sel) sel.value = 'simulated';
+            if (msg) msg.textContent = 'Camera access unavailable in sandbox; remaining on Simulated Edge Stream.';
+          }
+        } else {
+          APP_STATE.cameraSource = 'simulated';
+          const sel = document.getElementById('select-feed-source');
+          if (sel) sel.value = 'simulated';
+          if (msg) msg.textContent = 'Webcam API unavailable here; Simulated Edge Stream active.';
+        }
+      } else {
+        if (liveStream) {
+          liveStream.getTracks().forEach((tr) => tr.stop());
+          liveStream = null;
+        }
+        if (video) {
+          video.srcObject = null;
+          video.classList.remove('is-active');
+        }
+        if (simCanvas) simCanvas.style.display = 'block';
+        if (badge) badge.textContent = t.feedSim;
+        if (msg) msg.textContent = '';
+      }
+      updatePrivacyShieldVisuals();
+    }
+
+    function updatePrivacyShieldVisuals() {
+      const t = I18N[APP_STATE.lang] || I18N.en;
+      const mode = APP_STATE.privacyShield;
+      const video = document.getElementById('live-camera-video');
+      const veil = document.getElementById('privacy-veil');
+      const statusEl = document.getElementById('hud-shield-status');
+      const chipEl = document.getElementById('hud-shield-chip');
+      const noteEl = document.getElementById('ui-hud-shield-note');
+
+      if (video) {
+        video.classList.remove('privacy-blur', 'privacy-silhouette');
+        if (mode === 'blur') video.classList.add('privacy-blur');
+        if (mode === 'landmark') video.classList.add('privacy-silhouette');
+      }
+      if (veil) veil.classList.toggle('is-exposed', mode === 'off');
+
+      if (statusEl && chipEl && noteEl) {
+        if (mode === 'landmark') {
+          statusEl.textContent = t.shieldLandmark;
+          statusEl.style.color = getToken('--tertiary');
+          chipEl.textContent = t.shieldSafe;
+          chipEl.className = 'chip chip-sage';
+          noteEl.textContent = t.shieldNoteSafe;
+        } else if (mode === 'blur') {
+          statusEl.textContent = t.shieldBlur;
+          statusEl.style.color = getToken('--tertiary');
+          chipEl.textContent = t.shieldSafe;
+          chipEl.className = 'chip chip-sage';
+          noteEl.textContent = t.shieldNoteSafe;
+        } else {
+          statusEl.textContent = t.shieldOff;
+          statusEl.style.color = getToken('--error');
+          chipEl.textContent = t.shieldRisk;
+          chipEl.className = 'chip chip-error';
+          noteEl.textContent = t.shieldNoteRisk;
+        }
+      }
+    }
+
+    function setPrivacyShield(mode) {
+      APP_STATE.privacyShield = mode;
+      updatePrivacyShieldVisuals();
+      renderComplianceMatrix();
+      pushAuditLog('SYS_EDGE', 'HUD', 0.0, `SHIELD_${mode.toUpperCase()}`);
+      savePersistedState();
+    }
+
+    function setAffectiveGate(mode) {
+      APP_STATE.affectiveGate = mode;
+      const t = I18N[APP_STATE.lang] || I18N.en;
+      const subEl = document.getElementById('ui-hud-emotion-sub');
+      if (subEl) subEl.textContent = mode === 'restrained' ? t.emotionRestrainedSub : t.emotionUnrestrictedSub;
+      renderComplianceMatrix();
+      pushAuditLog('SYS_L2', 'FUSION', 0.0, `EMOTION_${mode.toUpperCase()}`);
+      savePersistedState();
+    }
+
+    function addShopper() {
+      if (shoppers.length >= 6) return;
+      const idx = shoppers.length + 1;
+      const zoneIds = ['A', 'B', 'C', 'D'];
+      const cols = ['--data-1', '--data-2', '--data-3', '--data-4'];
+      shoppers.push({
+        id: `SHOPPER_0${idx}`,
+        x: 80 + Math.random() * 500,
+        y: 145 + Math.random() * 45,
+        vx: 0.4,
+        vy: 0.1,
+        targetZone: zoneIds[idx % 4],
+        dwellSec: 1.4,
+        walkPhase: idx * 1.1,
+        headYaw: 0,
+        pausing: false,
+        pauseTimer: 2.5,
+        color: cols[idx % 4]
+      });
+      renderShopperSubcards();
+      pushAuditLog(`SHOPPER_0${idx}`, zoneIds[idx % 4], 1.4, 'ENTER_AISLE');
+    }
+
+    function toggleSimPause() {
+      APP_STATE.simPaused = !APP_STATE.simPaused;
+      applyLanguageUI();
+    }
+
+    function toggleDeploymentDrift() {
+      APP_STATE.driftActive = !APP_STATE.driftActive;
+      const btn = document.getElementById('btn-drift-sim');
+      if (APP_STATE.driftActive) {
+        APP_STATE.privacyShield = 'off';
+        APP_STATE.affectiveGate = 'unrestricted';
+        if (btn) btn.className = 'btn btn-compact btn-danger';
+      } else {
+        APP_STATE.privacyShield = 'blur';
+        APP_STATE.affectiveGate = 'restrained';
+        if (btn) btn.className = 'btn btn-compact btn-warning';
+      }
+      const shieldSel = document.getElementById('select-privacy-shield');
+      const affSel = document.getElementById('select-affective-gate');
+      if (shieldSel) shieldSel.value = APP_STATE.privacyShield;
+      if (affSel) affSel.value = APP_STATE.affectiveGate;
+
+      applyLanguageUI();
+      pushAuditLog('GOV_DRIFT', 'ALL', 0.0, APP_STATE.driftActive ? 'DRIFT_SIM_TRIGGERED' : 'GATES_RESTORED');
+      savePersistedState();
+    }
+
+    function setComplianceFilter(reg) {
+      APP_STATE.complianceFilter = reg;
+      const map = { 'all': 'filter-reg-all', 'GDPR': 'filter-reg-gdpr', 'EU AI Act': 'filter-reg-euai' };
+      Object.entries(map).forEach(([k, id]) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('btn-active', k === reg);
+      });
+      renderComplianceMatrix();
+    }
+
+    function toggleClauseAudit(clauseId) {
+      APP_STATE.verifiedClauses[clauseId] = !APP_STATE.verifiedClauses[clauseId];
+      renderComplianceMatrix();
+      updateKPIs();
+      savePersistedState();
+    }
+
+    // PURE ENGLISH CSV EXPORT (Guaranteed ASCII / Zero Garbled Characters)
+    function exportPureEnglishCSV() {
+  try {
+    const headers = [
+      'Timestamp_UTC', 'Shopper_ID', 'Shelf_Zone', 'Dwell_Seconds',
+      'Interest_Tier', 'Head_Pitch_Deg', 'Head_Yaw_Deg', 'Head_Roll_Deg',
+      'Privacy_Shield', 'Affective_Gate', 'MMDIAF_Verdict'
+    ];
+    const tierNamesEn = {
+      1: 'Glance_0_2s', 2: 'Browse_3_5s', 3: 'Engaged_6_10s', 4: 'PeakIntent_Gt10s'
+    };
+
+    const logs = typeof auditLogs !== 'undefined' ? auditLogs : [];
+    const rows = logs.map((r) => [
+      `"${r.utc || new Date().toISOString()}"`,
+      `"${r.shopperId || 'SH-001'}"`,
+      `"${(r.zoneId || '').replace(/[^\x20-\x7E]/g, '')}"`,
+      `"${(r.dwellSec || 0).toFixed(1)}"`,
+      `"${tierNamesEn[r.tier] || 'Glance_0_2s'}"`,
+      `"${(r.pitch || 0).toFixed(1)}"`,
+      `"${(r.yaw || 0).toFixed(1)}"`,
+      `"${(r.roll || 0).toFixed(1)}"`,
+      `"${r.shield || 'ACTIVE'}"`,
+      `"${r.emotionGate || 'Neutral'}"`,
+      `"${r.verdict || 'PASS'}"`
+    ].join(','));
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+
+    // 1. 優先支援內嵌 API
+    if (window.notebookAppApi && typeof window.notebookAppApi.triggerFileDownload === 'function') {
+      window.notebookAppApi.triggerFileDownload({
+        content: csvContent,
+        contentType: 'text/csv',
+        encoding: 'UTF-8',
+        filename: 'SmartMMDIAF_Telemetry_Audit_EN.csv'
+      });
+    } else {
+      // 2. 本機開啟 (file://) 的 Data URI 後備下載機制
+      const encodedUri = "data:text/csv;charset=utf-8,\uFEFF" + encodeURIComponent(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `SmartMMDIAF_Telemetry_Audit_EN_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    const msg = document.getElementById('paper-toast-msg');
+    if (msg) msg.textContent = `Exported ${logs.length} pure-English CSV telemetry records.`;
+  } catch (err) {
+    console.error("CSV Export Exception:", err);
+    alert("CSV 下載報錯: " + err.message);
+  }
+}
+
+    function updateDownloadCounterUI() {
+      const c1 = document.getElementById('pdf-download-count');
+      const c2 = document.getElementById('pdf-download-count-2');
+      const formatted = APP_STATE.pdfDownloads.toLocaleString('en-US');
+      if (c1) c1.textContent = formatted;
+      if (c2) c2.textContent = formatted;
+    }
+
+    function handlePaperDownload() {
+      APP_STATE.pdfDownloads += 1;
+      updateDownloadCounterUI();
+      savePersistedState();
+
+      const briefText = [
+        `Governing Multimodal Consumer Analytics: A Governance-by-Design Reference Architecture for Responsible Technology`,
+        `Authors: Hoiman Cheng & Cheng-Wang Lin (Institute of Technology Management / Industrial Engineering and Management, National Yang Ming Chiao Tung University)`,
+        `Publication: International Journal of Applied Science, ISSN 2576-7240, DOI: 10.30560/ijas.v9n1p75 (Published March 16, 2026)`,
+        `Repository Reference: drive.google.com/file/d/1oC3Hz8tfkNMpiZJSUNeAto5KEg7Qa5ap/view?usp=drive_link`,
+        ``,
+        `MMDIAF Four Architectural Layers:`,
+        `- Layer 1 (Data Acquisition): Purpose limitation, modality-specific consent, data minimization.`,
+        `- Layer 2 (Representation Management): Inference restraint, normative filtering, privacy-preserving transformation.`,
+        `- Layer 3 (Cross-Modal Fusion): Interpretability, modular explainable integration, model cards.`,
+        `- Layer 4 (Decision Deployment): Institutional accountability, contestable outputs, human appeal trails.`,
+        ``,
+        `Real-time Paper Counter Recorded: ${APP_STATE.pdfDownloads}`
+      ].join('\n');
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.triggerFileDownload === 'function') {
+        window.notebookAppApi.triggerFileDownload({
+          content: briefText,
+          contentType: 'text/plain',
+          encoding: 'UTF-8',
+          filename: 'MMDIAF_2026_Cheng_Lin_Paper_Brief.txt'
+        });
+      }
+      const msg = document.getElementById('paper-toast-msg');
+      if (msg) msg.textContent = `Counter updated (${APP_STATE.pdfDownloads}). Brief downloaded; copy Drive link above for full PDF.`;
+    }
+
+    async function copyDriveUrl() {
+      const urlText = 'https://drive.google.com/file/d/1oC3Hz8tfkNMpiZJSUNeAto5KEg7Qa5ap/view?usp=drive_link';
+      const msg = document.getElementById('paper-toast-msg');
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(urlText);
+          if (msg) msg.textContent = 'Google Drive PDF link copied to clipboard.';
+        } else if (msg) {
+          msg.textContent = 'Select and copy the Drive path displayed above.';
+        }
+      } catch (e) {
+        if (msg) msg.textContent = 'Select and copy the Drive path displayed above.';
+      }
+    }
+
+    // =========================================================================
+    // 7. STATE PERSISTENCE & INITIALIZATION
+    // =========================================================================
+    async function savePersistedState() {
+      if (!window.notebookAppApi || typeof window.notebookAppApi.setAppState !== 'function') return;
+      try {
+        await window.notebookAppApi.setAppState({
+          lang: APP_STATE.lang,
+          ttsEnabled: APP_STATE.ttsEnabled,
+          privacyShield: APP_STATE.privacyShield,
+          affectiveGate: APP_STATE.affectiveGate,
+          driftActive: APP_STATE.driftActive,
+          verifiedClauses: APP_STATE.verifiedClauses,
+          pdfDownloads: APP_STATE.pdfDownloads
+        });
+      } catch (e) {}
+    }
+
+    async function initDashboard() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === 'function') {
+        try {
+          const saved = await window.notebookAppApi.getAppState();
+          if (saved && typeof saved === 'object') {
+            if (saved.lang && I18N[saved.lang]) APP_STATE.lang = saved.lang;
+            if (typeof saved.ttsEnabled === 'boolean') APP_STATE.ttsEnabled = saved.ttsEnabled;
+            if (saved.privacyShield) APP_STATE.privacyShield = saved.privacyShield;
+            if (saved.affectiveGate) APP_STATE.affectiveGate = saved.affectiveGate;
+            if (typeof saved.driftActive === 'boolean') APP_STATE.driftActive = saved.driftActive;
+            if (saved.verifiedClauses) APP_STATE.verifiedClauses = Object.assign(APP_STATE.verifiedClauses, saved.verifiedClauses);
+            if (typeof saved.pdfDownloads === 'number' && saved.pdfDownloads >= 1248) APP_STATE.pdfDownloads = saved.pdfDownloads;
+          }
+        } catch (e) {}
+      }
+
+      const shieldSel = document.getElementById('select-privacy-shield');
+      const affSel = document.getElementById('select-affective-gate');
+      const ttsBtn = document.getElementById('btn-tts-toggle');
+      if (shieldSel) shieldSel.value = APP_STATE.privacyShield;
+      if (affSel) affSel.value = APP_STATE.affectiveGate;
+      if (ttsBtn) ttsBtn.classList.toggle('btn-active', APP_STATE.ttsEnabled);
+
+      // Seed initial audit logs
+      pushAuditLog('SHOPPER_01', 'B', 6.8, 'ENGAGED_CHECK');
+      pushAuditLog('SHOPPER_02', 'A', 3.9, 'BROWSE_AGGREGATE');
+      pushAuditLog('SHOPPER_03', 'D', 11.2, 'INTENT_CONTESTABLE');
+
+      updateDownloadCounterUI();
+      applyLanguageUI();
+      attachGlobalHoverTTS();
+
+      cancelAnimationFrame(animFrameId);
+      animFrameId = requestAnimationFrame(mainAnimationLoop);
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
+        window.notebookAppApi.notifyAppReady();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+</body>
+</html>

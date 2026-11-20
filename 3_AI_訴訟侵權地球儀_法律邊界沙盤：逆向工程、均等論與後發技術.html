@@ -1,0 +1,2925 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="haven">
+  <title>AI 與專利情報驅動之技術商品化與責任 AI 治理 — 3D 星際智權航行系統互動看板</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* Morandi Blue Light Mode Surfaces */
+      --background: #edf2f6;
+      --background-grad-top: #f5f8fb;
+      --background-grad-bottom: #dfe8f0;
+      --surface-container-low: rgba(255, 255, 255, 0.86);
+      --surface-container: #dde6ee;
+      --surface-container-high: #cfdbe6;
+      --surface-well: #f7fafc;
+
+      /* Ink */
+      --on-surface: #1e293b;
+      --on-surface-variant: #475569;
+
+      /* Author Tag Dynamic Inversion Tokens (Light Mode) */
+      --author-text-color: #1e293b;
+      --author-icon-color: #2b6cb0;
+      --author-bg: rgba(255, 255, 255, 0.84);
+      --author-border: rgba(43, 108, 176, 0.30);
+
+      /* Rules */
+      --outline: #9db0c2;
+      --outline-variant: rgba(71, 102, 130, 0.20);
+
+      /* Morandi Steel & Slate Accents */
+      --primary: #2b6cb0;
+      --on-primary: #ffffff;
+      --primary-container: #dbeafe;
+      --on-primary-container: #1e3a8a;
+      --secondary: #4a6b82;
+      --tertiary: #5d8275;
+      --error: #b84a45;
+      --on-error: #ffffff;
+      --positive: #36735a;
+      --warning: #a8742a;
+      --focus: #2b6cb0;
+
+      /* Data Series */
+      --data-1: #2b6cb0;
+      --data-2: #5b8599;
+      --data-3: #5d8275;
+      --data-4: #a87b64;
+      --data-context: #94a3b8;
+
+      /* 3D Scene Color Tokens (Light Morandi Sky) */
+      --scene-bg: #e7eff6;
+      --globe-wire: #5c7f9e;
+      --globe-core: #c6d7e6;
+      --globe-ring: #3c6991;
+      --star-color: #6b88a6;
+      --amoeba-body: #6ca0c7;
+      --amoeba-core: #2b6cb0;
+      --amoeba-eye: #0f172a;
+      --amoeba-highlight: #ffffff;
+
+      /* Fonts */
+      --font-headline: 'Noto Sans TC', 'Outfit', sans-serif;
+      --font-body: 'Noto Sans TC', 'Outfit', sans-serif;
+      --font-label: 'JetBrains Mono', 'Noto Sans TC', sans-serif;
+
+      /* Type Scale */
+      --display-size: clamp(1.65rem, 1.3rem + 1.25vw, 2.35rem);
+      --headline-size: clamp(1.2rem, 1.08rem + 0.45vw, 1.45rem);
+      --subhead-size: clamp(1.02rem, 0.96rem + 0.25vw, 1.15rem);
+      --body-size: clamp(0.9375rem, 0.9rem + 0.12vw, 1rem);
+      --label-size: 0.75rem;
+
+      /* Shape & Effects */
+      --rounded: 0.5rem;
+      --rounded-lg: 0.875rem;
+      --rounded-full: 9999px;
+      --hairline: 1px solid var(--outline-variant);
+      --hairline-control: 1px solid var(--outline);
+      --glass-blur: blur(14px);
+      --tooltip-bg: rgba(255, 255, 255, 0.96);
+      --tooltip-shadow: 0 12px 32px rgba(30, 41, 59, 0.14);
+
+      /* Spacing Scale (4pt base) */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.5rem;
+      --space-2xl: 4rem;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 240ms;
+      --dur-long: 420ms;
+    }
+
+    body.dark-mode {
+      color-scheme: dark;
+
+      /* Starry Deep-Space Night Mode */
+      --background: #060b16;
+      --background-grad-top: #040812;
+      --background-grad-bottom: #0d1930;
+      --surface-container-low: rgba(13, 22, 42, 0.82);
+      --surface-container: #12203b;
+      --surface-container-high: #1b2f52;
+      --surface-well: #091122;
+
+      /* Ink */
+      --on-surface: #f1f5f9;
+      --on-surface-variant: #cbd5e1;
+
+      /* Author Tag Dynamic Inversion Tokens (Dark Mode) */
+      --author-text-color: #ffffff;
+      --author-icon-color: #e0f2fe;
+      --author-bg: rgba(15, 23, 42, 0.80);
+      --author-border: rgba(224, 242, 254, 0.38);
+
+      /* Rules */
+      --outline: #38557d;
+      --outline-variant: rgba(148, 197, 255, 0.22);
+
+      /* Accents */
+      --primary: #60a5fa;
+      --on-primary: #061224;
+      --primary-container: #1a365d;
+      --on-primary-container: #e0f2fe;
+      --secondary: #93c5fd;
+      --tertiary: #6ee7b7;
+      --error: #f87171;
+      --on-error: #1f0707;
+      --positive: #6ee7b7;
+      --warning: #fbbf24;
+      --focus: #93c5fd;
+
+      /* Data Series */
+      --data-1: #60a5fa;
+      --data-2: #7dd3fc;
+      --data-3: #6ee7b7;
+      --data-4: #fbbf24;
+      --data-context: #475569;
+
+      /* 3D Scene Color Tokens (Night Starry Sky) */
+      --scene-bg: #050a14;
+      --globe-wire: #38bdf8;
+      --globe-core: #0f2544;
+      --globe-ring: #93c5fd;
+      --star-color: #e0f2fe;
+      --amoeba-body: #38bdf8;
+      --amoeba-core: #e0f2fe;
+      --amoeba-eye: #040812;
+      --amoeba-highlight: #e0f2fe;
+
+      --tooltip-bg: rgba(13, 22, 42, 0.96);
+      --tooltip-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Base Reset */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      overflow-x: clip;
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+    }
+    header { position: static !important; }
+
+    body {
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.6;
+      color: var(--on-surface);
+      background: linear-gradient(165deg, var(--background-grad-top) 0%, var(--background) 55%, var(--background-grad-bottom) 100%);
+      transition: background var(--dur-long) var(--ease-in-out), color var(--dur-short) var(--ease-in-out);
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+    }
+
+    /* Full-Bleed 3D Starfield + Amoeba Backdrop */
+    #cosmic-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      display: block;
+    }
+
+    /* Main HUD Shell */
+    .hud-shell {
+      position: relative;
+      z-index: 10;
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: var(--space-lg);
+      display: grid;
+      gap: var(--space-lg);
+    }
+    .hud-shell * { min-width: 0; }
+
+    /* Top HUD Header Bar */
+    .hud-topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    .hud-brand-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+
+    /* Author Strip — Mandatory Dynamic Inversion */
+    .author-strip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 0.42rem 0.95rem;
+      border-radius: var(--rounded-full);
+      background: var(--author-bg);
+      border: 1px solid var(--author-border);
+      color: var(--author-text-color);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      backdrop-filter: var(--glass-blur);
+      transition: color var(--dur-short) var(--ease-in-out),
+                  background-color var(--dur-short) var(--ease-in-out),
+                  border-color var(--dur-short) var(--ease-in-out);
+    }
+    .author-strip .author-icon {
+      color: var(--author-icon-color);
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: color var(--dur-short) var(--ease-in-out);
+    }
+    .dark-mode .author-strip {
+      color: var(--author-text-color);
+      background: var(--author-bg);
+      border-color: var(--author-border);
+    }
+    .dark-mode .author-strip .author-icon {
+      color: var(--author-icon-color);
+    }
+
+    .hud-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 400;
+      line-height: 1.15;
+      letter-spacing: -0.015em;
+      color: var(--on-surface);
+    }
+    .hud-title strong {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .hud-subtitle {
+      margin: 0;
+      font-size: var(--subhead-size);
+      color: var(--on-surface-variant);
+      max-width: 65ch;
+    }
+
+    /* Command Deck Controls */
+    .hud-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-sm) var(--space-md);
+      backdrop-filter: var(--glass-blur);
+    }
+
+    .ctrl-group {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      background: var(--surface-well);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: 0.2rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      min-height: 44px;
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--rounded);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--on-surface);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out),
+                  transform var(--dur-micro) var(--ease-out);
+    }
+    .btn:hover {
+      background: var(--surface-container);
+    }
+    .btn:active {
+      transform: translateY(1px);
+    }
+    .btn:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .btn[aria-pressed="true"],
+    .btn.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+    .btn-outline {
+      border: var(--hairline-control);
+      background: var(--surface-container-low);
+    }
+    .btn-outline:hover {
+      background: var(--surface-container);
+    }
+    .btn-lang {
+      min-height: 36px;
+      padding: 0.3rem 0.65rem;
+      font-family: var(--font-label);
+      font-size: 0.78rem;
+    }
+
+    /* Hairline Panel */
+    .panel {
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-lg);
+      backdrop-filter: var(--glass-blur);
+      transition: background-color var(--dur-short) var(--ease-in-out),
+                  border-color var(--dur-short) var(--ease-in-out);
+    }
+
+    /* KPI Telemetry Strip */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+
+    .kpi-card {
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md) var(--space-lg);
+      backdrop-filter: var(--glass-blur);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      color: var(--on-surface-variant);
+      letter-spacing: 0.01em;
+    }
+
+    .kpi-value {
+      font-family: var(--font-headline);
+      font-size: clamp(1.45rem, 1.2rem + 0.8vw, 1.95rem);
+      font-weight: 700;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+    }
+
+    .kpi-caption {
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--secondary);
+    }
+
+    /* Hero 3D Cockpit Grid */
+    .cockpit-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: stretch;
+    }
+
+    .globe-panel {
+      position: relative;
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 520px;
+    }
+
+    .globe-header {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-md) var(--space-lg);
+      border-bottom: var(--hairline);
+      background: var(--surface-container-low);
+    }
+
+    .globe-stage-wrap {
+      position: relative;
+      flex: 1;
+      min-height: 410px;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+    .globe-stage-wrap:active {
+      cursor: grabbing;
+    }
+    #globe-canvas {
+      width: 100%;
+      height: 100%;
+      min-height: 410px;
+      display: block;
+    }
+
+    /* Hover Tooltip inside 3D Globe */
+    .globe-tooltip {
+      position: absolute;
+      z-index: 15;
+      pointer-events: none;
+      max-width: 280px;
+      background: var(--tooltip-bg);
+      border: 1px solid var(--primary);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      box-shadow: var(--tooltip-shadow);
+      opacity: 0;
+      transform: translate(-50%, -110%) scale(0.96);
+      transition: opacity var(--dur-micro) var(--ease-out),
+                  transform var(--dur-micro) var(--ease-out);
+    }
+    .globe-tooltip.is-visible {
+      opacity: 1;
+      transform: translate(-50%, -115%) scale(1);
+    }
+    .globe-tooltip-tag {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .globe-tooltip-title {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--on-surface);
+      margin-top: 0.15rem;
+    }
+    .globe-tooltip-desc {
+      font-size: 0.8rem;
+      color: var(--on-surface-variant);
+      margin-top: 0.25rem;
+      line-height: 1.45;
+    }
+
+    /* Sector Selector Pills beneath Globe */
+    .sector-nav {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      padding: var(--space-sm) var(--space-md);
+      border-top: var(--hairline);
+      background: var(--surface-container-low);
+    }
+
+    .sector-pill {
+      min-height: 44px;
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--rounded);
+      border: var(--hairline);
+      background: var(--surface-well);
+      color: var(--on-surface-variant);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background-color var(--dur-micro) var(--ease-out),
+                  color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out);
+    }
+    .sector-pill:hover {
+      background: var(--surface-container);
+      color: var(--on-surface);
+    }
+    .sector-pill.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+    .sector-pill:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Right Telemetry Briefing Panel */
+    .briefing-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+
+    .briefing-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-sm);
+      border-bottom: var(--hairline);
+      padding-bottom: var(--space-sm);
+    }
+
+    .briefing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--rounded-full);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      font-family: var(--font-label);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .briefing-title {
+      margin: var(--space-xs) 0 0;
+      font-size: var(--headline-size);
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--on-surface);
+    }
+
+    .briefing-summary {
+      margin: 0;
+      color: var(--on-surface);
+      line-height: 1.65;
+    }
+
+    .briefing-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+    .briefing-metric-box {
+      background: var(--surface-well);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+    }
+    .briefing-metric-val {
+      font-family: var(--font-label);
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .briefing-points {
+      margin: 0;
+      padding-left: 1.2rem;
+      display: grid;
+      gap: var(--space-xs);
+      color: var(--on-surface-variant);
+      font-size: 0.9rem;
+    }
+
+    .autoplay-bar {
+      height: 4px;
+      width: 100%;
+      background: var(--surface-container);
+      border-radius: var(--rounded-full);
+      overflow: hidden;
+    }
+    .autoplay-progress {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 150ms linear;
+    }
+
+    /* Section Headings */
+    .section-block {
+      display: grid;
+      gap: var(--space-md);
+      border-top: var(--hairline);
+      padding-top: var(--space-xl);
+    }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-md);
+    }
+    .section-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 400;
+      color: var(--on-surface);
+    }
+    .section-title strong {
+      font-weight: 700;
+    }
+    .section-desc {
+      margin: var(--space-xs) 0 0;
+      color: var(--on-surface-variant);
+      max-width: 65ch;
+    }
+
+    /* Two-column Analytical Explorer */
+    .explorer-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    .chart-box {
+      position: relative;
+      width: 100%;
+      min-height: 330px;
+      margin-top: var(--space-md);
+    }
+
+    .data-table-wrap {
+      overflow-x: auto;
+      margin-top: var(--space-md);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.65rem 0.6rem;
+      border-bottom: var(--hairline);
+      vertical-align: top;
+    }
+    th {
+      font-family: var(--font-label);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--on-surface-variant);
+    }
+    td.num {
+      font-family: var(--font-label);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+    tr:hover td {
+      background: var(--surface-container-high);
+    }
+
+    /* Status Chip */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.18rem 0.55rem;
+      border-radius: var(--rounded-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--surface-container);
+      color: var(--secondary);
+    }
+    .chip-risk {
+      background: color-mix(in srgb, var(--error) 15%, transparent);
+      color: var(--error);
+    }
+    .chip-ok {
+      background: color-mix(in srgb, var(--positive) 16%, transparent);
+      color: var(--positive);
+    }
+
+    /* Commercialization & Governance Deck */
+    .cases-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+    .case-card {
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .case-org {
+      font-weight: 700;
+      font-size: 1.02rem;
+      color: var(--on-surface);
+    }
+    .case-impact {
+      font-family: var(--font-label);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .case-detail {
+      font-size: 0.88rem;
+      color: var(--on-surface-variant);
+      margin: 0;
+    }
+
+    /* Interactive AI as IP Governance Checklist */
+    .gov-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .checklist-list {
+      display: grid;
+      gap: var(--space-sm);
+    }
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--surface-well);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .check-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 0.2rem;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .readiness-meter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      border-radius: var(--rounded);
+      margin-bottom: var(--space-md);
+    }
+
+    /* Legal Doctrine Explorer */
+    .doctrine-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+    .doctrine-stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    /* Always-Floating 3D Amoeba Interactive Overlay Hitbox + Speech Bubble */
+    .amoeba-dock {
+      position: fixed;
+      z-index: 60;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--space-xs);
+      right: var(--space-lg);
+      bottom: var(--space-lg);
+    }
+
+    .amoeba-bubble {
+      pointer-events: auto;
+      max-width: 180px;
+      background: var(--tooltip-bg);
+      border: 1px solid var(--primary);
+      border-radius: var(--rounded-lg);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      color: var(--on-surface);
+      box-shadow: var(--tooltip-shadow);
+      backdrop-filter: var(--glass-blur);
+    }
+
+    .amoeba-hitbox {
+      pointer-events: auto;
+      width: 112px;
+      height: 112px;
+      border-radius: var(--rounded-full);
+      border: 1px dashed var(--outline);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 0.35rem;
+      color: var(--on-surface);
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      font-weight: 600;
+      transition: border-color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out);
+    }
+    .amoeba-hitbox:hover {
+      border-color: var(--primary);
+      transform: scale(1.04);
+    }
+    .amoeba-hitbox:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+    .amoeba-tag {
+      background: var(--author-bg);
+      border: 1px solid var(--author-border);
+      color: var(--author-text-color);
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--rounded-full);
+      backdrop-filter: blur(8px);
+    }
+
+    /* Footer */
+    .hud-footer {
+      border-top: var(--hairline);
+      padding-top: var(--space-lg);
+      padding-bottom: var(--space-2xl);
+      color: var(--on-surface-variant);
+      font-size: 0.84rem;
+      display: grid;
+      gap: var(--space-xs);
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .hud-topbar,
+      .cockpit-grid,
+      .explorer-grid,
+      .gov-grid,
+      .doctrine-stage {
+        grid-template-columns: 1fr;
+      }
+      .hud-controls {
+        justify-content: flex-start;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hud-shell {
+        padding: var(--space-sm);
+        gap: var(--space-md);
+      }
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      .briefing-metrics {
+        grid-template-columns: 1fr;
+      }
+      .amoeba-dock {
+        right: var(--space-sm);
+        bottom: var(--space-sm);
+      }
+      .amoeba-hitbox {
+        width: 88px;
+        height: 88px;
+      }
+      .amoeba-bubble {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Full-Bleed 3D Starry Backdrop + Floating Amoeba Canvas -->
+  <canvas id="cosmic-canvas" aria-hidden="true"></canvas>
+
+  <!-- Always-Floating 3D Amoeba Interactive Hitbox & Bubble -->
+  <div class="amoeba-dock" id="amoeba-dock">
+    <div class="amoeba-bubble" id="amoeba-bubble"></div>
+    <button
+      type="button"
+      class="amoeba-hitbox"
+      id="amoeba-toggle-btn"
+      onclick="toggleDayNightMode()"
+      aria-label="點擊阿米巴小助手切換白天與黑夜模式"
+    >
+      <span class="amoeba-tag" id="amoeba-btn-label">☀️ 白天模式</span>
+    </button>
+  </div>
+
+  <main class="hud-shell">
+
+    <!-- Top HUD Title & Controls -->
+    <header class="hud-topbar">
+      <div class="hud-brand-block">
+        <!-- Author Tag with Medal Icon & Dynamic Light/Dark Inversion -->
+        <div class="author-strip" id="author-strip">
+          <span class="author-icon" aria-hidden="true">
+            <i data-lucide="award" style="width:18px;height:18px;"></i>
+          </span>
+          <span id="author-text">國立中興大學 科技管理研究所｜鄭凱文 (Hoiman Cheng)</span>
+        </div>
+
+        <h1 class="hud-title" id="hero-title">
+          AI 與專利情報驅動之<strong>技術商品化與責任 AI 治理</strong>
+        </h1>
+        <p class="hud-subtitle" id="hero-subtitle">
+          3D 星際智權航行系統互動看板 — 整合實證專利基準、商業化加速案例、AI as IP™ 治理與逆向工程法律界線
+        </p>
+      </div>
+
+      <!-- Command Deck -->
+      <div class="hud-controls" role="toolbar" aria-label="航行控制列">
+        <!-- Multi-language Switcher -->
+        <div class="ctrl-group" role="group" aria-label="語系切換">
+          <button type="button" class="btn btn-lang is-active" id="lang-zh-TW" onclick="setLanguage('zh-TW')">繁中</button>
+          <button type="button" class="btn btn-lang" id="lang-en" onclick="setLanguage('en')">EN</button>
+          <button type="button" class="btn btn-lang" id="lang-ja" onclick="setLanguage('ja')">日本語</button>
+        </div>
+
+        <!-- Auto-play Tour -->
+        <button type="button" class="btn btn-outline" id="btn-autoplay" onclick="toggleAutoPlay()" aria-pressed="false">
+          <i data-lucide="play" style="width:16px;height:16px;"></i>
+          <span id="label-autoplay">自動播放</span>
+        </button>
+
+        <!-- Voice Narration -->
+        <button type="button" class="btn btn-outline" id="btn-voice" onclick="toggleVoiceNarration()" aria-pressed="false">
+          <i data-lucide="volume-2" style="width:16px;height:16px;"></i>
+          <span id="label-voice">語音導覽</span>
+        </button>
+
+        <!-- Day / Night Switcher (Synced with 3D Amoeba) -->
+        <button type="button" class="btn btn-outline" id="btn-theme" onclick="toggleDayNightMode()" aria-pressed="false">
+          <i data-lucide="moon" style="width:16px;height:16px;" id="theme-icon"></i>
+          <span id="label-theme">夜間星空</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Top KPI Telemetry Strip -->
+    <section class="kpi-grid" aria-label="關鍵情報指標">
+      <article class="kpi-card">
+        <span class="label" id="kpi-1-label">2024–25H1 美國專利侵權陪審團判賠</span>
+        <div class="kpi-value">$6.10B</div>
+        <span class="kpi-caption" id="kpi-1-cap">2024 年 72 案 $4.19B（單案最高 $857M）＋ 2025H1 $1.91B</span>
+      </article>
+      <article class="kpi-card">
+        <span class="label" id="kpi-2-label">垂直專利情報覆蓋領先倍數</span>
+        <div class="kpi-value">3.3× – 10×</div>
+        <span class="kpi-caption" id="kpi-2-cap">LLZO FTO 測試：Cypris 40+ 件 vs. Claude 12 / GPT 7 / Co-Pilot 4</span>
+      </article>
+      <article class="kpi-card">
+        <span class="label" id="kpi-3-label">AI 訴訟五年年複合成長率 (CAGR)</span>
+        <div class="kpi-value">56.5%</div>
+        <span class="kpi-caption" id="kpi-3-cap">J.S. Held 統計：累計 350+ 訴訟案，2025 單年新增 84 件</span>
+      </article>
+      <article class="kpi-card">
+        <span class="label" id="kpi-4-label">AI 代理賦能企業研發推進速度</span>
+        <div class="kpi-value">6×</div>
+        <span class="kpi-caption" id="kpi-4-cap">Talking Rain 實證提速 6 倍，取代 $600/hr 傳統外包檢索</span>
+      </article>
+    </section>
+
+    <!-- Hero 3D Global IP Sphere & Active Sector Briefing -->
+    <section class="cockpit-grid" aria-label="3D 全球智權球體導航">
+      <div class="panel globe-panel">
+        <div class="globe-header">
+          <div>
+            <span class="label" id="globe-kicker">3D GLOBAL IP SPHERE · 拖曳旋轉｜懸停解說｜點擊切換星域</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span class="chip" id="globe-status-chip">自動旋轉中</span>
+            <button type="button" class="btn btn-outline" style="min-height:36px;padding:0.25rem 0.65rem;font-size:0.78rem;" onclick="resetGlobeCamera()" id="btn-reset-cam">
+              重設視角
+            </button>
+          </div>
+        </div>
+
+        <div class="globe-stage-wrap" id="globe-stage-wrap">
+          <canvas id="globe-canvas" aria-label="自動旋轉與懸停解說之 3D 全球智權球體"></canvas>
+          <div class="globe-tooltip" id="globe-tooltip" role="status" aria-live="polite">
+            <div class="globe-tooltip-tag" id="tt-tag">NODE 01</div>
+            <div class="globe-tooltip-title" id="tt-title"></div>
+            <div class="globe-tooltip-desc" id="tt-desc"></div>
+          </div>
+        </div>
+
+        <div class="sector-nav" id="sector-nav" role="tablist" aria-label="五大星際智權航道"></div>
+      </div>
+
+      <!-- Active Sector Telemetry Briefing -->
+      <aside class="panel briefing-panel" id="briefing-panel" aria-live="polite">
+        <div>
+          <div class="briefing-header">
+            <div>
+              <span class="briefing-badge" id="brief-badge">SECTOR 01 / 05</span>
+              <h2 class="briefing-title" id="brief-title"></h2>
+            </div>
+            <button type="button" class="btn btn-outline" style="min-height:38px;padding:0.3rem 0.7rem;font-size:0.8rem;" onclick="speakCurrentSector()" id="btn-speak-single">
+              <i data-lucide="headphones" style="width:15px;height:15px;"></i>
+              <span id="label-speak-single">朗讀本區</span>
+            </button>
+          </div>
+
+          <p class="briefing-summary" id="brief-summary" style="margin-top:var(--space-md);"></p>
+
+          <div class="briefing-metrics" style="margin-top:var(--space-md);">
+            <div class="briefing-metric-box">
+              <span class="label" id="brief-m1-label"></span>
+              <div class="briefing-metric-val" id="brief-m1-val"></div>
+            </div>
+            <div class="briefing-metric-box">
+              <span class="label" id="brief-m2-label"></span>
+              <div class="briefing-metric-val" id="brief-m2-val"></div>
+            </div>
+          </div>
+
+          <ul class="briefing-points" id="brief-points" style="margin-top:var(--space-md);"></ul>
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;">
+            <span class="label" id="autoplay-status-text">星際航行待命 · 點擊節點或啟動自動播放</span>
+            <span class="label" id="brief-coord">LAT 38.9°N · LON 77.0°W</span>
+          </div>
+          <div class="autoplay-bar">
+            <div class="autoplay-progress" id="autoplay-progress"></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Section 1: Cypris Patent Intelligence Benchmark Explorer -->
+    <section class="section-block" aria-label="專利情報基準實測對比">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title" id="sec1-title">實證對比：<strong>垂直專利情報 vs. 通用語言模型</strong></h2>
+          <p class="section-desc" id="sec1-desc">
+            基於 2026 年 3 月 27 日控制實驗（依 USPTO 與 WIPO 記錄交叉驗證），檢視自由實施 (FTO) 與競爭情報之結構性覆蓋落差。
+          </p>
+        </div>
+        <div class="ctrl-group" role="group" aria-label="切換實測情境">
+          <button type="button" class="btn btn-lang is-active" id="btn-test1" onclick="setBenchmarkMode('test1')">Test 1 · LLZO 固態電池 FTO</button>
+          <button type="button" class="btn btn-lang" id="btn-test2" onclick="setBenchmarkMode('test2')">Test 2 · 生質聚醯胺競爭情報</button>
+        </div>
+      </div>
+
+      <div class="explorer-grid">
+        <div class="panel">
+          <span class="label" id="chart1-kicker">測試一：LLZO 石榴石固態鋰硫電池電解質 FTO 檢出專利數</span>
+          <div class="chart-box">
+            <canvas id="benchmark-chart"></canvas>
+          </div>
+          <p class="kpi-caption" id="chart1-note" style="margin-top:var(--space-sm);"></p>
+        </div>
+
+        <div class="panel">
+          <span class="label" id="table1-kicker">關鍵風險診斷與通用模型結構性盲點</span>
+          <div class="data-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th id="th-tool">平台工具</th>
+                  <th id="th-count">檢出/引用數</th>
+                  <th id="th-fencing">專利圍欄偵測</th>
+                  <th id="th-integrity">權屬與數據品質</th>
+                </tr>
+              </thead>
+              <tbody id="benchmark-tbody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:var(--space-md);padding:var(--space-sm) var(--space-md);background:var(--surface-well);border:var(--hairline);border-radius:var(--rounded);">
+            <span class="label" id="structural-driver-label">三大結構性障礙（非模型規模可解決）</span>
+            <p id="structural-driver-text" style="margin:0.3rem 0 0;font-size:0.86rem;color:var(--on-surface-variant);"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Commercialization Cases & AI as IP Governance -->
+    <section class="section-block" aria-label="技術商品化案例與責任 AI 治理">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title" id="sec2-title">技術商品化實戰與 <strong>AI as IP™ 責任治理框架</strong></h2>
+          <p class="section-desc" id="sec2-desc">
+            從國家實驗室到跨國製造與生醫企業之情報轉化實績，結合 Ocean Tomo / J.S. Held 之 AI 資產治理與防範「AI 洗白」檢核。
+          </p>
+        </div>
+        <div class="ctrl-group" role="group" aria-label="案例產業篩選">
+          <button type="button" class="btn btn-lang is-active" id="filter-all" onclick="setCaseFilter('all')">全部案例</button>
+          <button type="button" class="btn btn-lang" id="filter-deep" onclick="setCaseFilter('deep')">深科技/國家實驗室</button>
+          <button type="button" class="btn btn-lang" id="filter-corp" onclick="setCaseFilter('corp')">消費/製造/生醫</button>
+        </div>
+      </div>
+
+      <div class="cases-grid" id="cases-grid"></div>
+
+      <!-- AI as IP Governance Matrix & Interactive Readiness Checklist -->
+      <div class="gov-grid">
+        <div class="panel">
+          <span class="label" id="gov-chart-kicker">AI 訴訟驅動與 AI as IP™ 三層技術資產架構</span>
+          <div class="chart-box" style="min-height:280px;">
+            <canvas id="medtech-chart"></canvas>
+          </div>
+          <p class="kpi-caption" id="medtech-note" style="margin-top:var(--space-sm);"></p>
+        </div>
+
+        <div class="panel">
+          <div class="readiness-meter">
+            <div>
+              <span class="label" style="color:inherit;opacity:0.85;" id="gov-score-label">AI as IP™ 責任治理成熟度（可勾選並自動儲存）</span>
+              <div style="font-size:1.35rem;font-weight:700;" id="gov-score-val">0 / 6 (0%)</div>
+            </div>
+            <button type="button" class="btn btn-outline" style="min-height:38px;font-size:0.78rem;" onclick="resetChecklist(this)" id="btn-reset-check">
+              重設檢核
+            </button>
+          </div>
+          <div class="checklist-list" id="governance-checklist"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Reverse Engineering Legal Doctrines & After-Arising Tech -->
+    <section class="section-block" aria-label="逆向工程與均等論法律沙盤">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title" id="sec3-title">法律邊界沙盤：<strong>逆向工程、均等論與後發技術</strong></h2>
+          <p class="section-desc" id="sec3-desc">
+            技術商品化與迴避設計必須跨越五層法律門檻：專利耗盡、均等論與固有性、著作權潔淨室、營業秘密及契約條款凌駕。
+          </p>
+        </div>
+        <div class="doctrine-tabs" id="doctrine-tabs" role="tablist" aria-label="五大法律原則"></div>
+      </div>
+
+      <div class="panel doctrine-stage" id="doctrine-stage">
+        <div>
+          <span class="briefing-badge" id="doc-case-badge"></span>
+          <h3 id="doc-title" style="margin:0.5rem 0 0.4rem;font-size:1.25rem;color:var(--on-surface);"></h3>
+          <p id="doc-summary" style="margin:0;color:var(--on-surface);line-height:1.65;"></p>
+        </div>
+        <div style="background:var(--surface-well);border:var(--hairline);border-radius:var(--rounded);padding:var(--space-md);">
+          <span class="label" id="doc-implication-label">技術商品化與 AI 實務警訊</span>
+          <p id="doc-implication" style="margin:0.4rem 0 0;font-size:0.9rem;color:var(--on-surface-variant);line-height:1.6;"></p>
+          <div style="margin-top:var(--space-sm);display:flex;flex-wrap:wrap;gap:0.4rem;" id="doc-tags"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer & Grounded Source Credits -->
+    <footer class="hud-footer">
+      <strong id="footer-title">資料來源與研究基礎（Sources &amp; Grounding）</strong>
+      <span id="footer-sources">
+        1. Ocean Tomo / J.S. Held「AI Archives」：AI as IP™ 框架、合理保密措施、AI 洗白與董事會治理、AI Disputes Monitor（56.5% CAGR，350+ 訴訟案）。
+        2. Cypris「The Patent Intelligence Gap (2026)」與客戶實證報告（Brooks Running, PDI International, LANL Feynman Center, SEH, NOV, Glen Raven, Talking Rain, STAAR Surgical）。
+        3. EMI Group North America, Inc. v. Cypress Semiconductor Corp., 104 F. Supp. 2d 370 (D. Del. 2000)（均等論、固有性與 Ti-W 合金爭議）。
+        4. Lumenci「Reverse Engineering &amp; Patent Law」（Quanta, Graver Tank, Sega, DMCA §1201(f), Bowers v. Baystate, Clean Room Design, AI-Assisted RE）。
+        5. NYU Annual Survey of American Law (Vol. 61:151)「After-Arising Technologies」與 NIHR Innovation Observatory MedTech 專利水平掃描審查（medRxiv 2024）。
+      </span>
+    </footer>
+  </main>
+
+  <api-shim></api-shim>
+
+  <script>
+    // =========================================================================
+    // 1. MULTI-LANGUAGE GROUNDED DATA DICTIONARY (zh-TW / en / ja)
+    // =========================================================================
+    const I18N = {
+      'zh-TW': {
+        authorText: `國立中興大學 科技管理研究所｜鄭凱文 (Hoiman Cheng)`,
+        heroTitle: `AI 與專利情報驅動之<strong>技術商品化與責任 AI 治理</strong>`,
+        heroSubtitle: `3D 星際智權航行系統互動看板 — 整合實證專利基準、商業化加速案例、AI as IP™ 治理與逆向工程法律界線`,
+        autoplay: `自動播放`,
+        autoplayPause: `暫停播放`,
+        voice: `語音導覽`,
+        voiceStop: `停止語音`,
+        themeToNight: `夜間星空`,
+        themeToDay: `莫蘭迪日間`,
+        amoebaTagDay: `☀️ 日間模式`,
+        amoebaTagNight: `🌙 夜間星空`,
+        amoebaBubbleDay: `嗨！我是阿米巴小助手～目前為莫蘭迪明亮藍調，點擊我可切換至「黑夜星空模式」喔！`,
+        amoebaBubbleNight: `咻～歡迎來到深空星際模式！點擊我隨時切換回「莫蘭迪日間模式」。`,
+        kpi1Label: `2024–25H1 美國專利侵權陪審團判賠`,
+        kpi1Cap: `2024 年 72 案 $4.19B（單案最高 $857M）＋ 2025H1 $1.91B`,
+        kpi2Label: `垂直專利情報覆蓋領先倍數`,
+        kpi2Cap: `LLZO FTO 測試：Cypris 40+ 件 vs. Claude 12 / GPT 7 / Co-Pilot 4`,
+        kpi3Label: `AI 訴訟五年年複合成長率 (CAGR)`,
+        kpi3Cap: `J.S. Held 統計：累計 350+ 訴訟案，2025 單年新增 84 件`,
+        kpi4Label: `AI 代理賦能企業研發推進速度`,
+        kpi4Cap: `Talking Rain 實證提速 6 倍，取代 $600/hr 傳統外包檢索`,
+        globeKicker: `3D GLOBAL IP SPHERE · 拖曳旋轉｜懸停解說｜點擊切換星域`,
+        globeAuto: `自動旋轉中`,
+        globeHover: `懸停鎖定解說`,
+        resetCam: `重設視角`,
+        speakSingle: `朗讀本區`,
+        autoplayIdle: `星際航行待命 · 點擊節點或啟動自動播放`,
+        autoplayRunning: `自動星際導覽進行中`,
+        sec1Title: `實證對比：<strong>垂直專利情報 vs. 通用語言模型</strong>`,
+        sec1Desc: `基於 2026 年 3 月 27 日控制實驗（依 USPTO 與 WIPO 記錄交叉驗證），檢視自由實施 (FTO) 與競爭情報之結構性覆蓋落差。`,
+        test1Btn: `Test 1 · LLZO 固態電池 FTO`,
+        test2Btn: `Test 2 · 生質聚醯胺競爭情報`,
+        sec2Title: `技術商品化實戰與 <strong>AI as IP™ 責任治理框架</strong>`,
+        sec2Desc: `從國家實驗室到跨國製造與生醫企業之情報轉化實績，結合 Ocean Tomo / J.S. Held 之 AI 資產治理與防範「AI 洗白」檢核。`,
+        filterAll: `全部案例`,
+        filterDeep: `深科技 / 國家實驗室`,
+        filterCorp: `消費 / 製造 / 生醫`,
+        govScoreLabel: `AI as IP™ 責任治理成熟度（可勾選並自動儲存）`,
+        resetCheck: `重設檢核`,
+        resetCheckArm: `再點一次確認重設`,
+        sec3Title: `法律邊界沙盤：<strong>逆向工程、均等論與後發技術</strong>`,
+        sec3Desc: `技術商品化與迴避設計必須跨越五層法律門檻：專利耗盡、均等論與固有性、著作權潔淨室、營業秘密及契約條款凌駕。`,
+        docImpLabel: `技術商品化與 AI 實務警訊`,
+        footerTitle: `資料來源與研究基礎（Sources & Grounding）`,
+        footerSources: `1. Ocean Tomo / J.S. Held「AI Archives」：AI as IP™ 框架、合理保密措施、AI 洗白與董事會治理、AI Disputes Monitor（56.5% CAGR，350+ 訴訟案）。 2. Cypris「The Patent Intelligence Gap (2026)」與客戶實證（Brooks Running, PDI, LANL, SEH, NOV, Glen Raven, Talking Rain, STAAR Surgical）。 3. EMI Group v. Cypress Semiconductor, 104 F. Supp. 2d 370 (D. Del. 2000)。 4. Lumenci「Reverse Engineering & Patent Law」。 5. NYU Law Review「After-Arising Technologies」與 NIHR Innovation Observatory MedTech 審查（medRxiv 2024）。`,
+        thTool: `平台工具`,
+        thCount: `檢出 / 引用數`,
+        thFencing: `專利圍欄 / 化學路線`,
+        thIntegrity: `權屬與數據品質`,
+        structuralLabel: `三大結構性障礙（非模型規模可解決）`,
+        structuralText: `① 訓練資料非即時專利庫（無法解析權利項與延續案鏈）；② 網路爬蟲封鎖加劇（2025 年中過半 Top 10,000 網域封鎖 AI，Anthropic 抓取/導流比逾 73,000:1）；③ 缺乏專利本體論架構，導致「高自信不完整輸出」與「多模型交叉驗證幻覺」。`,
+        medtechChartKicker: `MedTech 水平掃描方法學與 NICE 疾病分佈（124 篇研究 / 199 資料庫）`,
+        medtechNote: `NIHR 創新觀測站審查 1,741 篇文獻並納入 124 篇（平均回溯 24.6 年）：50% 自動化方法採用網路視覺化（Gephi、VOSViewer、ThemeScape），最常使用 Python (Pandas) 與 R；唯多數研究缺乏去重機制導致數據膨脹風險。`
+      },
+      'en': {
+        authorText: `Graduate Institute of Technology Management, NCHU｜Hoiman Cheng`,
+        heroTitle: `AI & Patent Intelligence for <strong>Tech Commercialization & Responsible AI</strong>`,
+        heroSubtitle: `3D Interstellar IP Navigation Dashboard — Empirical Patent Benchmarks, Commercialization Velocity, AI as IP™ Governance & Legal Boundaries`,
+        autoplay: `Auto-Play`,
+        autoplayPause: `Pause Tour`,
+        voice: `Voice Guide`,
+        voiceStop: `Stop Voice`,
+        themeToNight: `Night Sky`,
+        themeToDay: `Morandi Day`,
+        amoebaTagDay: `☀️ Day Mode`,
+        amoebaTagNight: `🌙 Night Sky`,
+        amoebaBubbleDay: `Hi! I'm your Amoeba Guide in bright Morandi Blue. Click me to warp into Starry Night Mode!`,
+        amoebaBubbleNight: `Whoosh! Starry Deep-Space Mode active. Click me anytime to return to Morandi Day Mode.`,
+        kpi1Label: `2024–25H1 US Patent Jury Verdicts`,
+        kpi1Cap: `2024: $4.19B across 72 cases (peak $857M) + H1 2025: $1.91B`,
+        kpi2Label: `Vertical Patent Coverage Multiplier`,
+        kpi2Cap: `LLZO FTO Test: Cypris 40+ vs. Claude 12 / GPT 7 / Co-Pilot 4`,
+        kpi3Label: `AI Litigation 5-Year CAGR`,
+        kpi3Cap: `J.S. Held Monitor: 350+ cases to date, 84 new filings in 2025`,
+        kpi4Label: `Agentic R&D Project Velocity`,
+        kpi4Cap: `Talking Rain achieved 6× velocity, replacing $600/hr manual searches`,
+        globeKicker: `3D GLOBAL IP SPHERE · Drag to Orbit | Hover to Inspect | Click Sector`,
+        globeAuto: `Auto-Rotating`,
+        globeHover: `Hover Inspection`,
+        resetCam: `Reset View`,
+        speakSingle: `Narrate Sector`,
+        autoplayIdle: `Navigation Ready · Select a beacon or start Auto-Play`,
+        autoplayRunning: `Auto-Play Guided Tour Active`,
+        sec1Title: `Empirical Benchmark: <strong>Vertical Patent AI vs. General LLMs</strong>`,
+        sec1Desc: `Controlled comparison on March 27, 2026 cross-checked against USPTO & WIPO records across FTO and Competitive Intelligence workflows.`,
+        test1Btn: `Test 1 · LLZO Battery FTO`,
+        test2Btn: `Test 2 · Bio-Polyamide CI`,
+        sec2Title: `Tech Commercialization & <strong>AI as IP™ Governance Framework</strong>`,
+        sec2Desc: `Real-world R&D acceleration from national labs to global enterprises, paired with Ocean Tomo / J.S. Held board governance against AI Washing.`,
+        filterAll: `All Cases`,
+        filterDeep: `Deep Tech / Nat. Lab`,
+        filterCorp: `Enterprise / MedTech`,
+        govScoreLabel: `AI as IP™ Governance Readiness (Persisted automatically)`,
+        resetCheck: `Reset`,
+        resetCheckArm: `Click again to reset`,
+        sec3Title: `Legal Boundary Sandbox: <strong>Reverse Engineering & Equivalents</strong>`,
+        sec3Desc: `Design-arounds and commercialization must navigate five legal boundaries: exhaustion, doctrine of equivalents, clean room copyright, trade secrets, and contract override.`,
+        docImpLabel: `Commercialization & AI Risk Implications`,
+        footerTitle: `Sources & Grounding`,
+        footerSources: `1. Ocean Tomo / J.S. Held AI Archives (AI as IP™ Framework, Reasonable Measures, AI Washing, AI Disputes Monitor). 2. Cypris Patent Intelligence Gap Report (2026) & Customer Case Studies (Brooks, PDI, LANL, SEH, NOV, Glen Raven, Talking Rain, STAAR). 3. EMI Group v. Cypress Semiconductor, 104 F. Supp. 2d 370. 4. Lumenci Reverse Engineering & Patent Law. 5. NYU Law Review After-Arising Technologies & medRxiv MedTech Horizon Scanning (2024).`,
+        thTool: `Platform`,
+        thCount: `Patents / Citations`,
+        thFencing: `Fencing / Route Detection`,
+        thIntegrity: `Attribution & Integrity`,
+        structuralLabel: `Three Structural Limitations of General LLMs`,
+        structuralText: `1) Training data is not live patent records (cannot parse claims or continuations); 2) Web crawler blocks (over half of top 10k domains block bots; Anthropic ratio >73,000:1); 3) Lack of patent ontological frameworks causing high-confidence incomplete outputs.`,
+        medtechChartKicker: `MedTech Horizon Scanning Methods & NICE Disease Focus (124 Studies / 199 DBs)`,
+        medtechNote: `NIHR Innovation Observatory scoped 1,741 records to 124 studies (avg 24.6-year span): 50% of automated workflows use network visualization (Gephi, VOSViewer, ThemeScape) via Python/R; inconsistent deduplication risks data inflation.`
+      },
+      'ja': {
+        authorText: `国立中興大学 技術管理研究所｜鄭凱文 (Hoiman Cheng)`,
+        heroTitle: `AI・特許インテリジェンス駆動の<strong>技術商業化と責任あるAIガバナンス</strong>`,
+        heroSubtitle: `3D 星際知財ナビゲーション・ダッシュボード — 特許ベンチマーク、商業化加速事例、AI as IP™ ガバナンス、リバースエンジニアリング法理`,
+        autoplay: `自動再生`,
+        autoplayPause: `一時停止`,
+        voice: `音声ガイド`,
+        voiceStop: `音声停止`,
+        themeToNight: `星空ナイト`,
+        themeToDay: `モランディ昼`,
+        amoebaTagDay: `☀️ 昼モード`,
+        amoebaTagNight: `🌙 星空モード`,
+        amoebaBubbleDay: `こんにちは！モランディ・ブルーの昼モードです。私をクリックすると「星空ナイトモード」に切り替わります！`,
+        amoebaBubbleNight: `深宇宙・星空モードへようこそ！クリックでいつでも昼モードに戻れます。`,
+        kpi1Label: `2024–25H1 米国特許侵害陪審評決総額`,
+        kpi1Cap: `2024年 72件 $4.19B（最大単件 $857M）＋ 2025上期 $1.91B`,
+        kpi2Label: `特化型特許インテリジェンス網羅倍率`,
+        kpi2Cap: `LLZO FTO検証：Cypris 40件超 vs. Claude 12 / GPT 7 / Co-Pilot 4`,
+        kpi3Label: `AI関連訴訟 5年間年平均成長率 (CAGR)`,
+        kpi3Cap: `J.S. Held 調査：累計 350件超（2025年単独で 84件提訴）`,
+        kpi4Label: `AIエージェントによる新規開発速度`,
+        kpi4Cap: `Talking Rain 実績：開発速度 6倍、$600/hr 外部調査を代替`,
+        globeKicker: `3D GLOBAL IP SPHERE · ドラッグ回転｜ホバー解説｜クリック切替`,
+        globeAuto: `自動回転中`,
+        globeHover: `ホバー解説中`,
+        resetCam: `視点リセット`,
+        speakSingle: `音声解説`,
+        autoplayIdle: `待機中 · ノード選択または自動再生を開始`,
+        autoplayRunning: `自動ナビゲーション実行中`,
+        sec1Title: `実証比較：<strong>特化型特許AI vs. 汎用LLM</strong>`,
+        sec1Desc: `2026年3月27日実施の統制実験（USPTO/WIPO記録照合）に基づく、FTO調査と競合インテリジェンスの構造的ギャップ。`,
+        test1Btn: `Test 1 · LLZO固体電池FTO`,
+        test2Btn: `Test 2 · バイオポリアミドCI`,
+        sec2Title: `技術商業化の実践と <strong>AI as IP™ ガバナンス</strong>`,
+        sec2Desc: `国立研究所からグローバル製造・医療機器企業の研究開発加速事例と、Ocean Tomo / J.S. Heldの「AIウォッシング」対策フレームワーク。`,
+        filterAll: `すべて`,
+        filterDeep: `ディープテック / 国研`,
+        filterCorp: `企業 / 医療機器`,
+        govScoreLabel: `AI as IP™ ガバナンス成熟度（自動保存）`,
+        resetCheck: `リセット`,
+        resetCheckArm: `もう一度押して確定`,
+        sec3Title: `法的境界サンドボックス：<strong>リバースエンジニアリングと均等論</strong>`,
+        sec3Desc: `設計回避と商業化は、権利消尽、均等論・固有性、クリーンルーム著作権、営業秘密、契約優先の5つの法的関門を越える必要があります。`,
+        docImpLabel: `技術商業化とAI実務上の留意点`,
+        footerTitle: `出典・研究基盤（Sources & Grounding）`,
+        footerSources: `1. Ocean Tomo / J.S. Held「AI Archives」(AI as IP™、AIウォッシング、AI Disputes Monitor)。 2. Cypris特許ギャップ調査(2026)および顧客事例(Brooks, PDI, LANL, SEH, NOV, Glen Raven, Talking Rain, STAAR)。 3. EMI Group v. Cypress Semiconductor, 104 F. Supp. 2d 370。 4. Lumenci「Reverse Engineering & Patent Law」。 5. NYU Law Review「After-Arising Technologies」およびNIHR MedTech調査(medRxiv 2024)。`,
+        thTool: `ツール`,
+        thCount: `検出・引用数`,
+        thFencing: `特許網・化学経路検出`,
+        thIntegrity: `権利者情報と信頼性`,
+        structuralLabel: `汎用LLMにおける3つの構造的限界`,
+        structuralText: `① 学習データはリアルタイム特許DBではない；② クローラー遮断の拡大（上位1万ドメインの過半が遮断、Anthropic参照比73,000:1超）；③ 特許オントロジーの欠如により「自信満々な不完全回答」を生む。`,
+        medtechChartKicker: `MedTech ホライズンスキャン手法とNICE疾患領域分布（124研究 / 199DB）`,
+        medtechNote: `NIHRイノベーション観測所が1,741件から124研究を精査（平均24.6年対象）：自動化手法の50%がGephiやVOSViewerによるネットワーク可視化（Python/R）を採用。重複排除の不備が課題。`
+      }
+    };
+
+    const SECTORS = [
+      {
+        id: 0,
+        code: `01`,
+        lat: 38.9,
+        lon: -77.0,
+        coordLabel: `LAT 38.9°N · LON 77.0°W (USPTO)`,
+        short: { 'zh-TW': `01 情報落差`, 'en': `01 IP Gap`, 'ja': `01 知財格差` },
+        title: {
+          'zh-TW': `專利情報落差與商業生存風險`,
+          'en': `The Patent Intelligence Gap & Litigation Risk`,
+          'ja': `特許インテリジェンス格差と訴訟リスク`
+        },
+        summary: {
+          'zh-TW': `2024 年美國專利侵權陪審團判賠達 $4.19B（72 案，含 Verizon 案 $857M）；Apple Watch 亦因 Masimo 血氧專利遭禁售與 $634M 判賠。然而多數團隊依賴通用 AI 進行 FTO 檢索，在固態鋰硫電池 LLZO 測試中僅檢出 4–12 件專利（Cypris 達 40+ 件），漏檢 Solid Energies 跨配方與製程之完整專利圍欄。`,
+          'en': `US patent jury verdicts hit $4.19B in 2024 ($857M peak in Verizon) plus $1.91B in H1 2025, while Masimo patents triggered an Apple Watch import ban and $634M verdict. Yet general LLMs find only 4–12 patents vs. Cypris's 40+ in LLZO solid-state electrolyte FTO, missing Solid Energies' coordinated patent fence.`,
+          'ja': `2024年の米国特許侵害評決は$4.19Bに達し、Apple WatchもMasimo特許により輸入禁止と$634Mの評決を受けました。しかし汎用LLMのFTO検索ではLLZO電池で4〜12件しか検出できず（Cyprisは40件超）、Solid Energiesの特許網を見落とします。`
+        },
+        m1Label: { 'zh-TW': `LLZO FTO 檢出比較`, 'en': `LLZO FTO Coverage`, 'ja': `LLZO FTO 検出数` },
+        m1Val: `40+ vs. 4–12`,
+        m2Label: { 'zh-TW': `爬蟲導流封鎖比 (Anthropic)`, 'en': `Crawler Referral Ratio`, 'ja': `クローラー遮断比` },
+        m2Val: `> 73,000 : 1`,
+        points: {
+          'zh-TW': [
+            `Solid Energies 專利圍欄涵蓋配方 (US-12463245-B2)、梯度結構 (US-12283655-B2)、電極整合 (US-12463249-B2) 與製程 (US-20230035720-A1)。`,
+            `ChatGPT 虛構專利權人（如標記為「Likely DOE / national lab ecosystem」），造成高風險盲點。`,
+            `Test 2 生質聚醯胺中，通用模型引用 0 個專利號且重複計算 Cathay Biotech 與 Toray。`
+          ],
+          'en': [
+            `Solid Energies' fence spans composition (US-12463245-B2), gradient architecture (US-12283655-B2), electrode integration (US-12463249-B2), and manufacturing (US-20230035720-A1).`,
+            `ChatGPT fabricated assignee labels like "Likely DOE / national lab ecosystem" for US 2021/0202983 A1.`,
+            `In Test 2 (bio-polyamide), general LLMs cited zero patent numbers and double-counted Cathay Biotech and Toray.`
+          ],
+          'ja': [
+            `Solid Energiesは組成(US-12463245-B2)、勾配構造(US-12283655-B2)、電極統合、製造方法まで網羅的な特許網を構築。`,
+            `ChatGPTは「Likely DOE」等の架空の権利者名を推測出力し、実務上の誤認リスクを生みました。`,
+            `Test 2でも汎用LLMは特許番号を1件も引用できず、企業名を二重計上しました。`
+          ]
+        }
+      },
+      {
+        id: 1,
+        code: `02`,
+        lat: 35.8,
+        lon: -106.3,
+        coordLabel: `LAT 35.8°N · LON 106.3°W (LANL)`,
+        short: { 'zh-TW': `02 商業化引擎`, 'en': `02 Commercialization`, 'ja': `02 商業化` },
+        title: {
+          'zh-TW': `AI 情報驅動之技術商品化加速引擎`,
+          'en': `AI-Driven Tech Commercialization & R&D Velocity`,
+          'ja': `AI駆動による技術商業化・研究開発の加速`
+        },
+        summary: {
+          'zh-TW': `透過垂直化智權代理與 5 億筆以上全球數據整合，洛斯阿拉莫斯國家實驗室 (LANL) 費曼創新中心建立「創新計分卡」，Talking Rain 實現新專案推動速度提升 6 倍，PDI 與 NOV 則將數週的人工技術偵察壓縮為數天，大幅降低沉沒研發成本。`,
+          'en': `By uniting 500M+ global data points with specialized AI agents, LANL's Feynman Center standardized Innovation Scorecards for tech transfer, Talking Rain achieved 6× project velocity, and PDI/NOV cut multi-week technology scouting down to days.`,
+          'ja': `5億件超のグローバルデータと特化型AIエージェントにより、ロスアラモス国立研究所(LANL)は商業化スコアカードを標準化し、Talking Rainは新規案件推進速度を6倍に引き上げました。`
+        },
+        m1Label: { 'zh-TW': `專案推進速度提升`, 'en': `Project Velocity Gain`, 'ja': `新規開発速度向上` },
+        m1Val: `6× (Talking Rain)`,
+        m2Label: { 'zh-TW': `整合全球智權數據`, 'en': `Unified Data Points`, 'ja': `統合データ規模` },
+        m2Val: `500M+`,
+        points: {
+          'zh-TW': [
+            `LANL 費曼中心將含空白市場 (Whitespace) 分析的計分卡導入設計衝刺與 UC/LANL 博士後創業加速器。`,
+            `PDI International 透過每週競爭情資代理監測，避免投入 1–2 年研發已被競爭對手取得專利的領域。`,
+            `SEH 針對傳統機構忽略的「工業半導體」建立季度需求預測簡報，成功獲得日本母公司研發團隊採用。`
+          ],
+          'en': [
+            `LANL Feynman Center embeds Innovation Scorecards with whitespace maps into Design Sprints and UC/LANL Postdoc Accelerators.`,
+            `PDI International's weekly agentic monitor prevented wasting 1–2 years on already-patented disinfection spaces.`,
+            `SEH built custom quarterly industrial semiconductor direction reports trusted by its Japanese parent R&D groups.`
+          ],
+          'ja': [
+            `LANLファインマンセンターは設計スプリントや起業アクセラレータにイノベーション・スコアカードを導入。`,
+            `PDIは週次エージェント監視により、1〜2年の重複研究開発リスクを早期回避。`,
+            `SEHは産業用半導体に特化した四半期レポートを構築し、日本の親会社R&D部門の意思決定を支援。`
+          ]
+        }
+      },
+      {
+        id: 2,
+        code: `03`,
+        lat: 40.7,
+        lon: -74.0,
+        coordLabel: `LAT 40.7°N · LON 74.0°W (CIPO)`,
+        short: { 'zh-TW': `03 責任 AI 治理`, 'en': `03 AI as IP™`, 'ja': `03 責任AI統治` },
+        title: {
+          'zh-TW': `責任 AI 治理與 AI as IP™ 資產化框架`,
+          'en': `Responsible AI Governance & AI as IP™ Framework`,
+          'ja': `責任あるAIガバナンスと AI as IP™ フレームワーク`
+        },
+        summary: {
+          'zh-TW': `過去五年 AI 訴訟以 56.5% 年複合成長率激增（累計逾 350 案，2025 年新增 84 案）。Ocean Tomo / J.S. Held 提出「AI as IP™」框架，將 AI 拆解為資料、算力與演算法三層核心無形資產，透過 AI 資產清冊、90 天治理計畫與 AIQ Score™ 協助董事會防範「AI 洗白 (AI Washing)」並對接 IAS 38 企業估值。`,
+          'en': `AI litigation is surging at 56.5% CAGR (350+ filings; 84 in 2025). Ocean Tomo & J.S. Held's AI as IP™ treats Data, Compute, and Algorithms as enterprise capital—using AI Asset Registers, 90-day governance plans, and AIQ Score™ to prevent AI Washing and align with IAS 38 valuation.`,
+          'ja': `AI関連訴訟は5年間CAGR 56.5%で急増（累計350件超）。Ocean Tomo / J.S. Heldの「AI as IP™」はデータ・計算資源・アルゴリズムを無形資産として管理し、AI資産台帳とAIQ Score™により取締役会の「AIウォッシング」リスクを抑制します。`
+        },
+        m1Label: { 'zh-TW': `AI 訴訟五年成長率`, 'en': `AI Litigation CAGR`, 'ja': `AI訴訟年平均成長率` },
+        m1Val: `56.5% (350+ 案)`,
+        m2Label: { 'zh-TW': `AI 三大資產基石`, 'en': `Core AI Asset Stack`, 'ja': `AI資産3層構造` },
+        m2Val: `Data · Compute · Algo`,
+        points: {
+          'zh-TW': [
+            `資料 (Data) 常為最具價值的核心，高品質專有資料可大幅降低對高價算力與複雜演算法的依賴。`,
+            `重塑營業秘密、專利與著作權之「合理保密措施 (Reasonable Measures)」，防範生成式輸出外洩與權屬混淆。`,
+            `透過 AIQ Score™ 量化驗證真實 AI 能力，回應監管合規與投資人對 EBITDA 及無形資產價值之審查。`
+          ],
+          'en': [
+            `Proprietary, contemporaneous data is often the most valuable pillar, reducing reliance on costly compute.`,
+            `Evolves "reasonable measures" across trade secrets, patents, and copyrights via AI Asset Registers.`,
+            `Counters "AI Washing" at the board level using AIQ Score™ and defensible IAS 38 intangible valuation.`
+          ],
+          'ja': [
+            `高品質な独自データは、高価な計算資源や複雑アルゴリズムへの依存を下げる最重要資産です。`,
+            `AI資産台帳を通じて営業秘密・特許・著作権における「合理的管理措置」を再定義します。`,
+            `AIQ Score™により「AIウォッシング」を検証し、IAS 38に準拠した無形資産評価を実現します。`
+          ]
+        }
+      },
+      {
+        id: 3,
+        code: `04`,
+        lat: 39.7,
+        lon: -75.5,
+        coordLabel: `LAT 39.7°N · LON 75.5°W (D. Del.)`,
+        short: { 'zh-TW': `04 法律邊界`, 'en': `04 Legal Limits`, 'ja': `04 法的境界` },
+        title: {
+          'zh-TW': `逆向工程、均等論與後發技術法律邊界`,
+          'en': `Reverse Engineering, Equivalents & After-Arising Tech`,
+          'ja': `リバースエンジニアリング・均等論・後発技術法理`
+        },
+        summary: {
+          'zh-TW': `拆解合法購買產品受《權利耗盡原則》(Quanta) 保護，但後續設計變更仍可能落入《均等論》(Graver Tank / EMI v. Cypress) 射程，或於軟體授權中被 EULA 契約條款封殺 (Bowers v. Baystate)。在累積創新產業中，功能性用語與 AI 自動化逆向工程亦引發權屬未定與高速違約風險。`,
+          'en': `Patent exhaustion (Quanta) allows teardown of purchased goods, yet design-arounds face the doctrine of equivalents (Graver Tank; EMI v. Cypress) and contractual EULA bans (Bowers v. Baystate). AI-assisted reverse engineering introduces unsettled human-authorship ownership and machine-speed breach risks.`,
+          'ja': `権利消尽原則(Quanta)は購入品の分解を許容しますが、設計回避は均等論(Graver Tank / EMI v. Cypress)やEULA契約優先(Bowers)の制約を受けます。AI支援解析は人間著作者要件や高速契約違反リスクを伴います。`
+        },
+        m1Label: { 'zh-TW': `代表性聯邦判例`, 'en': `Core Precedents`, 'ja': `主要判例法理` },
+        m1Val: `5 大判例矩陣`,
+        m2Label: { 'zh-TW': `半導體合金經典案`, 'en': `EMI v. Cypress Citation`, 'ja': `半導体均等論判例` },
+        m2Val: `104 F. Supp. 2d 370`,
+        points: {
+          'zh-TW': [
+            `EMI v. Cypress (2000)：探討純過渡金屬與鈦鎢合金 (Ti-W) 吸光層之均等論及爆破移除機制之固有性 (Inherency)。`,
+            `潔淨室設計 (Clean Room) 與 DMCA §1201(f)：透過雙團隊隔離取得互通性規格，為最穩健的著作權風控機制。`,
+            `後發技術保護：在半導體與軟體等累積創新產業，宜採功能性撰寫與階段式調整均等論舉證責任。`
+          ],
+          'en': [
+            `EMI v. Cypress (2000): Examined Ti-W alloy vs. pure transition metal laser fuse caps under equivalents and inherency.`,
+            `Clean Room Design & DMCA §1201(f): Two-team separation for interoperability remains the gold standard against copyright risk.`,
+            `After-Arising Tech: Functional claim drafting (e.g., electron collector/emitter) bridges vacuum tubes to transistors.`
+          ],
+          'ja': [
+            `EMI v. Cypress (2000)：純遷移金属とTi-W合金キャップ層の均等論および固有性(Inherency)を審理。`,
+            `クリーンルーム設計とDMCA §1201(f)：2チーム分離による相互運用性確保が著作権リスク回避の標準手法。`,
+            `後発技術保護：累積的イノベーション産業では機能的クレーム記載と均等論の調整が不可欠。`
+          ]
+        }
+      },
+      {
+        id: 4,
+        code: `05`,
+        lat: 54.9,
+        lon: -1.6,
+        coordLabel: `LAT 54.9°N · LON 1.6°W (NIHR / EPO)`,
+        short: { 'zh-TW': `05 水平掃描`, 'en': `05 Horizon Scan`, 'ja': `05 ホライズン` },
+        title: {
+          'zh-TW': `醫療科技水平掃描與圖譜視覺化方法學`,
+          'en': `MedTech Horizon Scanning & Patent Network Methods`,
+          'ja': `MedTechホライズンスキャンと可視化手法`
+        },
+        summary: {
+          'zh-TW': `英國 NIHR 創新觀測站對 1,741 篇研究進行快速範圍界定審查並納入 124 篇，涵蓋 199 個專利資料庫（平均搜尋跨度 24.6 年）。研究發現 33% 採用自動化方法，其中半數仰賴 Gephi、VOSViewer 等網路視覺化工具與 Python/R；唯跨庫重複資料未去重仍是趨勢膨脹主因。`,
+          'en': `NIHR Innovation Observatory screened 1,741 records to 124 studies across 199 patent databases (avg 24.6-year span). Automated workflows (33%) rely heavily on network visualization (50%, led by Gephi & VOSViewer) and Python/R, while lack of deduplication risks data inflation.`,
+          'ja': `英国NIHRは1,741報から124研究（199特許DB、平均24.6年対象）を精査。自動化手法の50%がGephiやVOSViewerによるネットワーク可視化とPython/Rを活用する一方、重複排除の欠如が課題です。`
+        },
+        m1Label: { 'zh-TW': `納入實證 / 資料庫數`, 'en': `Studies / Databases`, 'ja': `精査研究 / DB数` },
+        m1Val: `124 篇 / 199 庫`,
+        m2Label: { 'zh-TW': `自動化網路視覺佔比`, 'en': `Network Viz Share`, 'ja': `可視化手法比率` },
+        m2Val: `50% (Gephi #1)`,
+        points: {
+          'zh-TW': [
+            `NICE 疾病分類映射顯示：癌症 (19%) 與呼吸道/COVID-19 (16%) 為專利熱點，數位健康主導照護服務領域。`,
+            `四大核心自動化技術：資料探勘、文字探勘、資料轉換 (ETL) 與網路視覺化。`,
+            `27% 研究使用多資料庫來源，但多數未落實專利家族去重 (Deduplication)，亟需標準化流程。`
+          ],
+          'en': [
+            `NICE disease mapping highlights Cancer (19%) and Respiratory/COVID-19 (16%), with digital health leading care delivery.`,
+            `Four automated pillars: data mining, text mining, data transformation, and network visualization.`,
+            `27% use multi-source patent databases, yet inconsistent deduplication risks inflating innovation clusters.`
+          ],
+          'ja': [
+            `NICE分類ではがん(19%)と呼吸器・COVID-19(16%)が上位を占め、デジタルヘルスが医療提供領域を牽引。`,
+            `4大自動化技術：データマイニング、テキストマイニング、データ変換、ネットワーク可視化。`,
+            `27%が複数DBを併用するものの、特許ファミリー重複排除の標準化が今後の重要課題です。`
+          ]
+        }
+      }
+    ];
+
+    const BENCHMARK_DATA = {
+      test1: {
+        chartKicker: {
+          'zh-TW': `Test 1：LLZO 石榴石固態鋰硫電池電解質 FTO 檢出專利數`,
+          'en': `Test 1: Active US Patents Identified for LLZO Garnet Li-S FTO`,
+          'ja': `Test 1：LLZO固体Li-S電池電解質 FTO調査における検出特許数`
+        },
+        note: {
+          'zh-TW': `Cypris 檢出 40+ 件專利並完整識別 Solid Energies 跨配方、梯度與製程專利圍欄；通用模型平均漏檢 70%–90% 高風險專利。`,
+          'en': `Cypris surfaced 40+ filings and Solid Energies' multi-layer patent fence; general LLMs missed 70%–90% of high-risk patents.`,
+          'ja': `Cyprisは40件超を検出しSolid Energiesの特許網を捕捉。汎用LLMは高リスク特許の70〜90%を見落としました。`
+        },
+        labels: [`Cypris`, `Claude`, `ChatGPT`, `Microsoft Co-Pilot`],
+        values: [42, 12, 7, 4],
+        rows: [
+          {
+            tool: `Cypris`,
+            count: `40+ 件`,
+            fencing: `完整偵測 Solid Energies 5 件圍欄 + Corning / GM / KIER / HonHai`,
+            integrity: `100% 可驗證 USPTO / WIPO 記錄與風險分級`,
+            status: `ok`
+          },
+          {
+            tool: `Claude`,
+            count: `12 件`,
+            fencing: `僅抓到 1 件 Solid Energies (US 11,967,678)，漏失 Corning 與 GM`,
+            integrity: `四級風險架構良好，但覆蓋嚴重不足`,
+            status: `warn`
+          },
+          {
+            tool: `ChatGPT`,
+            count: `7 件`,
+            fencing: `0 件 Solid Energies，遺漏核心鋰硫專屬申請案`,
+            integrity: `虛構權屬（「Likely DOE / 國防新創聚落」）`,
+            status: `risk`
+          },
+          {
+            tool: `Co-Pilot`,
+            count: `4 件`,
+            fencing: `完全遺漏 Solid Energies、UMD/Wachsman 與 NASA SABERS`,
+            integrity: `範圍極度受限，無法支撐 FTO 決策`,
+            status: `risk`
+          }
+        ]
+      },
+      test2: {
+        chartKicker: {
+          'zh-TW': `Test 2：蓖麻油生質聚醯胺競爭情報 — 可驗證專利引用數`,
+          'en': `Test 2: Bio-Based Polyamide CI — Verifiable Patent Filings Cited`,
+          'ja': `Test 2：バイオポリアミド競合情報 — 検証可能な特許引用数`
+        },
+        note: {
+          'zh-TW': `Cypris 引用逾 100 件獨立專利號，揭示歐洲廠（熱裂解）與中國新進者（發酵/呋喃二酸，Kingfa 8–10 件、Zhejiang NHU 4–6 件）之化學路線分歧；所有通用模型均引用 0 個專利號。`,
+          'en': `Cypris cited 100+ patent filings, uncovering chemistry divergence (EU pyrolysis vs. Chinese fermentation/FDCA routes by Kingfa & Zhejiang NHU). General LLMs cited 0 patent numbers.`,
+          'ja': `Cyprisは100件超の特許番号を引用し、欧州勢（熱分解）と中国勢（発酵・フランジカルボン酸）の技術分岐を特定。汎用LLMの引用特許番号は0件でした。`
+        },
+        labels: [`Cypris`, `Claude`, `ChatGPT`, `Microsoft Co-Pilot`],
+        values: [105, 0, 0, 0],
+        rows: [
+          {
+            tool: `Cypris`,
+            count: `100+ 專利號`,
+            fencing: `精準捕捉 Kingfa (8–10件) 與 Zhejiang NHU (4–6件) 及化學路線分歧`,
+            integrity: `全數附 USPTO / Espacenet / PATENTSCOPE 可驗證案號`,
+            status: `ok`
+          },
+          {
+            tool: `Claude`,
+            count: `0 個專利號`,
+            fencing: `方向性正確但漏失新興玩家 Kingfa 與 Zhejiang NHU`,
+            integrity: `僅提供估算區間，欠缺文件級證據`,
+            status: `warn`
+          },
+          {
+            tool: `ChatGPT`,
+            count: `0 個專利號`,
+            fencing: `未識別技術路徑分歧；誤納下游使用者 ANTA`,
+            integrity: `重複計數 Cathay Biotech (#5/#9) 與 Toray (#4/#10)`,
+            status: `risk`
+          },
+          {
+            tool: `Co-Pilot`,
+            count: `0 個專利號`,
+            fencing: `僅列泛用名稱，缺乏數量與路線洞察`,
+            integrity: `無法支持競爭監測資源配置`,
+            status: `risk`
+          }
+        ]
+      }
+    };
+
+    const CASES = [
+      {
+        cat: `deep`,
+        org: `Los Alamos National Laboratory (LANL)`,
+        impact: `費曼創新中心 · 商業化評分卡標準化`,
+        detail: {
+          'zh-TW': `整合技術、專利與市場訊號，導入「創新計分卡」於內部 Design Sprints 與 UC/LANL 博士後創業加速器，加速國安與商業技轉。`,
+          'en': `Unified patents & market signals into Innovation Scorecards for Design Sprints and UC/LANL Postdoc Accelerators.`,
+          'ja': `特許と市場シグナルを統合し、イノベーション・スコアカードを設計スプリントと起業アクセラレータに導入。`
+        }
+      },
+      {
+        cat: `corp`,
+        org: `Talking Rain (Sparkling Ice)`,
+        impact: `6× 新專案推動速度 · 取代 $600/hr 檢索`,
+        detail: {
+          'zh-TW': `部署客製化 AI 研發代理團隊自動執行先前技術與市場研究，取代高昂外部律師計時檢索，達成 6 倍創新推進速度。`,
+          'en': `Deployed bespoke AI research agents replacing $600/hr external prior-art searches, driving 6× new project velocity.`,
+          'ja': `特化型AIリサーチエージェントにより$600/hrの外部先行技術調査を代替し、新規開発速度を6倍に向上。`
+        }
+      },
+      {
+        cat: `corp`,
+        org: `PDI International`,
+        impact: `早期避險 · 避免 1–2 年沉沒研發成本`,
+        detail: {
+          'zh-TW': `建立每週自動化競爭情報代理監測，於立項前即發現競品專利覆蓋，成功導向具備技術空白 (Whitespace) 的研發路線。`,
+          'en': `Weekly agentic competitive monitoring catches occupied patent spaces early, avoiding 1–2 years of wasted R&D.`,
+          'ja': `週次の競合特許監視により、1〜2年の無駄な研究開発投資を着手前に回避しホワイトスペースへ誘導。`
+        }
+      },
+      {
+        cat: `deep`,
+        org: `SEH (半導體材料領導廠)`,
+        impact: `量子運算週報 + 工業半導體季報`,
+        detail: {
+          'zh-TW': `突破付費牆文獻取得，為長期遭分析師忽略的「工業半導體」建立出貨訊號季報，提升向日本母公司提案的說服力。`,
+          'en': `Automated quantum/competitor briefs plus custom industrial semiconductor quarterly reports trusted by Japanese parent R&D.`,
+          'ja': `量子技術週報と、業界アナリストが見落とす産業用半導体向けの四半期市場レポートを構築。`
+        }
+      },
+      {
+        cat: `corp`,
+        org: `STAAR Surgical (EVO Visian ICL)`,
+        impact: `500M+ 全球數據點 · 跨 75 國光學佈局`,
+        detail: {
+          'zh-TW': `將散落的公開檢索整合至單一即時創新儀表板，追蹤超過百萬例植入產品背後之材料科學與全球監管動態。`,
+          'en': `Consolidated 500M+ global data points into one live dashboard tracking optics, materials, and regulatory trends across 75+ countries.`,
+          'ja': `5億件超のグローバルデータを統合し、75カ国以上の眼内レンズ関連特許と規制動向をリアルタイム把握。`
+        }
+      },
+      {
+        cat: `deep`,
+        org: `NOV / Glen Raven / Brooks Running`,
+        impact: `「力量倍增」· 數週偵察縮短至數天`,
+        detail: {
+          'zh-TW': `NOV 以協作空間將數週技術偵察縮短為數天；Glen Raven 在防火牆保密環境加速專利佈局；Brooks 迅速聚焦跨產業跑鞋材料。`,
+          'en': `NOV cut scouting from weeks to days; Glen Raven secured confidential patent workflows; Brooks accelerated early footwear material focus.`,
+          'ja': `NOVは探索期間を数週間から数日に短縮、Glen Ravenは機密保持型調査を実現、Brooksは革新素材の早期特定を達成。`
+        }
+      }
+    ];
+
+    const GOVERNANCE_ITEMS = [
+      {
+        id: `gov_register`,
+        text: {
+          'zh-TW': `建立「AI 資產清冊 (AI Asset Register)」：完整登錄訓練資料來源、模型權重、推論管線與相關專利/營業秘密歸屬。`,
+          'en': `Maintain an AI Asset Register documenting training data provenance, model weights, and IP ownership.`,
+          'ja': `AI資産台帳（AI Asset Register）を構築し、学習データ・重み・知財帰属を体系的に記録する。`
+        }
+      },
+      {
+        id: `gov_measures`,
+        text: {
+          'zh-TW': `升級「合理保密措施 (Reasonable Measures)」：實施安全資料環境存取控管，防止員工輸入專有演算法至公有 LLM。`,
+          'en': `Update Reasonable Measures with secure data environments to prevent trade secret leakage into public LLMs.`,
+          'ja': `安全なデータ環境を整備し、パブリックLLMへの営業秘密流出を防ぐ合理的管理措置を強化する。`
+        }
+      },
+      {
+        id: `gov_washing`,
+        text: {
+          'zh-TW': `董事會防範「AI 洗白 (AI Washing)」：導入 AIQ Score™ 實質評估指標，確保對外揭露與技術真實能力一致。`,
+          'en': `Prevent AI Washing via board oversight and AIQ Score™ verification of actual technical capabilities.`,
+          'ja': `取締役会による監督とAIQ Score™の導入により、誇大な「AIウォッシング」リスクを排除する。`
+        }
+      },
+      {
+        id: `gov_data`,
+        text: {
+          'zh-TW': `專有資料契約與權利清查：針對聯合開發協議 (JDA) 與授權合約明確界定衍生模型與合成資料權利。`,
+          'en': `Audit Joint Development Agreements (JDAs) and licensing contracts for derivative model and training data rights.`,
+          'ja': `共同開発契約(JDA)およびライセンス契約において、派生モデルと学習データの権利関係を明確化する。`
+        }
+      },
+      {
+        id: `gov_litigation`,
+        text: {
+          'zh-TW': `追蹤 AI 訴訟風險熱區：定期監測著作權、生物特徵隱私 (BIPA)、演算法偏誤與產品責任訴訟趨勢。`,
+          'en': `Monitor AI Disputes Monitor risk clusters: copyright, biometric privacy, algorithmic bias, and product liability.`,
+          'ja': `著作権・生体認証プライバシー・アルゴリズムバイアス・製造物責任のAI訴訟トレンドを継続監視する。`
+        }
+      },
+      {
+        id: `gov_valuation`,
+        text: {
+          'zh-TW': `對齊 IAS 38 無形資產估值：將垂直 AI 專利組合與資料授權費率轉化為可辯護之企業資本與 EBITDA 支撐。`,
+          'en': `Align AI IP portfolios with IAS 38 valuation standards to substantiate enterprise capital and royalty rates.`,
+          'ja': `IAS 38無形資産基準に沿った評価を行い、AI知財ポートフォリオを企業資本・ロイヤルティ算定に結びつける。`
+        }
+      }
+    ];
+
+    const DOCTRINES = [
+      {
+        id: `exhaustion`,
+        tab: { 'zh-TW': `1. 專利耗盡 (Quanta)`, 'en': `1. Exhaustion (Quanta)`, 'ja': `1. 権利消尽 (Quanta)` },
+        badge: `Quanta Computer v. LG Electronics`,
+        title: {
+          'zh-TW': `專利耗盡原則：合法拆解硬體的法律基石`,
+          'en': `Doctrine of Exhaustion: Legal Basis for Teardown`,
+          'ja': `特許権消尽の原則：製品分解の法的基盤`
+        },
+        summary: {
+          'zh-TW': `當專利產品經合法售出後，專利權人對「該特定實體物品」之排他權即告耗盡。購買者有權對市售產品進行使用、檢視、維修、轉售與物理逆向拆解，惟耗盡的是該件實物之權利，而非整項發明之製造授權。`,
+          'en': `Once a patented item is lawfully sold, patent rights over that specific unit are exhausted. Purchasers may inspect, repair, resell, and tear it down—though rights to the underlying invention remain intact.`,
+          'ja': `適法に販売された製品については、その特定個体の特許権は消尽します。購入者は分析・分解が可能ですが、発明全体の複製権まで消尽するわけではありません。`
+        },
+        implication: {
+          'zh-TW': `進行半導體剖片或競品拆解前，必須建立完整「合法取得採購鏈 (Chain of Custody)」文件，方能確保分析證據於訴訟與授權談判中站得住腳。`,
+          'en': `Maintain documented chain of custody proving lawful commercial acquisition before conducting physical teardowns.`,
+          'ja': `半導体解析等の前には、適法な購入経路（Chain of Custody）の記録を確立することが証拠能力の前提となります。`
+        },
+        tags: [`First Sale Doctrine`, `Chain of Custody`, `Teardown`]
+      },
+      {
+        id: `equivalents`,
+        tab: { 'zh-TW': `2. 均等論與固有性 (EMI v. Cypress)`, 'en': `2. Equivalents (EMI v. Cypress)`, 'ja': `2. 均等論・固有性 (EMI事件)` },
+        badge: `Graver Tank · EMI v. Cypress (104 F. Supp. 2d 370)`,
+        title: {
+          'zh-TW': `均等論、固有性與後發技術射程`,
+          'en': `Doctrine of Equivalents, Inherency & After-Arising Tech`,
+          'ja': `均等論、固有性、および後発技術の権利範囲`
+        },
+        summary: {
+          'zh-TW': `即便未構成字面侵權，若被控產品以實質相同方式、執行實質相同功能並達成實質相同結果，仍可能成立均等侵權。在 EMI v. Cypress 案中，陪審團認定 Cypress 使用鈦鎢合金 (Ti-W) 吸光層未侵害純過渡金屬熔絲專利，且將蒸氣壓爆破認定為既有結構之「固有特性 (Inherency)」。`,
+          'en': `A design-around performing substantially the same function, way, and result can infringe under equivalents. In EMI v. Cypress (D. Del. 2000), a Ti-W alloy cap avoided infringement while explosive vapor removal was deemed an inherent property.`,
+          'ja': `実質同一の機能・方法・結果を満たす設計回避は均等侵害となり得ます。EMI対Cypress事件ではTi-W合金と純遷移金属の差異や爆発除去メカニズムの固有性が争われました。`
+        },
+        implication: {
+          'zh-TW': `對比真空管 (陽極/陰極) 演進至電晶體 (集極/射極) 等「後發技術」，迴避設計不能只替換表面元件名稱，必須在技術實質上產生差異，並結合專利工程師與律師共同審查。`,
+          'en': `From vacuum tubes to transistors, functional drafting captures after-arising tech; design-arounds must differ substantively, not superficially.`,
+          'ja': `真空管からトランジスタへの技術進化（後発技術）のように、表面的な部品置換だけでは均等論を回避できず、実質的差異と法的精査が必須です。`
+        },
+        tags: [`Function-Way-Result`, `104 F. Supp. 2d 370`, `After-Arising Tech`]
+      },
+      {
+        id: `cleanroom`,
+        tab: { 'zh-TW': `3. 著作權與潔淨室 (Sega)`, 'en': `3. Clean Room (Sega / DMCA)`, 'ja': `3. クリーンルーム (Sega)` },
+        badge: `Sega v. Accolade · DMCA § 1201(f)`,
+        title: {
+          'zh-TW': `軟體反編譯合理使用與雙團隊潔淨室設計`,
+          'en': `Software Decompilation Fair Use & Clean Room Design`,
+          'ja': `逆コンパイルのフェアユースとクリーンルーム設計`
+        },
+        summary: {
+          'zh-TW': `著作權保護「程式碼表達」而非「系統功能」。Sega v. Accolade 與 DMCA § 1201(f) 允許基於「系統互通性 (Interoperability)」之必要範圍進行反組譯與有限規避，但不得用於單純商業競品抄襲。`,
+          'en': `Copyright protects expression, not function. Sega v. Accolade and DMCA § 1201(f) allow limited decompilation strictly for interoperability—never commercial cloning.`,
+          'ja': `著作権は表現を保護し機能を保護しません。Sega事件およびDMCA §1201(f)は相互運用性確保に必要な範囲での解析のみを許容します。`
+        },
+        implication: {
+          'zh-TW': `實務標準為「潔淨室設計 (Clean Room Design)」：分析團隊撰寫純功能規格書，由完全未接觸原始碼的獨立開發團隊依規格實作，徹底切斷重製侵權鏈。`,
+          'en': `Clean Room Design separates spec analysts from independent builders who never view protected code, creating a defensible audit trail.`,
+          'ja': `解析チームと実装チームを完全に隔離するクリーンルーム設計が、著作権侵害リスクを遮断する実務標準です。`
+        },
+        tags: [`Clean Room Design`, `Interoperability`, `DMCA §1201(f)`]
+      },
+      {
+        id: `tradesecret`,
+        tab: { 'zh-TW': `4. 營業秘密與不當取得`, 'en': `4. Trade Secrets`, 'ja': `4. 営業秘密と不正取得` },
+        badge: `Lawful Discovery vs. Misappropriation`,
+        title: {
+          'zh-TW': `營業秘密之合法發現與證據污染風險`,
+          'en': `Trade Secret Law: Lawful Discovery vs. Misappropriation`,
+          'ja': `営業秘密：適法な解析と不正取得による証拠汚染`
+        },
+        summary: {
+          'zh-TW': `營業秘密與專利交換公開不同，只要維持秘密性與合理保密措施即可無限期受保護。對公開市售品進行合法逆向工程屬正當發現，但若經由違反保密義務、未授權存取或商業間諜取得技術資訊，即構成不法侵害。`,
+          'en': `Unlike patents, trade secrets last indefinitely while secret. Reverse engineering a lawfully bought product is valid, whereas improper acquisition voids evidentiary integrity.`,
+          'ja': `公開製品からの適法なリバースエンジニアリングは認められますが、秘密保持違反や不正アクセスで得た知見は、技術的正確性に関わらず証拠として致命的に汚染されます。`
+        },
+        implication: {
+          'zh-TW': `即使技術分析精準無誤，只要情報來源受不當取得污染，該分析報告於法庭上即完全失效並招致高額懲罰性賠償。`,
+          'en': `A technically flawless analysis built on improperly obtained data is legally compromised regardless of accuracy.`,
+          'ja': `どれほど精緻な技術解析であっても、情報源が不正取得であれば法廷証拠としての価値を失い、損害賠償リスクを招きます。`
+        },
+        tags: [`Reasonable Measures`, `Evidentiary Integrity`, `Secrecy`]
+      },
+      {
+        id: `bowers`,
+        tab: { 'zh-TW': `5. 契約凌駕與 AI 逆向 (Bowers)`, 'en': `5. Contract & AI RE (Bowers)`, 'ja': `5. 契約優先とAI解析 (Bowers)` },
+        badge: `Bowers v. Baystate · Machine-Speed AI RE`,
+        title: {
+          'zh-TW': `EULA 契約條款凌駕法定權利與 AI 機器速度風險`,
+          'en': `Contract Overrides Statute & Machine-Speed AI Analysis`,
+          'ja': `EULAによる法定制限の上書きとAI高速解析リスク`
+        },
+        summary: {
+          'zh-TW': `即便通過專利、著作權與營業秘密檢視，Bowers v. Baystate 確立使用者簽署的 EULA 或 SaaS 授權條款可有效禁止反組譯與協定分析——契約可剝奪法律原本允許的行為。`,
+          'en': `Clearing IP statutes is not enough: Bowers v. Baystate held that shrink-wrap/EULA contracts can lawfully prohibit reverse engineering otherwise permitted by copyright.`,
+          'ja': `Bowers事件は、特許法や著作権法が許容する解析行為であっても、EULA等のライセンス契約によって有効に禁止できることを示しました。`
+        },
+        implication: {
+          'zh-TW': `AI 輔助逆向工程（自動反編譯、雲端流量提取）雖大幅降低分析成本，但因現行法假設「人類發明人與人類作者」，AI 產出歸屬未定且易於「機器速度」瞬間觸犯契約與個資義務。`,
+          'en': `AI-assisted reverse engineering raises unsettled human-inventor/author ownership gaps and risks breaching EULAs at machine speed before analysts notice.`,
+          'ja': `AIによる自動逆コンパイル等は、人間発明者・著作者前提の現行法で帰属が未確定な上、人間が気づく前に契約違反を高速発生させます。`
+        },
+        tags: [`EULA Override`, `Unsettled Ownership`, `Machine Speed`]
+      }
+    ];
+
+    // =========================================================================
+    // 2. APPLICATION STATE & PERSISTENCE (notebookAppApi)
+    // =========================================================================
+    const APP_STATE = {
+      lang: 'zh-TW',
+      darkMode: false,
+      activeSector: 0,
+      autoPlay: false,
+      voiceEnabled: false,
+      benchmarkMode: 'test1',
+      caseFilter: 'all',
+      activeDoctrine: 'exhaustion',
+      checkedGov: {},
+      autoPlayElapsed: 0
+    };
+
+    let autoPlayTimer = null;
+    const AUTOPLAY_INTERVAL_MS = 7000;
+    let benchmarkChart = null;
+    let medtechChart = null;
+
+    function savePersistedState() {
+      if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === 'function') {
+        window.notebookAppApi.setAppState({
+          lang: APP_STATE.lang,
+          darkMode: APP_STATE.darkMode,
+          activeSector: APP_STATE.activeSector,
+          benchmarkMode: APP_STATE.benchmarkMode,
+          caseFilter: APP_STATE.caseFilter,
+          activeDoctrine: APP_STATE.activeDoctrine,
+          checkedGov: APP_STATE.checkedGov
+        }).catch(function () {});
+      }
+    }
+
+    // =========================================================================
+    // 3. CORE UI & THEME / LANGUAGE / VOICE / AUTOPLAY HANDLERS
+    // =========================================================================
+    function applyThemeVisuals() {
+      const body = document.body;
+      body.classList.toggle('dark-mode', APP_STATE.darkMode);
+
+      const t = I18N[APP_STATE.lang];
+      const themeBtn = document.getElementById('btn-theme');
+      const themeLabel = document.getElementById('label-theme');
+      const themeIcon = document.getElementById('theme-icon');
+      const amoebaTag = document.getElementById('amoeba-btn-label');
+      const amoebaBubble = document.getElementById('amoeba-bubble');
+
+      if (themeBtn) themeBtn.setAttribute('aria-pressed', String(APP_STATE.darkMode));
+      if (themeLabel) themeLabel.textContent = APP_STATE.darkMode ? t.themeToDay : t.themeToNight;
+      if (themeIcon) themeIcon.setAttribute('data-lucide', APP_STATE.darkMode ? 'sun' : 'moon');
+      if (amoebaTag) amoebaTag.textContent = APP_STATE.darkMode ? t.amoebaTagNight : t.amoebaTagDay;
+      if (amoebaBubble) amoebaBubble.textContent = APP_STATE.darkMode ? t.amoebaBubbleNight : t.amoebaBubbleDay;
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+      updateThreeSceneColors();
+      renderCharts();
+    }
+
+    function toggleDayNightMode() {
+      APP_STATE.darkMode = !APP_STATE.darkMode;
+      triggerAmoebaBounce();
+      applyThemeVisuals();
+      savePersistedState();
+    }
+
+    function setLanguage(lang) {
+      if (!I18N[lang]) return;
+      APP_STATE.lang = lang;
+      ['zh-TW', 'en', 'ja'].forEach(function (code) {
+        const b = document.getElementById('lang-' + code);
+        if (b) b.classList.toggle('is-active', code === lang);
+      });
+      renderAllCopy();
+      if (APP_STATE.voiceEnabled) {
+        speakCurrentSector();
+      }
+      savePersistedState();
+    }
+
+    function selectSector(idx, fromAutoPlay) {
+      APP_STATE.activeSector = idx;
+      if (!fromAutoPlay) {
+        APP_STATE.autoPlayElapsed = 0;
+      }
+      renderSectorNav();
+      renderActiveBriefing();
+      focusGlobeOnSector(idx);
+      if (APP_STATE.voiceEnabled) {
+        speakCurrentSector();
+      }
+      if (!fromAutoPlay) {
+        savePersistedState();
+      }
+    }
+
+    function toggleAutoPlay() {
+      APP_STATE.autoPlay = !APP_STATE.autoPlay;
+      const btn = document.getElementById('btn-autoplay');
+      const lbl = document.getElementById('label-autoplay');
+      const statusTxt = document.getElementById('autoplay-status-text');
+      const t = I18N[APP_STATE.lang];
+
+      if (btn) btn.setAttribute('aria-pressed', String(APP_STATE.autoPlay));
+      if (lbl) lbl.textContent = APP_STATE.autoPlay ? t.autoplayPause : t.autoplay;
+      if (statusTxt) statusTxt.textContent = APP_STATE.autoPlay ? t.autoplayRunning : t.autoplayIdle;
+
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+      }
+      const prog = document.getElementById('autoplay-progress');
+
+      if (APP_STATE.autoPlay) {
+        APP_STATE.autoPlayElapsed = 0;
+        autoPlayTimer = setInterval(function () {
+          APP_STATE.autoPlayElapsed += 150;
+          const pct = Math.min(100, (APP_STATE.autoPlayElapsed / AUTOPLAY_INTERVAL_MS) * 100);
+          if (prog) prog.style.width = pct + '%';
+          if (APP_STATE.autoPlayElapsed >= AUTOPLAY_INTERVAL_MS) {
+            APP_STATE.autoPlayElapsed = 0;
+            const nextIdx = (APP_STATE.activeSector + 1) % SECTORS.length;
+            selectSector(nextIdx, true);
+          }
+        }, 150);
+      } else {
+        APP_STATE.autoPlayElapsed = 0;
+        if (prog) prog.style.width = '0%';
+      }
+    }
+
+    function toggleVoiceNarration() {
+      APP_STATE.voiceEnabled = !APP_STATE.voiceEnabled;
+      const btn = document.getElementById('btn-voice');
+      const lbl = document.getElementById('label-voice');
+      const t = I18N[APP_STATE.lang];
+
+      if (btn) btn.setAttribute('aria-pressed', String(APP_STATE.voiceEnabled));
+      if (lbl) lbl.textContent = APP_STATE.voiceEnabled ? t.voiceStop : t.voice;
+
+      if (APP_STATE.voiceEnabled) {
+        speakCurrentSector();
+      } else if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    function speakCurrentSector() {
+      if (!('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const sec = SECTORS[APP_STATE.activeSector];
+        const lang = APP_STATE.lang;
+        const utter = new SpeechSynthesisUtterance(sec.title[lang] + '。' + sec.summary[lang]);
+        utter.lang = lang === 'zh-TW' ? 'zh-TW' : (lang === 'ja' ? 'ja-JP' : 'en-US');
+        utter.rate = 1.02;
+        window.speechSynthesis.speak(utter);
+      } catch (e) {
+        // Graceful fallback if speech synthesis is blocked
+      }
+    }
+
+    function setBenchmarkMode(mode) {
+      APP_STATE.benchmarkMode = mode;
+      const b1 = document.getElementById('btn-test1');
+      const b2 = document.getElementById('btn-test2');
+      if (b1) b1.classList.toggle('is-active', mode === 'test1');
+      if (b2) b2.classList.toggle('is-active', mode === 'test2');
+      renderBenchmarkSection();
+      savePersistedState();
+    }
+
+    function setCaseFilter(filter) {
+      APP_STATE.caseFilter = filter;
+      ['all', 'deep', 'corp'].forEach(function (f) {
+        const el = document.getElementById('filter-' + f);
+        if (el) el.classList.toggle('is-active', f === filter);
+      });
+      renderCases();
+      savePersistedState();
+    }
+
+    function selectDoctrine(docId) {
+      APP_STATE.activeDoctrine = docId;
+      renderDoctrineSection();
+      savePersistedState();
+    }
+
+    function toggleGovCheck(id, checked) {
+      APP_STATE.checkedGov[id] = checked;
+      renderGovernanceSection();
+      savePersistedState();
+    }
+
+    function resetChecklist(btn) {
+      const t = I18N[APP_STATE.lang];
+      if (!btn) return;
+      if (btn.dataset.armed !== 'true') {
+        btn.dataset.armed = 'true';
+        btn.textContent = t.resetCheckArm;
+        return;
+      }
+      btn.dataset.armed = 'false';
+      btn.textContent = t.resetCheck;
+      APP_STATE.checkedGov = {};
+      renderGovernanceSection();
+      savePersistedState();
+    }
+
+    // =========================================================================
+    // 4. DOM RENDERERS
+    // =========================================================================
+    function setHTML(id, html) {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    }
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    function renderAllCopy() {
+      const t = I18N[APP_STATE.lang];
+      setText('author-text', t.authorText);
+      setHTML('hero-title', t.heroTitle);
+      setText('hero-subtitle', t.heroSubtitle);
+      setText('label-autoplay', APP_STATE.autoPlay ? t.autoplayPause : t.autoplay);
+      setText('label-voice', APP_STATE.voiceEnabled ? t.voiceStop : t.voice);
+      setText('kpi-1-label', t.kpi1Label);
+      setText('kpi-1-cap', t.kpi1Cap);
+      setText('kpi-2-label', t.kpi2Label);
+      setText('kpi-2-cap', t.kpi2Cap);
+      setText('kpi-3-label', t.kpi3Label);
+      setText('kpi-3-cap', t.kpi3Cap);
+      setText('kpi-4-label', t.kpi4Label);
+      setText('kpi-4-cap', t.kpi4Cap);
+      setText('globe-kicker', t.globeKicker);
+      setText('btn-reset-cam', t.resetCam);
+      setText('label-speak-single', t.speakSingle);
+      setText('autoplay-status-text', APP_STATE.autoPlay ? t.autoplayRunning : t.autoplayIdle);
+      setHTML('sec1-title', t.sec1Title);
+      setText('sec1-desc', t.sec1Desc);
+      setText('btn-test1', t.test1Btn);
+      setText('btn-test2', t.test2Btn);
+      setHTML('sec2-title', t.sec2Title);
+      setText('sec2-desc', t.sec2Desc);
+      setText('filter-all', t.filterAll);
+      setText('filter-deep', t.filterDeep);
+      setText('filter-corp', t.filterCorp);
+      setText('gov-score-label', t.govScoreLabel);
+      setText('btn-reset-check', t.resetCheck);
+      setHTML('sec3-title', t.sec3Title);
+      setText('sec3-desc', t.sec3Desc);
+      setText('doc-implication-label', t.docImpLabel);
+      setText('footer-title', t.footerTitle);
+      setText('footer-sources', t.footerSources);
+      setText('th-tool', t.thTool);
+      setText('th-count', t.thCount);
+      setText('th-fencing', t.thFencing);
+      setText('th-integrity', t.thIntegrity);
+      setText('structural-driver-label', t.structuralLabel);
+      setText('structural-driver-text', t.structuralText);
+      setText('medtech-chart-kicker', t.medtechChartKicker);
+      setText('medtech-note', t.medtechNote);
+
+      applyThemeVisuals();
+      renderSectorNav();
+      renderActiveBriefing();
+      renderBenchmarkSection();
+      renderCases();
+      renderGovernanceSection();
+      renderDoctrineSection();
+    }
+
+    function renderSectorNav() {
+      const nav = document.getElementById('sector-nav');
+      if (!nav) return;
+      const lang = APP_STATE.lang;
+      nav.innerHTML = SECTORS.map(function (s, idx) {
+        const activeCls = idx === APP_STATE.activeSector ? ' is-active' : '';
+        return `<button type="button" class="sector-pill${activeCls}" role="tab" aria-selected="${idx === APP_STATE.activeSector}" onclick="selectSector(${idx}, false)">${s.short[lang]}</button>`;
+      }).join('');
+    }
+
+    function renderActiveBriefing() {
+      const sec = SECTORS[APP_STATE.activeSector];
+      const lang = APP_STATE.lang;
+      setText('brief-badge', `SECTOR ${sec.code} / 05`);
+      setText('brief-title', sec.title[lang]);
+      setText('brief-summary', sec.summary[lang]);
+      setText('brief-m1-label', sec.m1Label[lang]);
+      setText('brief-m1-val', sec.m1Val);
+      setText('brief-m2-label', sec.m2Label[lang]);
+      setText('brief-m2-val', sec.m2Val);
+      setText('brief-coord', sec.coordLabel);
+
+      const list = document.getElementById('brief-points');
+      if (list) {
+        list.innerHTML = sec.points[lang].map(function (p) {
+          return `<li>${p}</li>`;
+        }).join('');
+      }
+    }
+
+    function renderBenchmarkSection() {
+      const data = BENCHMARK_DATA[APP_STATE.benchmarkMode];
+      const lang = APP_STATE.lang;
+      setText('chart1-kicker', data.chartKicker[lang]);
+      setText('chart1-note', data.note[lang]);
+
+      const tbody = document.getElementById('benchmark-tbody');
+      if (tbody) {
+        tbody.innerHTML = data.rows.map(function (r) {
+          const badgeCls = r.status === 'ok' ? 'chip-ok' : (r.status === 'risk' ? 'chip-risk' : '');
+          return `
+            <tr>
+              <td><strong>${r.tool}</strong></td>
+              <td class="num"><span class="chip ${badgeCls}">${r.count}</span></td>
+              <td>${r.fencing}</td>
+              <td>${r.integrity}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+      renderBenchmarkChart();
+    }
+
+    function renderCases() {
+      const grid = document.getElementById('cases-grid');
+      if (!grid) return;
+      const lang = APP_STATE.lang;
+      const filtered = CASES.filter(function (c) {
+        return APP_STATE.caseFilter === 'all' || c.cat === APP_STATE.caseFilter;
+      });
+      grid.innerHTML = filtered.map(function (c) {
+        return `
+          <article class="case-card">
+            <span class="case-impact">${c.impact}</span>
+            <div class="case-org">${c.org}</div>
+            <p class="case-detail">${c.detail[lang]}</p>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderGovernanceSection() {
+      const container = document.getElementById('governance-checklist');
+      if (!container) return;
+      const lang = APP_STATE.lang;
+      let checkedCount = 0;
+
+      container.innerHTML = GOVERNANCE_ITEMS.map(function (item) {
+        const isChecked = !!APP_STATE.checkedGov[item.id];
+        if (isChecked) checkedCount += 1;
+        return `
+          <label class="check-item">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleGovCheck('${item.id}', this.checked)">
+            <span style="font-size:0.88rem;line-height:1.5;">${item.text[lang]}</span>
+          </label>
+        `;
+      }).join('');
+
+      const pct = Math.round((checkedCount / GOVERNANCE_ITEMS.length) * 100);
+      setText('gov-score-val', `${checkedCount} / ${GOVERNANCE_ITEMS.length} (${pct}%)`);
+    }
+
+    function renderDoctrineSection() {
+      const tabs = document.getElementById('doctrine-tabs');
+      const lang = APP_STATE.lang;
+      if (tabs) {
+        tabs.innerHTML = DOCTRINES.map(function (d) {
+          const active = d.id === APP_STATE.activeDoctrine ? ' is-active' : '';
+          return `<button type="button" class="sector-pill${active}" role="tab" aria-selected="${d.id === APP_STATE.activeDoctrine}" onclick="selectDoctrine('${d.id}')">${d.tab[lang]}</button>`;
+        }).join('');
+      }
+
+      const activeDoc = DOCTRINES.find(function (d) { return d.id === APP_STATE.activeDoctrine; }) || DOCTRINES[0];
+      setText('doc-case-badge', activeDoc.badge);
+      setText('doc-title', activeDoc.title[lang]);
+      setText('doc-summary', activeDoc.summary[lang]);
+      setText('doc-implication', activeDoc.implication[lang]);
+
+      const tagsEl = document.getElementById('doc-tags');
+      if (tagsEl) {
+        tagsEl.innerHTML = activeDoc.tags.map(function (tg) {
+          return `<span class="chip">${tg}</span>`;
+        }).join('');
+      }
+    }
+
+    // =========================================================================
+    // 5. CHART.JS ANALYTICAL VISUALIZATIONS (Theme-Reactive)
+    // =========================================================================
+    function getThemeVar(name) {
+      return getComputedStyle(document.body).getPropertyValue(name).trim() || '#2b6cb0';
+    }
+
+    function renderCharts() {
+      renderBenchmarkChart();
+      renderMedtechChart();
+    }
+
+    function renderBenchmarkChart() {
+      const canvas = document.getElementById('benchmark-chart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const data = BENCHMARK_DATA[APP_STATE.benchmarkMode];
+      const textColor = getThemeVar('--on-surface');
+      const gridColor = getThemeVar('--outline-variant');
+      const c1 = getThemeVar('--data-1');
+      const c2 = getThemeVar('--data-2');
+      const c3 = getThemeVar('--warning');
+      const c4 = getThemeVar('--error');
+
+      if (benchmarkChart) {
+        benchmarkChart.destroy();
+      }
+
+      benchmarkChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: APP_STATE.benchmarkMode === 'test1' ? 'Patents Found' : 'Verified Patent Citations',
+            data: data.values,
+            backgroundColor: [c1, c2, c3, c4],
+            borderRadius: 6,
+            maxBarThickness: 56
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              ticks: { color: textColor, font: { family: 'JetBrains Mono, sans-serif', size: 12 } },
+              grid: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: textColor, font: { family: 'JetBrains Mono, sans-serif', size: 12 } },
+              grid: { color: gridColor }
+            }
+          }
+        }
+      });
+    }
+
+    function renderMedtechChart() {
+      const canvas = document.getElementById('medtech-chart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const textColor = getThemeVar('--on-surface');
+      const gridColor = getThemeVar('--outline-variant');
+      const c1 = getThemeVar('--data-1');
+      const c2 = getThemeVar('--data-2');
+      const c3 = getThemeVar('--data-3');
+      const c4 = getThemeVar('--data-4');
+
+      if (medtechChart) {
+        medtechChart.destroy();
+      }
+
+      const labels = APP_STATE.lang === 'en'
+        ? [`Trend Analysis (50%)`, `Network Viz in Auto (50%)`, `Automated Studies (33%)`, `Multi-DB Usage (27%)`, `Policy Recs (20%)`, `Cancer NICE (19%)`, `Respiratory/COVID (16%)`]
+        : APP_STATE.lang === 'ja'
+        ? [`トレンド分析 (50%)`, `自動化内ネットワーク可視化 (50%)`, `自動化研究比率 (33%)`, `複数DB併用 (27%)`, `政策提言 (20%)`, `がん領域NICE (19%)`, `呼吸器/COVID (16%)`]
+        : [`趨勢分析主題 (50%)`, `自動化採網路視覺化 (50%)`, `採自動化方法研究 (33%)`, `多專利庫跨庫檢索 (27%)`, `政策建議研究 (20%)`, `NICE 癌症領域 (19%)`, `NICE 呼吸/COVID (16%)`];
+
+      medtechChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '%',
+            data: [50, 50, 33, 27, 20, 19, 16],
+            backgroundColor: [c1, c1, c2, c2, c3, c4, c4],
+            borderRadius: 5,
+            maxBarThickness: 24
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              beginAtZero: true,
+              max: 60,
+              ticks: { color: textColor, callback: function (v) { return v + '%'; } },
+              grid: { color: gridColor }
+            },
+            y: {
+              ticks: { color: textColor, font: { size: 11 } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 6. THREE.JS 3D INTERSTELLAR STARFIELD + ALWAYS-FLOATING CUTE 3D AMOEBA
+    // =========================================================================
+    let cosmicScene, cosmicCamera, cosmicRenderer;
+    let starPoints, starMat, nebulaRing, nebulaMat;
+    let amoebaGroup, amoebaMesh, amoebaMat, amoebaCoreMesh, amoebaCoreMat, amoebaBasePos;
+    let amoebaEyeL, amoebaEyeR, amoebaBubbleMeshes = [];
+    let amoebaBounceTimer = 0;
+
+    function initCosmicAndAmoebaScene() {
+      const canvas = document.getElementById('cosmic-canvas');
+      if (!canvas || typeof THREE === 'undefined') return;
+
+      try {
+        cosmicScene = new THREE.Scene();
+        cosmicCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+        cosmicCamera.position.set(0, 0, 12);
+
+        cosmicRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+        cosmicRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        cosmicRenderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Starfield / Morandi Cosmic Dust Particles
+        const count = 900;
+        const positions = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) {
+          positions[i * 3] = (Math.random() - 0.5) * 42;
+          positions[i * 3 + 1] = (Math.random() - 0.5) * 28;
+          positions[i * 3 + 2] = (Math.random() - 0.5) * 30 - 5;
+        }
+        const starGeo = new THREE.BufferGeometry();
+        starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        starMat = new THREE.PointsMaterial({
+          color: new THREE.Color(getThemeVar('--star-color')),
+          size: 0.085,
+          transparent: true,
+          opacity: 0.72
+        });
+        starPoints = new THREE.Points(starGeo, starMat);
+        cosmicScene.add(starPoints);
+
+        // Subtle Celestial Horizon Ring
+        const ringGeo = new THREE.TorusGeometry(9.5, 0.02, 8, 96);
+        nebulaMat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(getThemeVar('--globe-wire')),
+          transparent: true,
+          opacity: 0.22
+        });
+        nebulaRing = new THREE.Mesh(ringGeo, nebulaMat);
+        nebulaRing.rotation.x = Math.PI * 0.38;
+        nebulaRing.rotation.y = Math.PI * 0.12;
+        cosmicScene.add(nebulaRing);
+
+        // Cute Floating 3D Amoeba Assistant
+        amoebaGroup = new THREE.Group();
+        const aGeo = new THREE.IcosahedronGeometry(0.95, 4);
+        amoebaBasePos = new Float32Array(aGeo.attributes.position.array);
+        amoebaMat = new THREE.MeshPhongMaterial({
+          color: new THREE.Color(getThemeVar('--amoeba-body')),
+          emissive: new THREE.Color(getThemeVar('--amoeba-core')),
+          emissiveIntensity: 0.18,
+          shininess: 95,
+          transparent: true,
+          opacity: 0.84
+        });
+        amoebaMesh = new THREE.Mesh(aGeo, amoebaMat);
+        amoebaGroup.add(amoebaMesh);
+
+        // Glowing Inner Nucleus
+        const cGeo = new THREE.SphereGeometry(0.32, 20, 20);
+        amoebaCoreMat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(getThemeVar('--amoeba-core')),
+          transparent: true,
+          opacity: 0.75
+        });
+        amoebaCoreMesh = new THREE.Mesh(cGeo, amoebaCoreMat);
+        amoebaCoreMesh.position.set(-0.08, -0.05, 0.05);
+        amoebaGroup.add(amoebaCoreMesh);
+
+        // Cute Glossy Eyes
+        const eyeGeo = new THREE.SphereGeometry(0.11, 14, 14);
+        const eyeMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(getThemeVar('--amoeba-eye')) });
+        amoebaEyeL = new THREE.Mesh(eyeGeo, eyeMat);
+        amoebaEyeR = new THREE.Mesh(eyeGeo, eyeMat);
+        amoebaEyeL.position.set(-0.26, 0.18, 0.86);
+        amoebaEyeR.position.set(0.24, 0.18, 0.86);
+        amoebaGroup.add(amoebaEyeL);
+        amoebaGroup.add(amoebaEyeR);
+
+        // Little Orbiting Pseudopod Bubbles
+        for (let b = 0; b < 3; b++) {
+          const bGeo = new THREE.SphereGeometry(0.14 + b * 0.03, 12, 12);
+          const bMesh = new THREE.Mesh(bGeo, amoebaMat);
+          amoebaGroup.add(bMesh);
+          amoebaBubbleMeshes.push(bMesh);
+        }
+
+        // Lighting
+        const amb = new THREE.AmbientLight(0xffffff, 0.85);
+        cosmicScene.add(amb);
+        const dir = new THREE.DirectionalLight(0xffffff, 1.15);
+        dir.position.set(5, 8, 10);
+        cosmicScene.add(dir);
+
+        cosmicScene.add(amoebaGroup);
+        positionAmoebaCorner();
+        animateCosmic();
+      } catch (e) {
+        // Fallback safely if WebGL unavailable
+      }
+    }
+
+    function positionAmoebaCorner() {
+      if (!amoebaGroup || !cosmicCamera) return;
+      const aspect = window.innerWidth / Math.max(window.innerHeight, 1);
+      const vFOV = THREE.MathUtils.degToRad(cosmicCamera.fov);
+      const height = 2 * Math.tan(vFOV / 2) * cosmicCamera.position.z;
+      const width = height * aspect;
+      amoebaGroup.position.set(width * 0.41, -height * 0.36, 0);
+    }
+
+    function triggerAmoebaBounce() {
+      amoebaBounceTimer = 1.0;
+    }
+
+    function animateCosmic() {
+      requestAnimationFrame(animateCosmic);
+      if (!cosmicRenderer || !cosmicScene || !cosmicCamera) return;
+
+      const t = performance.now() * 0.001;
+      if (starPoints) {
+        starPoints.rotation.y = t * 0.025;
+        starPoints.rotation.x = Math.sin(t * 0.08) * 0.04;
+      }
+      if (nebulaRing) {
+        nebulaRing.rotation.z = t * 0.06;
+      }
+
+      // Organic Amoeba Morphing & Floating
+      if (amoebaMesh && amoebaBasePos) {
+        const pos = amoebaMesh.geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const bx = amoebaBasePos[i * 3];
+          const by = amoebaBasePos[i * 3 + 1];
+          const bz = amoebaBasePos[i * 3 + 2];
+          const wave = 1 + 0.11 * Math.sin(bx * 3.1 + t * 2.4) * Math.cos(by * 2.8 + t * 1.9);
+          pos.setXYZ(i, bx * wave, by * wave, bz * wave);
+        }
+        pos.needsUpdate = true;
+        amoebaMesh.geometry.computeVertexNormals();
+
+        // Playful float + click bounce
+        if (amoebaBounceTimer > 0) {
+          amoebaBounceTimer = Math.max(0, amoebaBounceTimer - 0.04);
+          const s = 1 + Math.sin(amoebaBounceTimer * Math.PI) * 0.35;
+          amoebaGroup.scale.set(s, 1 / Math.sqrt(s), s);
+        } else {
+          amoebaGroup.scale.set(1, 1, 1);
+        }
+
+        amoebaGroup.rotation.y = Math.sin(t * 0.9) * 0.32;
+        amoebaGroup.rotation.z = Math.cos(t * 0.7) * 0.09;
+
+        // Blink eyes gently every ~4 seconds
+        const blink = (t % 4.2) > 4.02 ? 0.12 : 1.0;
+        if (amoebaEyeL && amoebaEyeR) {
+          amoebaEyeL.scale.y = blink;
+          amoebaEyeR.scale.y = blink;
+        }
+
+        amoebaBubbleMeshes.forEach(function (bm, idx) {
+          const ang = t * (1.2 + idx * 0.35) + idx * 2.1;
+          bm.position.set(Math.cos(ang) * 1.15, Math.sin(ang * 1.2) * 0.85, Math.sin(ang) * 0.45);
+        });
+      }
+
+      cosmicRenderer.render(cosmicScene, cosmicCamera);
+    }
+
+    // =========================================================================
+    // 7. THREE.JS 3D GLOBAL IP SPHERE (Auto-Rotate + Raycast Hover + Click)
+    // =========================================================================
+    let globeScene, globeCamera, globeRenderer, globeRoot;
+    let globeCoreMat, globeWireMat, globeRingMat;
+    let beaconMeshes = [];
+    let isDraggingGlobe = false;
+    let isHoveringBeacon = false;
+    let hoveredBeaconIndex = -1;
+    let prevPointer = { x: 0, y: 0 };
+    let targetRot = { x: 0.25, y: 0 };
+    const raycaster = typeof THREE !== 'undefined' ? new THREE.Raycaster() : null;
+    const pointerNDC = typeof THREE !== 'undefined' ? new THREE.Vector2() : null;
+
+    function latLonToVec3(lat, lon, radius) {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lon + 180) * (Math.PI / 180);
+      return new THREE.Vector3(
+        -radius * Math.sin(phi) * Math.cos(theta),
+        radius * Math.cos(phi),
+        radius * Math.sin(phi) * Math.sin(theta)
+      );
+    }
+
+    function initGlobeScene() {
+      const canvas = document.getElementById('globe-canvas');
+      const wrap = document.getElementById('globe-stage-wrap');
+      if (!canvas || !wrap || typeof THREE === 'undefined') return;
+
+      try {
+        const w = wrap.clientWidth || 640;
+        const h = wrap.clientHeight || 420;
+
+        globeScene = new THREE.Scene();
+        globeCamera = new THREE.PerspectiveCamera(42, w / h, 0.1, 100);
+        globeCamera.position.set(0, 0.3, 6.2);
+
+        globeRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+        globeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        globeRenderer.setSize(w, h);
+
+        globeRoot = new THREE.Group();
+        globeScene.add(globeRoot);
+
+        // Core translucent Morandi / Deep-Space Globe
+        const coreGeo = new THREE.SphereGeometry(1.85, 36, 36);
+        globeCoreMat = new THREE.MeshPhongMaterial({
+          color: new THREE.Color(getThemeVar('--globe-core')),
+          transparent: true,
+          opacity: 0.65,
+          shininess: 55
+        });
+        globeRoot.add(new THREE.Mesh(coreGeo, globeCoreMat));
+
+        // Wireframe Geodesic Grid
+        const wireGeo = new THREE.SphereGeometry(1.88, 22, 16);
+        globeWireMat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(getThemeVar('--globe-wire')),
+          wireframe: true,
+          transparent: true,
+          opacity: 0.38
+        });
+        globeRoot.add(new THREE.Mesh(wireGeo, globeWireMat));
+
+        // Two Orbital Satellite Rings
+        const ringGeo1 = new THREE.TorusGeometry(2.42, 0.018, 8, 80);
+        globeRingMat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(getThemeVar('--globe-ring')),
+          transparent: true,
+          opacity: 0.55
+        });
+        const r1 = new THREE.Mesh(ringGeo1, globeRingMat);
+        r1.rotation.x = Math.PI * 0.42;
+        r1.rotation.y = Math.PI * 0.14;
+        globeRoot.add(r1);
+
+        const r2 = new THREE.Mesh(new THREE.TorusGeometry(2.68, 0.012, 8, 80), globeRingMat);
+        r2.rotation.x = -Math.PI * 0.35;
+        r2.rotation.z = Math.PI * 0.22;
+        globeRoot.add(r2);
+
+        // 5 Interactive Sector Beacons
+        SECTORS.forEach(function (sec, idx) {
+          const pos = latLonToVec3(sec.lat, sec.lon, 1.96);
+          const bGeo = new THREE.SphereGeometry(0.13, 18, 18);
+          const bMat = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(getThemeVar('--primary'))
+          });
+          const bMesh = new THREE.Mesh(bGeo, bMat);
+          bMesh.position.copy(pos);
+          bMesh.userData = { sectorIdx: idx };
+
+          // Halo ring around beacon
+          const hGeo = new THREE.RingGeometry(0.17, 0.23, 24);
+          const hMat = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(getThemeVar('--secondary')),
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.75
+          });
+          const hMesh = new THREE.Mesh(hGeo, hMat);
+          hMesh.position.copy(pos.clone().multiplyScalar(1.01));
+          hMesh.lookAt(pos.clone().multiplyScalar(2));
+          globeRoot.add(hMesh);
+
+          globeRoot.add(bMesh);
+          beaconMeshes.push(bMesh);
+        });
+
+        // Lighting
+        globeScene.add(new THREE.AmbientLight(0xffffff, 0.9));
+        const dLight = new THREE.DirectionalLight(0xffffff, 1.1);
+        dLight.position.set(4, 6, 8);
+        globeScene.add(dLight);
+
+        // Pointer Interaction Events
+        wrap.addEventListener('pointerdown', function (e) {
+          isDraggingGlobe = true;
+          prevPointer = { x: e.clientX, y: e.clientY };
+        });
+
+        window.addEventListener('pointerup', function () {
+          isDraggingGlobe = false;
+        });
+
+        wrap.addEventListener('pointermove', function (e) {
+          const rect = wrap.getBoundingClientRect();
+          if (isDraggingGlobe) {
+            const dx = e.clientX - prevPointer.x;
+            const dy = e.clientY - prevPointer.y;
+            targetRot.y += dx * 0.008;
+            targetRot.x = Math.max(-1.1, Math.min(1.1, targetRot.x + dy * 0.006));
+            prevPointer = { x: e.clientX, y: e.clientY };
+          }
+          checkBeaconHover(e.clientX, e.clientY, rect);
+        });
+
+        wrap.addEventListener('pointerleave', function () {
+          isHoveringBeacon = false;
+          hoveredBeaconIndex = -1;
+          hideGlobeTooltip();
+        });
+
+        wrap.addEventListener('click', function (e) {
+          const rect = wrap.getBoundingClientRect();
+          const hitIdx = raycastBeacon(e.clientX, e.clientY, rect);
+          if (hitIdx >= 0) {
+            selectSector(hitIdx, false);
+          }
+        });
+
+        focusGlobeOnSector(APP_STATE.activeSector);
+        animateGlobe();
+      } catch (e) {
+        // Fallback safely
+      }
+    }
+
+    function raycastBeacon(clientX, clientY, rect) {
+      if (!raycaster || !pointerNDC || !globeCamera || beaconMeshes.length === 0) return -1;
+      pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointerNDC, globeCamera);
+      const intersects = raycaster.intersectObjects(beaconMeshes, false);
+      if (intersects.length > 0) {
+        return intersects[0].object.userData.sectorIdx;
+      }
+      return -1;
+    }
+
+    function checkBeaconHover(clientX, clientY, rect) {
+      const hitIdx = raycastBeacon(clientX, clientY, rect);
+      const chip = document.getElementById('globe-status-chip');
+      const wrap = document.getElementById('globe-stage-wrap');
+      const t = I18N[APP_STATE.lang];
+
+      if (hitIdx >= 0) {
+        isHoveringBeacon = true;
+        hoveredBeaconIndex = hitIdx;
+        if (wrap) wrap.style.cursor = 'pointer';
+        if (chip) chip.textContent = t.globeHover;
+        showGlobeTooltip(hitIdx, clientX - rect.left, clientY - rect.top);
+      } else {
+        isHoveringBeacon = false;
+        hoveredBeaconIndex = -1;
+        if (wrap) wrap.style.cursor = isDraggingGlobe ? 'grabbing' : 'grab';
+        if (chip) chip.textContent = t.globeAuto;
+        hideGlobeTooltip();
+      }
+    }
+
+    function showGlobeTooltip(idx, localX, localY) {
+      const tt = document.getElementById('globe-tooltip');
+      if (!tt) return;
+      const sec = SECTORS[idx];
+      const lang = APP_STATE.lang;
+      setText('tt-tag', `NODE ${sec.code} · ${sec.m1Val}`);
+      setText('tt-title', sec.title[lang]);
+      setText('tt-desc', sec.points[lang][0]);
+      tt.style.left = Math.max(130, Math.min(localX, 460)) + 'px';
+      tt.style.top = Math.max(100, localY) + 'px';
+      tt.classList.add('is-visible');
+    }
+
+    function hideGlobeTooltip() {
+      const tt = document.getElementById('globe-tooltip');
+      if (tt) tt.classList.remove('is-visible');
+    }
+
+    function focusGlobeOnSector(idx) {
+      if (!SECTORS[idx]) return;
+      const sec = SECTORS[idx];
+      const lonRad = (sec.lon + 90) * (Math.PI / 180);
+      targetRot.y = -lonRad;
+      targetRot.x = Math.max(-0.6, Math.min(0.6, sec.lat * 0.008));
+    }
+
+    function resetGlobeCamera() {
+      targetRot = { x: 0.22, y: 0 };
+      if (globeRoot) {
+        globeRoot.rotation.set(0.22, 0, 0);
+      }
+    }
+
+    function animateGlobe() {
+      requestAnimationFrame(animateGlobe);
+      if (!globeRenderer || !globeScene || !globeCamera || !globeRoot) return;
+
+      if (!isDraggingGlobe && !isHoveringBeacon) {
+        targetRot.y += 0.0032;
+      }
+
+      globeRoot.rotation.y += (targetRot.y - globeRoot.rotation.y) * 0.08;
+      globeRoot.rotation.x += (targetRot.x - globeRoot.rotation.x) * 0.08;
+
+      const t = performance.now() * 0.003;
+      beaconMeshes.forEach(function (bm, idx) {
+        const isActive = idx === APP_STATE.activeSector || idx === hoveredBeaconIndex;
+        const pulse = isActive ? 1.38 + Math.sin(t * 2) * 0.18 : 1.0;
+        bm.scale.set(pulse, pulse, pulse);
+      });
+
+      globeRenderer.render(globeScene, globeCamera);
+    }
+
+    function updateThreeSceneColors() {
+      if (typeof THREE === 'undefined') return;
+      if (starMat) starMat.color.set(getThemeVar('--star-color'));
+      if (nebulaMat) nebulaMat.color.set(getThemeVar('--globe-wire'));
+      if (amoebaMat) amoebaMat.color.set(getThemeVar('--amoeba-body'));
+      if (amoebaCoreMat) amoebaCoreMat.color.set(getThemeVar('--amoeba-core'));
+      if (globeCoreMat) globeCoreMat.color.set(getThemeVar('--globe-core'));
+      if (globeWireMat) globeWireMat.color.set(getThemeVar('--globe-wire'));
+      if (globeRingMat) globeRingMat.color.set(getThemeVar('--globe-ring'));
+
+      const primaryCol = getThemeVar('--primary');
+      const warnCol = getThemeVar('--warning');
+      beaconMeshes.forEach(function (bm, idx) {
+        bm.material.color.set(idx === APP_STATE.activeSector ? warnCol : primaryCol);
+      });
+    }
+
+    function handleResize() {
+      if (cosmicRenderer && cosmicCamera) {
+        cosmicCamera.aspect = window.innerWidth / Math.max(window.innerHeight, 1);
+        cosmicCamera.updateProjectionMatrix();
+        cosmicRenderer.setSize(window.innerWidth, window.innerHeight);
+        positionAmoebaCorner();
+      }
+      const wrap = document.getElementById('globe-stage-wrap');
+      if (globeRenderer && globeCamera && wrap) {
+        const w = wrap.clientWidth || 640;
+        const h = wrap.clientHeight || 420;
+        globeCamera.aspect = w / h;
+        globeCamera.updateProjectionMatrix();
+        globeRenderer.setSize(w, h);
+      }
+    }
+
+    // =========================================================================
+    // 8. BOOTSTRAP & GEMINI NOTEBOOK SHIM LIFECYCLE
+    // =========================================================================
+    async function bootDashboard() {
+      if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === 'function') {
+        try {
+          const saved = await window.notebookAppApi.getAppState();
+          if (saved && typeof saved === 'object') {
+            if (saved.lang && I18N[saved.lang]) APP_STATE.lang = saved.lang;
+            if (typeof saved.darkMode === 'boolean') APP_STATE.darkMode = saved.darkMode;
+            if (typeof saved.activeSector === 'number') APP_STATE.activeSector = saved.activeSector;
+            if (saved.benchmarkMode) APP_STATE.benchmarkMode = saved.benchmarkMode;
+            if (saved.caseFilter) APP_STATE.caseFilter = saved.caseFilter;
+            if (saved.activeDoctrine) APP_STATE.activeDoctrine = saved.activeDoctrine;
+            if (saved.checkedGov && typeof saved.checkedGov === 'object') APP_STATE.checkedGov = saved.checkedGov;
+          }
+        } catch (e) {}
+      }
+
+      // Sync UI Controls with loaded state
+      ['zh-TW', 'en', 'ja'].forEach(function (code) {
+        const b = document.getElementById('lang-' + code);
+        if (b) b.classList.toggle('is-active', code === APP_STATE.lang);
+      });
+      setBenchmarkMode(APP_STATE.benchmarkMode);
+      setCaseFilter(APP_STATE.caseFilter);
+
+      initCosmicAndAmoebaScene();
+      initGlobeScene();
+      renderAllCopy();
+
+      window.addEventListener('resize', handleResize);
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
+        window.notebookAppApi.notifyAppReady();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', bootDashboard);
+  </script>
+</body>
+</html>
