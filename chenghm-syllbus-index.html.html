@@ -1,0 +1,3203 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW" data-theme="day">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="aurora">
+  <title>鄭凱文SCI學術研究及科技管理教學平台</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* Nival Morandi Blue Day Mode (Default) */
+      --background: #eef2f6;
+      --surface-container-low: #f7f9fc;
+      --surface-container: #ffffff;
+      --surface-container-high: #e1e9f0;
+      --surface-glass: rgba(255, 255, 255, 0.84);
+
+      --on-surface: #1e2d3b;
+      --on-surface-variant: #4e6375;
+
+      --outline: #8ea4b8;
+      --outline-variant: #cfdbe6;
+
+      --primary: #466985;
+      --on-primary: #ffffff;
+      --primary-container: #dbe6f0;
+      --on-primary-container: #243e54;
+      --secondary: #5c7a8e;
+      --tertiary: #4e7d6b;
+      --error: #b84a4a;
+      --on-error: #ffffff;
+
+      --positive: #3f7a64;
+      --warning: #a67c38;
+      --focus: #466985;
+
+      /* Data series (Morandi Blue Harmony) */
+      --data-1: #466985;
+      --data-2: #5b8c7a;
+      --data-3: #7893b0;
+      --data-4: #b5836d;
+      --data-context: #b8c7d4;
+
+      /* Canvas & Atmosphere Tokens */
+      --sky-top: #e3ebf3;
+      --sky-horizon: #f4f7fa;
+      --horizon-line: #b4c6d6;
+      --dandelion-stem: #6c89a3;
+      --dandelion-seed: #4c6d8a;
+      --dandelion-glow: #8fb2cc;
+      --star-color: #ffffff;
+      --mascot-body-a: #7ea3c0;
+      --mascot-body-b: #537896;
+      --mascot-horn: #a7c7de;
+      --mascot-eye: #182736;
+      --mascot-ring: #6e94b2;
+
+      /* Fonts */
+      --font-headline: 'Noto Sans TC', 'Noto Sans SC', 'Instrument Sans', sans-serif;
+      --font-body: 'Noto Sans TC', 'Noto Sans SC', 'Plus Jakarta Sans', sans-serif;
+      --font-label: 'Geist Mono', 'Noto Sans TC', 'Noto Sans SC', monospace;
+
+      /* Type Scale (Dashboard) */
+      --display-size: clamp(1.5rem, 1.2rem + 1.1vw, 2.05rem);
+      --headline-size: clamp(1.15rem, 1.05rem + 0.45vw, 1.375rem);
+      --subhead-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --body-size: clamp(0.9375rem, 0.9rem + 0.12vw, 0.975rem);
+      --label-size: 0.75rem;
+
+      /* Spacing Scale (4pt base) */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.25rem;
+      --space-2xl: 3.5rem;
+      --space-3xl: 5rem;
+
+      /* Shape */
+      --rounded: 0.5rem;
+      --rounded-lg: 0.875rem;
+      --rounded-full: 9999px;
+
+      /* Effects */
+      --hairline: 1px solid var(--outline-variant);
+      --hairline-strong: 1px solid var(--outline);
+      --panel-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(244, 248, 252, 0.88) 100%);
+      --panel-shadow: 0 8px 28px color-mix(in srgb, var(--primary) 8%, transparent);
+      --heading-tracking: -0.02em;
+      --label-tracking: 0.04em;
+      --sage-tint: color-mix(in srgb, var(--tertiary) 13%, transparent);
+      --cyan-tint: color-mix(in srgb, var(--primary) 13%, transparent);
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 140ms;
+      --dur-short: 240ms;
+      --dur-long: 420ms;
+    }
+
+    html[data-theme="night"] {
+      color-scheme: dark;
+
+      /* Night Starry Morandi Cyberspace Mode */
+      --background: #0d1620;
+      --surface-container-low: #121e2b;
+      --surface-container: #162535;
+      --surface-container-high: #1e3145;
+      --surface-glass: rgba(20, 33, 47, 0.84);
+
+      --on-surface: #e8eff6;
+      --on-surface-variant: #9db4c9;
+
+      --outline: #3f5b75;
+      --outline-variant: #25394d;
+
+      --primary: #7eb0d4;
+      --on-primary: #09141f;
+      --primary-container: #1b3852;
+      --on-primary-container: #d2e9fa;
+      --secondary: #6889a6;
+      --tertiary: #84c4aa;
+      --error: #ef7d7d;
+      --on-error: #1a0606;
+
+      --positive: #84c4aa;
+      --warning: #e6b865;
+      --focus: #7eb0d4;
+
+      --data-1: #7eb0d4;
+      --data-2: #84c4aa;
+      --data-3: #e6b865;
+      --data-4: #e08d79;
+      --data-context: #3b5369;
+
+      --sky-top: #070e17;
+      --sky-horizon: #132233;
+      --horizon-line: #34506b;
+      --dandelion-stem: #6b95b8;
+      --dandelion-seed: #9fc7e8;
+      --dandelion-glow: #7eb0d4;
+      --star-color: #e6f1fc;
+      --mascot-body-a: #7cb6db;
+      --mascot-body-b: #3b6991;
+      --mascot-horn: #b4e2f7;
+      --mascot-eye: #08131f;
+      --mascot-ring: #88c7eb;
+
+      --panel-gradient: linear-gradient(180deg, rgba(24, 39, 55, 0.9) 0%, rgba(16, 27, 39, 0.88) 100%);
+      --panel-shadow: 0 12px 32px color-mix(in srgb, var(--background) 55%, transparent);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      overflow-x: clip;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.55;
+      transition: background-color var(--dur-long) var(--ease-in-out), color var(--dur-long) var(--ease-in-out);
+    }
+
+    header {
+      position: static !important;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* 3D Dandelion Jungle & Starry Horizon Canvas */
+    #bg-scene-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Main 16:9 Responsive Shell */
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1520px;
+      margin: 0 auto;
+      padding: var(--space-lg) var(--space-lg) var(--space-3xl);
+      display: grid;
+      gap: var(--space-lg);
+    }
+    .app-shell * {
+      min-width: 0;
+    }
+
+    /* Top Masthead / Control Bar */
+    .masthead {
+      background: var(--panel-gradient);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--panel-shadow);
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      max-width: 68ch;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 700;
+      letter-spacing: var(--heading-tracking);
+      line-height: 1.15;
+      color: var(--on-surface);
+    }
+
+    .brand-subtitle {
+      margin: 0;
+      font-size: var(--body-size);
+      color: var(--on-surface-variant);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .btn-control {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded);
+      border: var(--hairline-strong);
+      background: var(--surface-container);
+      color: var(--on-surface);
+      font-size: var(--label-size);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+    }
+
+    .btn-control:hover {
+      background: var(--surface-container-high);
+    }
+
+    .btn-control[aria-pressed="true"],
+    .btn-control.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+
+    .lang-group {
+      display: inline-flex;
+      align-items: center;
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      min-height: 38px;
+      padding: var(--space-xs) var(--space-sm);
+      border: none;
+      border-radius: calc(var(--rounded) - 2px);
+      background: transparent;
+      color: var(--on-surface-variant);
+      font-size: var(--label-size);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+
+    .lang-btn:hover {
+      background: var(--surface-container-high);
+      color: var(--on-surface);
+    }
+
+    .lang-btn[aria-pressed="true"] {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    /* Tour Spotlight Banner */
+    .tour-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+      border-radius: var(--rounded);
+    }
+
+    .tour-banner.is-visible {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .tour-banner-text {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-weight: 600;
+    }
+
+    .tts-status-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-xs) var(--space-md);
+      background: var(--sage-tint);
+      color: var(--on-surface);
+      border: 1px solid color-mix(in srgb, var(--tertiary) 35%, transparent);
+      border-radius: var(--rounded);
+      font-size: var(--label-size);
+    }
+
+    .tts-status-bar.is-visible {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    /* KPI Row */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+
+    .panel {
+      background: var(--panel-gradient);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--panel-shadow);
+      padding: var(--space-lg);
+      transition: transform var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+    }
+
+    .kpi-card {
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .data-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      letter-spacing: var(--label-tracking);
+      color: var(--on-surface-variant);
+    }
+
+    .kpi-value {
+      font-family: var(--font-headline);
+      font-size: clamp(1.35rem, 1.15rem + 0.7vw, 1.75rem);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: var(--heading-tracking);
+      color: var(--on-surface);
+      line-height: 1.2;
+    }
+
+    .kpi-delta {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--positive);
+      font-weight: 500;
+    }
+
+    /* 16:9 Asymmetric Main Bento Grid */
+    .bento-main {
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+
+    .app-shell.is-compact .bento-main {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .stack-col {
+      display: grid;
+      gap: var(--space-lg);
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+
+    .section-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 700;
+      letter-spacing: var(--heading-tracking);
+      color: var(--on-surface);
+    }
+
+    /* Profile & Credentials */
+    .profile-list {
+      display: grid;
+      gap: var(--space-sm);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .profile-item {
+      padding: var(--space-sm) var(--space-md);
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+    }
+
+    .profile-item strong {
+      display: block;
+      color: var(--on-surface);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .profile-item span {
+      color: var(--on-surface-variant);
+      font-size: 0.9rem;
+    }
+
+    .scope-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-top: var(--space-md);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: var(--rounded-full);
+      background: var(--cyan-tint);
+      color: var(--on-primary-container);
+      border: 1px solid color-mix(in srgb, var(--primary) 28%, transparent);
+      font-size: var(--label-size);
+      font-weight: 500;
+    }
+
+    .contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: var(--hairline);
+    }
+
+    .copy-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded);
+      border: var(--hairline);
+      background: var(--surface-container-low);
+      color: var(--on-surface);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .copy-pill:hover {
+      background: var(--surface-container-high);
+    }
+
+    /* Chart Panel */
+    .chart-controls {
+      display: flex;
+      gap: var(--space-xs);
+      flex-wrap: wrap;
+    }
+
+    .chart-box {
+      position: relative;
+      min-height: 250px;
+      width: 100%;
+    }
+
+    /* 7 Research & Teaching GitHub Dashboard Cards */
+    .dashboards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(270px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+
+    .project-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      color: inherit;
+      transition: transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out), background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .project-card:hover {
+      background: var(--surface-container);
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 35%, transparent);
+    }
+
+    .project-card.is-tour-focus {
+      background: var(--primary-container);
+      box-shadow: 0 0 0 2px var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .project-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      flex-wrap: wrap;
+    }
+
+    .status-chip {
+      background: var(--sage-tint);
+      color: var(--positive);
+      border: 1px solid color-mix(in srgb, var(--tertiary) 35%, transparent);
+      border-radius: var(--rounded);
+      padding: 2px var(--space-sm);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+    }
+
+    .status-chip.is-primary {
+      background: var(--cyan-tint);
+      color: var(--primary);
+      border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+    }
+
+    .project-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--subhead-size);
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--on-surface);
+    }
+
+    .project-summary {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--on-surface-variant);
+      line-height: 1.45;
+    }
+
+    .project-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      padding-top: var(--space-xs);
+      border-top: var(--hairline);
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      color: var(--primary);
+    }
+
+    .filename-code {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 85%;
+    }
+
+    /* Syllabus Section */
+    .syllabus-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-md);
+      align-items: end;
+      margin-bottom: var(--space-md);
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .field-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      color: var(--on-surface-variant);
+    }
+
+    .text-input {
+      min-height: 44px;
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--rounded);
+      border: var(--hairline-strong);
+      background: var(--surface-container-low);
+      color: var(--on-surface);
+      font-size: var(--body-size);
+      width: 100%;
+    }
+
+    .keyword-chips,
+    .course-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-md);
+    }
+
+    .tag-btn {
+      min-height: 40px;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded-full);
+      border: var(--hairline);
+      background: var(--surface-container-low);
+      color: var(--on-surface-variant);
+      font-size: var(--label-size);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+
+    .tag-btn:hover {
+      background: var(--surface-container-high);
+      color: var(--on-surface);
+    }
+
+    .tag-btn[aria-pressed="true"] {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+
+    .course-tag-btn {
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded);
+      border: var(--hairline-strong);
+      background: var(--surface-container-low);
+      color: var(--on-surface);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+    }
+
+    .course-tag-btn:hover {
+      background: var(--surface-container-high);
+    }
+
+    .course-tag-btn[aria-pressed="true"] {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+
+    .course-tag-btn.is-tour-focus {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--tertiary) 65%, transparent);
+    }
+
+    .course-meta-banner {
+      padding: var(--space-md);
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      margin-bottom: var(--space-md);
+      display: grid;
+      gap: var(--space-xs);
+    }
+
+    .course-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .weeks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+      gap: var(--space-sm);
+    }
+
+    .week-card {
+      padding: var(--space-sm) var(--space-md);
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .week-card:hover {
+      background: var(--surface-container-high);
+    }
+
+    .week-badge-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .week-topic {
+      font-size: 0.9rem;
+      color: var(--on-surface);
+      line-height: 1.45;
+    }
+
+    mark.kw-hit {
+      background: color-mix(in srgb, var(--tertiary) 28%, transparent);
+      color: var(--on-surface);
+      padding: 0 3px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      padding: var(--space-xl);
+      text-align: center;
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      display: grid;
+      gap: var(--space-sm);
+      justify-items: center;
+    }
+
+    /* Interactive Research / Dashboard Detail Drawer Modal */
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: color-mix(in srgb, var(--background) 65%, transparent);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-lg);
+    }
+
+    .drawer-backdrop.is-open {
+      display: flex;
+    }
+
+    .drawer-dialog {
+      width: min(760px, 100%);
+      max-height: 88vh;
+      overflow-y: auto;
+      background: var(--surface-container);
+      border: var(--hairline-strong);
+      border-radius: var(--rounded-lg);
+      box-shadow: 0 24px 60px color-mix(in srgb, var(--on-surface) 22%, transparent);
+      padding: var(--space-xl);
+      display: grid;
+      gap: var(--space-md);
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+
+    .drawer-box {
+      padding: var(--space-md);
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+    }
+
+    /* Bottom-Right Holographic 3D Mascot Widget */
+    .mascot-widget {
+      position: fixed;
+      right: var(--space-lg);
+      bottom: var(--space-lg);
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--space-sm);
+      pointer-events: none;
+    }
+
+    .mascot-bubble {
+      pointer-events: auto;
+      width: min(300px, calc(100vw - 2rem));
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: var(--hairline-strong);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--panel-shadow);
+      padding: var(--space-md);
+      display: grid;
+      gap: var(--space-xs);
+    }
+
+    .mascot-bubble.is-collapsed {
+      display: none;
+    }
+
+    .mascot-bubble-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+    }
+
+    .mascot-name-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-xs);
+      align-items: end;
+      margin-top: var(--space-xs);
+    }
+
+    .mascot-canvas-wrap {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    #mascot-canvas {
+      width: 132px;
+      height: 132px;
+      border-radius: var(--rounded-full);
+      cursor: grab;
+      touch-action: none;
+      background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 72%);
+    }
+
+    #mascot-canvas:active {
+      cursor: grabbing;
+    }
+
+    .mascot-toggle-bubble {
+      min-height: 36px;
+      min-width: 36px;
+      border-radius: var(--rounded-full);
+      border: var(--hairline-strong);
+      background: var(--surface-container);
+      color: var(--on-surface);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    .tts-zone {
+      border-radius: var(--rounded);
+      transition: box-shadow var(--dur-micro) var(--ease-out);
+    }
+
+    .tts-enabled .tts-zone:hover {
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tertiary) 45%, transparent);
+    }
+
+    .toast-msg {
+      position: fixed;
+      left: 50%;
+      bottom: var(--space-lg);
+      transform: translateX(-50%);
+      z-index: 50;
+      padding: var(--space-sm) var(--space-lg);
+      border-radius: var(--rounded-full);
+      background: var(--on-surface);
+      color: var(--background);
+      font-size: var(--label-size);
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--dur-short) var(--ease-out);
+    }
+
+    .toast-msg.is-shown {
+      opacity: 1;
+    }
+
+    @media (max-width: 1080px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .bento-main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-shell {
+        padding: var(--space-sm) var(--space-sm) var(--space-3xl);
+      }
+      .kpi-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .syllabus-toolbar {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .mascot-widget {
+        right: var(--space-sm);
+        bottom: var(--space-sm);
+      }
+      #mascot-canvas {
+        width: 104px;
+        height: 104px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg-scene-canvas" aria-hidden="true"></canvas>
+
+  <main class="app-shell" id="app-shell">
+    <!-- Top Masthead -->
+    <header class="masthead">
+      <div class="brand-block tts-zone" id="tts-hero" tabindex="0">
+        <h1 class="brand-title" id="ui-site-title">鄭凱文SCI學術研究及科技管理教學平台</h1>
+        <p class="brand-subtitle" id="ui-site-subtitle">國立陽明交通大學 科技管理研究所 博士｜AI 供應鏈優化演算法、科技商品化與科技管理實作課程總覽</p>
+      </div>
+
+      <div class="toolbar" role="toolbar" aria-label="Dashboard controls">
+        <button type="button" class="btn-control" id="btn-overview-mode" aria-pressed="true" onclick="toggleOverviewMode()">
+          <i data-lucide="layout-grid" aria-hidden="true"></i>
+          <span id="ui-btn-overview">全景 Overview</span>
+        </button>
+
+        <button type="button" class="btn-control" id="btn-tour-toggle" aria-pressed="false" onclick="toggleTourAnimation()">
+          <i data-lucide="play" aria-hidden="true"></i>
+          <span id="ui-btn-tour">標籤巡迴：自動播放</span>
+        </button>
+
+        <button type="button" class="btn-control" id="btn-tts-toggle" aria-pressed="false" onclick="toggleTtsMode()">
+          <i data-lucide="volume-2" aria-hidden="true"></i>
+          <span id="ui-btn-tts">懸停語音：關閉</span>
+        </button>
+
+        <button type="button" class="btn-control" id="btn-theme-toggle" aria-pressed="false" onclick="toggleDayNightTheme()">
+          <i data-lucide="sun" aria-hidden="true"></i>
+          <span id="ui-btn-theme">Nival 白天模式</span>
+        </button>
+
+        <div class="lang-group" role="group" aria-label="Language switcher">
+          <button type="button" class="lang-btn" id="lang-zh-TW" aria-pressed="true" onclick="setLanguage('zh-TW')">繁中</button>
+          <button type="button" class="lang-btn" id="lang-zh-CN" aria-pressed="false" onclick="setLanguage('zh-CN')">简中</button>
+          <button type="button" class="lang-btn" id="lang-en" aria-pressed="false" onclick="setLanguage('en')">EN</button>
+          <button type="button" class="lang-btn" id="lang-de" aria-pressed="false" onclick="setLanguage('de')">DE</button>
+          <button type="button" class="lang-btn" id="lang-fr" aria-pressed="false" onclick="setLanguage('fr')">FR</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tour Spotlight Banner -->
+    <div class="tour-banner" id="tour-banner" aria-live="polite">
+      <div class="tour-banner-text">
+        <i data-lucide="sparkles" aria-hidden="true"></i>
+        <span id="tour-status-text"></span>
+      </div>
+      <button type="button" class="btn-control" onclick="toggleTourAnimation()">
+        <span id="ui-tour-pause-inline">暫停播放</span>
+      </button>
+    </div>
+
+    <!-- TTS Active Status Banner -->
+    <div class="tts-status-bar" id="tts-status-bar" aria-live="polite">
+      <span id="tts-status-text"></span>
+      <button type="button" class="btn-control" style="min-height: 32px; padding: 2px 10px;" onclick="stopSpeaking()">
+        <span id="ui-tts-stop">停止朗讀</span>
+      </button>
+    </div>
+
+    <!-- Row 1: KPI Metrics -->
+    <section class="kpi-grid" aria-label="Key metrics">
+      <article class="panel kpi-card tts-zone" tabindex="0">
+        <span class="data-label" id="kpi-1-label">SCIE / ESCI 國際期刊發表</span>
+        <span class="kpi-value" id="kpi-1-val">5 篇已出版 (+4 審稿中)</span>
+        <span class="kpi-delta" id="kpi-1-delta">最高 JCR Q1 TOP｜IF 10.7 (通訊作者)</span>
+      </article>
+      <article class="panel kpi-card tts-zone" tabindex="0">
+        <span class="data-label" id="kpi-2-label">博士學業與專利影響力</span>
+        <span class="kpi-value" id="kpi-2-val">GPA 4.21｜1 項專利引用</span>
+        <span class="kpi-delta" id="kpi-2-delta">論文考試 4.3｜修課 4.12</span>
+      </article>
+      <article class="panel kpi-card tts-zone" tabindex="0">
+        <span class="data-label" id="kpi-3-label">AI 演算法實證優化成效</span>
+        <span class="kpi-value" id="kpi-3-val">-32% 延遲｜93.3% 成功率</span>
+        <span class="kpi-delta" id="kpi-3-delta">6G Fuzzy-DT &amp; MBOA 實測表現</span>
+      </article>
+      <article class="panel kpi-card tts-zone" tabindex="0">
+        <span class="data-label" id="kpi-4-label">科技管理實作課程矩陣</span>
+        <span class="kpi-value" id="kpi-4-val">5 門課程 × 16 週</span>
+        <span class="kpi-delta" id="kpi-4-delta">80 週完整教案｜即時跨課檢索</span>
+      </article>
+    </section>
+
+    <!-- Row 2: Left Profile + Chart / Right 7 GitHub Dashboards -->
+    <section class="bento-main">
+      <div class="stack-col">
+        <!-- Academic Profile & Credentials -->
+        <article class="panel tts-zone" id="panel-profile" tabindex="0">
+          <div class="section-header">
+            <h2 class="section-title" id="ui-profile-heading">學術履歷與研究焦點</h2>
+            <span class="data-label" id="ui-profile-tag">科技管理｜創新創業</span>
+          </div>
+
+          <ul class="profile-list">
+            <li class="profile-item">
+              <strong id="edu-1-title">國立陽明交通大學（NYCU）科技管理研究所 博士</strong>
+              <span id="edu-1-desc">博士論文：基於人工智慧供應鏈與混合製造物流優化排程演算法。結合多目標適應度函數、混沌序列與煙花演算法優化全域搜索，應用於混合製造決策與干擾重新排程。</span>
+            </li>
+            <li class="profile-item">
+              <strong id="edu-2-title">香港中文大學 碩士｜香港浸會大學 榮譽學士</strong>
+              <span id="edu-2-desc">商管、跨領域科技管理與視覺商品展示專業訓練（曾獲浸會大學商品展示設計進階專業資歷）。</span>
+            </li>
+            <li class="profile-item">
+              <strong id="exp-1-title">產學與顧問實務：香港 業界 高級經理及顧問｜陽明交大兼任助教</strong>
+              <span id="exp-1-desc">涵蓋企業經營管理、顧問諮詢、展銷策劃、政府基金申請、教學授課、專利檢索與國際期刊發表。</span>
+            </li>
+          </ul>
+
+          <div class="scope-chips" id="research-scopes-list"></div>
+
+          <div class="contact-row">
+            <button type="button" class="copy-pill" onclick="copyTextValue('dr.chenghm@gmail.com')">
+              <i data-lucide="mail" aria-hidden="true"></i>
+              <span>dr.chenghm@gmail.com</span>
+            </button>
+            <button type="button" class="copy-pill" onclick="copyTextValue('0009-0002-8416-6042')">
+              <i data-lucide="fingerprint" aria-hidden="true"></i>
+              <span>ORCID: 0009-0002-8416-6042</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- Quantitative Impact Chart -->
+        <article class="panel" id="panel-chart">
+          <div class="section-header">
+            <h2 class="section-title" id="ui-chart-heading">期刊影響因子與實證優化指標</h2>
+            <div class="chart-controls">
+              <button type="button" class="tag-btn" id="btn-chart-if" aria-pressed="true" onclick="switchChartMode('if')">IF 分佈</button>
+              <button type="button" class="tag-btn" id="btn-chart-perf" aria-pressed="false" onclick="switchChartMode('perf')">演算法效能</button>
+            </div>
+          </div>
+          <div class="chart-box" style="min-height: 250px;">
+            <canvas id="impactChart"></canvas>
+          </div>
+        </article>
+      </div>
+
+      <!-- 7 Research & Teaching Dashboards -->
+      <article class="panel" id="panel-dashboards">
+        <div class="section-header">
+          <h2 class="section-title" id="ui-dashboards-heading">SCI 學術研究與教學互動儀表板（點擊開啟 GitHub Dashboard 詳情）</h2>
+          <span class="data-label" id="ui-dashboards-hint">共 7 項實作與論文主題</span>
+        </div>
+
+        <div class="dashboards-grid" id="dashboards-grid"></div>
+      </article>
+    </section>
+
+    <!-- Row 3: 5-Course Syllabus Explorer & Real-Time Keyword Filter -->
+    <section class="panel" id="panel-syllabus">
+      <div class="section-header">
+        <h2 class="section-title" id="ui-syllabus-heading">中興科管 5 門課程教學大綱與即時關鍵字篩選</h2>
+        <span class="data-label" id="syllabus-count-badge">顯示中：16 週進度</span>
+      </div>
+
+      <div class="syllabus-toolbar">
+        <div class="field-group">
+          <label class="field-label" for="syllabus-search" id="ui-search-label">跨課程關鍵字搜尋（即時過濾 5 門課 × 16 週主題）</label>
+          <input type="search" id="syllabus-search" class="text-input" oninput="onSearchInput(this.value)" autocomplete="off">
+        </div>
+        <button type="button" class="btn-control" id="btn-clear-filter" onclick="clearSyllabusFilter()">
+          <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+          <span id="ui-btn-clear">重設篩選</span>
+        </button>
+      </div>
+
+      <div class="keyword-chips" id="keyword-chips-row" role="group" aria-label="Quick keyword filters"></div>
+
+      <div class="course-tabs" id="course-tabs-row" role="tablist" aria-label="Courses"></div>
+
+      <div class="course-meta-banner tts-zone" id="course-meta-banner" tabindex="0"></div>
+
+      <div class="weeks-grid" id="weeks-grid"></div>
+    </section>
+  </main>
+
+  <!-- In-Page Research & GitHub Dashboard Detail Modal -->
+  <div class="drawer-backdrop" id="detail-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="handleModalBackdropClick(event)">
+    <div class="drawer-dialog">
+      <div class="drawer-header">
+        <div>
+          <span class="status-chip is-primary" id="modal-badge"></span>
+          <h2 class="section-title" id="modal-title" style="margin-top: var(--space-xs);"></h2>
+        </div>
+        <button type="button" class="btn-control" onclick="closeProjectModal()" aria-label="Close">
+          <i data-lucide="x" aria-hidden="true"></i>
+          <span id="ui-modal-close">關閉</span>
+        </button>
+      </div>
+
+      <div class="drawer-box tts-zone" tabindex="0">
+        <span class="data-label" id="ui-modal-meta-label">期刊 / 發表與識別資訊</span>
+        <p id="modal-meta" style="margin: var(--space-xs) 0 0; font-weight: 600;"></p>
+      </div>
+
+      <div class="drawer-box tts-zone" tabindex="0">
+        <span class="data-label" id="ui-modal-abstract-label">核心摘要與研究內容</span>
+        <p id="modal-abstract" style="margin: var(--space-xs) 0 0;"></p>
+      </div>
+
+      <div class="drawer-box tts-zone" tabindex="0">
+        <span class="data-label" id="ui-modal-innovation-label">方法創新與產業落地價值</span>
+        <p id="modal-innovation" style="margin: var(--space-xs) 0 0;"></p>
+      </div>
+
+      <div class="drawer-box">
+        <span class="data-label" id="ui-modal-file-label">對應 GitHub Pages Dashboard 檔案</span>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-top: var(--space-xs);">
+          <code id="modal-filename" style="font-family: var(--font-label); color: var(--primary); font-weight: 600; word-break: break-all;"></code>
+          <button type="button" class="btn-control" onclick="copyCurrentModalFile()">
+            <i data-lucide="copy" aria-hidden="true"></i>
+            <span id="ui-modal-copy">複製檔案名稱</span>
+          </button>
+        </div>
+        <p id="modal-sandbox-note" style="margin: var(--space-xs) 0 0; font-size: 0.82rem; color: var(--on-surface-variant);"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom-Right 3D Holographic Amoeba Mascot -->
+  <aside class="mascot-widget" aria-label="Interactive 3D Mascot">
+    <div class="mascot-bubble" id="mascot-bubble">
+      <div class="mascot-bubble-top">
+        <span class="data-label" id="mascot-title-label">小科管星人｜全息助手</span>
+        <button type="button" class="mascot-toggle-bubble" onclick="toggleMascotBubble()" aria-label="Toggle speech bubble">
+          <i data-lucide="minus" aria-hidden="true"></i>
+        </button>
+      </div>
+      <p id="mascot-greeting-text" style="margin: 0; font-size: 0.875rem; line-height: 1.45;"></p>
+      <div class="mascot-name-form">
+        <div class="field-group">
+          <label class="field-label" for="visitor-name-input" id="ui-visitor-label">請問您的姓名？</label>
+          <input type="text" id="visitor-name-input" class="text-input" style="min-height: 36px; padding: 4px 10px; font-size: 0.85rem;" maxlength="32">
+        </div>
+        <button type="button" class="btn-control" style="min-height: 36px; padding: 4px 12px;" onclick="saveVisitorName()">
+          <span id="ui-visitor-save">打招呼</span>
+        </button>
+      </div>
+      <span class="data-label" id="mascot-hint-label" style="font-size: 0.68rem;">拖曳可 360° 旋轉｜點擊本體切換晝夜星空</span>
+    </div>
+
+    <div class="mascot-canvas-wrap">
+      <button type="button" class="mascot-toggle-bubble" id="btn-show-bubble" onclick="toggleMascotBubble()" aria-label="Open greeting bubble" style="display: none;">
+        <i data-lucide="message-circle" aria-hidden="true"></i>
+      </button>
+      <canvas id="mascot-canvas" width="264" height="264" role="button" tabindex="0" aria-label="3D Holographic Mascot: drag to rotate 360 degrees, click to switch day and night starry mode" onkeydown="handleMascotKey(event)"></canvas>
+    </div>
+  </aside>
+
+  <div class="toast-msg" id="toast-msg" role="status" aria-live="polite"></div>
+
+  <api-shim></api-shim>
+  <script>
+    // =========================================================================
+    // 1. MULTILINGUAL DICTIONARIES (zh-TW, zh-CN, en, de, fr)
+    // =========================================================================
+    const I18N = {
+      'zh-TW': {
+        siteTitle: `鄭凱文SCI學術研究及科技管理教學平台`,
+        siteSubtitle: `國立陽明交通大學 科技管理研究所 博士｜AI 供應鏈優化演算法、科技商品化與科技管理實作課程總覽`,
+        btnOverview: `全景 Overview`,
+        btnCompact: `精簡檢視`,
+        btnTourPlay: `標籤巡迴：自動播放`,
+        btnTourPause: `標籤巡迴：暫停播放`,
+        btnTtsOff: `懸停語音：關閉`,
+        btnTtsOn: `懸停語音：開啟 (2.0x)`,
+        btnDay: `Nival 白天模式`,
+        btnNight: `黑夜星空模式`,
+        tourPauseInline: `暫停播放`,
+        ttsStop: `停止朗讀`,
+        kpi1Label: `SCIE / ESCI 國際期刊發表`,
+        kpi1Val: `5 篇已出版 (+4 審稿中)`,
+        kpi1Delta: `最高 JCR Q1 TOP｜IF 10.7 (通訊作者)`,
+        kpi2Label: `博士學業與專利影響力`,
+        kpi2Val: `GPA 4.21｜1 項專利引用`,
+        kpi2Delta: `論文考試 4.3｜修課 4.12`,
+        kpi3Label: `AI 演算法實證優化成效`,
+        kpi3Val: `-32% 延遲｜93.3% 成功率`,
+        kpi3Delta: `6G Fuzzy-DT & MBOA 實測表現`,
+        kpi4Label: `科技管理實作課程矩陣`,
+        kpi4Val: `5 門課程 × 16 週`,
+        kpi4Delta: `80 週完整教案｜即時跨課檢索`,
+        profileHeading: `學術履歷與研究焦點`,
+        profileTag: `科技管理｜創新創業`,
+        edu1Title: `國立陽明交通大學（NYCU）科技管理研究所 博士`,
+        edu1Desc: `博士論文：基於人工智慧供應鏈與混合製造物流優化排程演算法。結合多目標適應度函數、混沌序列與煙花演算法優化全域搜索，應用於混合製造決策與干擾重新排程。`,
+        edu2Title: `香港中文大學 碩士｜香港浸會大學 榮譽學士`,
+        edu2Desc: `兼具商管研究訓練與商品展示設計專業資歷，整合技術創新、供應鏈系統與商業管理實務。`,
+        exp1Title: `產學與顧問實務：香港業界 高級經理及顧問｜陽明交大兼任助教`,
+        exp1Desc: `負責企業經營管理、顧問諮詢、展銷策劃、政府基金申請、教學授課、專利檢索與國際期刊發表。`,
+        scopes: [`人工智慧與機器學習`, `企業管理與經營政策`, `AI 數據訓練與產業研究`, `數據分析與視覺化`, `供應鏈管理`, `工作流模組化與自動化`, `創業創新與專案管理`],
+        chartHeading: `期刊影響因子與實證優化指標`,
+        chartIfBtn: `IF 分佈`,
+        chartPerfBtn: `演算法效能`,
+        dashboardsHeading: `SCI 學術研究與教學互動儀表板（點擊檢視 GitHub 檔案與摘要）`,
+        dashboardsHint: `共 7 項研究與教學儀表板`,
+        syllabusHeading: `中興科管 5 門課程教學大綱與即時關鍵字篩選`,
+        searchLabel: `跨課程關鍵字搜尋（即時過濾 5 門課 × 16 週主題）`,
+        searchPlaceholder: `輸入關鍵字，例如：LLM、專利、Pandas、Figma...`,
+        btnClear: `重設篩選`,
+        allCoursesTab: `全部 5 門課程 (80 週)`,
+        weekPrefix: `第`,
+        weekSuffix: `週`,
+        creditsLabel: `學分數`,
+        prereqLabel: `預修科目`,
+        textbookLabel: `指定教材`,
+        noPrereq: `無`,
+        customNotes: `自制課堂講義`,
+        creditsUnit: `3 學分`,
+        showingCount: `顯示中：{n} 週教學單元`,
+        emptyTitle: `找不到符合「{q}」的課程單元`,
+        emptyDesc: `請嘗試其他關鍵字（如 LLM、專利、Pandas、Figma）或重設篩選條件。`,
+        modalMetaLabel: `期刊 / 發表與識別資訊`,
+        modalAbstractLabel: `核心摘要與研究內容`,
+        modalInnovationLabel: `方法創新與產業落地價值`,
+        modalFileLabel: `對應 GitHub Pages Dashboard 檔案`,
+        modalCopy: `複製檔案名稱`,
+        modalClose: `關閉`,
+        modalSandboxNote: `提示：本儀表板運行於安全沙盒環境，不直接跳轉外部網頁；請使用上方「複製檔案名稱」開啟對應 GitHub Pages 專案檔。`,
+        mascotTitle: `小科管星人｜全息助手`,
+        visitorLabel: `請問您的姓名？`,
+        visitorSave: `打招呼`,
+        mascotHint: `拖曳可 360° 旋轉｜點擊本體切換晝夜星空`,
+        mascotAsk: `哈囉！我是妙脆角小科管星人 👾 請問怎麼稱呼您？點擊我可以切換白天與黑夜星空模式喔！`,
+        mascotGreet: `歡迎您，{name}！✨ 您現在正在瀏覽鄭凱文博士的 SCI 研究與科管教學平台，試著旋轉我或搜尋課程關鍵字吧！`,
+        copiedToast: `已複製：{val}`,
+        ttsReading: `正在朗讀（2.0x 語速）：{text}`,
+        ttsUnsupported: `目前瀏覽器環境不支援語音朗讀`,
+        tourStepLabel: `自動巡迴焦點 ({idx}/{total})：{name}`,
+        chartIfLabels: [`J. Clean. Prod. (Q1 TOP)`, `Vehic. Commun. (Q1)`, `IEEE Access (Q2)`, `IJCM (ESCI Q2)`, `IJAMT 博論 (Q2)`],
+        chartIfDataset: `期刊影響因子 (Impact Factor)`,
+        chartPerfLabels: [`6G Fuzzy-DT 延遲降幅`, `6G Fuzzy-DT 能耗降幅`, `6G 丟包率降幅`, `MBOA 求解成功率`, `DRQL 成本降幅`, `DRQL 延遲降幅`],
+        chartPerfDataset: `實證指標表現 (%)`
+      },
+      'zh-CN': {
+        siteTitle: `郑凯文SCI学术研究及科技管理教学平台`,
+        siteSubtitle: `国立阳明交通大学 科技管理研究所 博士｜AI 供应链优化算法、科技商品化与科技管理实作课程总览`,
+        btnOverview: `全景 Overview`,
+        btnCompact: `精简视图`,
+        btnTourPlay: `标签巡回：自动播放`,
+        btnTourPause: `标签巡回：暂停播放`,
+        btnTtsOff: `悬停语音：关闭`,
+        btnTtsOn: `悬停语音：开启`,
+        btnDay: `Nival 白天模式`,
+        btnNight: `黑夜星空模式`,
+        tourPauseInline: `暂停播放`,
+        ttsStop: `停止朗读`,
+        kpi1Label: `SCIE / ESCI 国际期刊发表`,
+        kpi1Val: `5 篇已出版 (+4 审稿中)`,
+        kpi1Delta: `最高 JCR Q1 TOP｜IF 10.7 (通讯作者)`,
+        kpi2Label: `博士学业与专利影响力`,
+        kpi2Val: `GPA 4.21｜1 项专利引用`,
+        kpi2Delta: `论文考试 4.3｜修课 4.12`,
+        kpi3Label: `AI 算法实证优化成效`,
+        kpi3Val: `-32% 延迟｜93.3% 成功率`,
+        kpi3Delta: `6G Fuzzy-DT & MBOA 实测表现`,
+        kpi4Label: `科技管理实作课程矩阵`,
+        kpi4Val: `5 门课程 × 16 周`,
+        kpi4Delta: `80 周完整教案｜实时跨课检索`,
+        profileHeading: `学术履历与研究焦点`,
+        profileTag: `科技管理｜创新创业`,
+        edu1Title: `国立阳明交通大学（NYCU）科技管理研究所 博士`,
+        edu1Desc: `博士论文：基于人工智能供应链与混合制造物流优化排程算法。结合多目标适应度函数、混沌序列与烟花算法优化全局搜索，应用于混合制造决策与干扰重排程。`,
+        edu2Title: `香港中文大学 硕士｜香港浸会大学 荣誉学士`,
+        edu2Desc: `兼具商管研究训练与商品展示设计专业资历，整合技术创新、供应链系统与商业管理实务。`,
+        exp1Title: `产学与顾问实务：香港业界 高级经理及顾问｜阳明交大兼任助教`,
+        exp1Desc: `负责企业经营管理、顾问咨询、展销策划、政府基金申请、教学授课、专利检索与国际期刊发表。`,
+        scopes: [`人工智能与机器学习`, `企业管理与经营政策`, `AI 数据训练与产业研究`, `数据分析与可视化`, `供应链管理`, `工作流模块化与自动化`, `创业创新与项目管理`],
+        chartHeading: `期刊影响因子与实证优化指标`,
+        chartIfBtn: `IF 分布`,
+        chartPerfBtn: `算法效能`,
+        dashboardsHeading: `SCI 学术研究与教学互动仪表板（点击查看 GitHub 文件与摘要）`,
+        dashboardsHint: `共 7 项研究与教学仪表板`,
+        syllabusHeading: `中兴科管 5 门课程教学大纲与实时关键字筛选`,
+        searchLabel: `跨课程关键字搜索（实时过滤 5 门课 × 16 周主题）`,
+        searchPlaceholder: `输入关键字，例如：LLM、专利、Pandas、Figma...`,
+        btnClear: `重置筛选`,
+        allCoursesTab: `全部 5 门课程 (80 周)`,
+        weekPrefix: `第`,
+        weekSuffix: `周`,
+        creditsLabel: `学分数`,
+        prereqLabel: `预修科目`,
+        textbookLabel: `指定教材`,
+        noPrereq: `无`,
+        customNotes: `自制课堂讲义`,
+        creditsUnit: `3 学分`,
+        showingCount: `显示中：{n} 周教学单元`,
+        emptyTitle: `找不到符合“{q}”的课程单元`,
+        emptyDesc: `请尝试其他关键字（如 LLM、专利、Pandas、Figma）或重置筛选条件。`,
+        modalMetaLabel: `期刊 / 发表与识别信息`,
+        modalAbstractLabel: `核心摘要与研究内容`,
+        modalInnovationLabel: `方法创新与产业落地价值`,
+        modalFileLabel: `对应 GitHub Pages Dashboard 文件`,
+        modalCopy: `复制文件名称`,
+        modalClose: `关闭`,
+        modalSandboxNote: `提示：本仪表板运行于安全沙盒环境，不直接跳转外部网页；请使用上方“复制文件名称”打开对应 GitHub Pages 项目文件。`,
+        mascotTitle: `小科管星人｜全息助手`,
+        visitorLabel: `请问您的姓名？`,
+        visitorSave: `打招呼`,
+        mascotHint: `拖拽可 360° 旋转｜点击本体切换昼夜星空`,
+        mascotAsk: `哈喽！我是双角小科管星人 👾 请问怎么称呼您？点击我可以切换白天与黑夜星空模式哦！`,
+        mascotGreet: `欢迎您，{name}！✨ 您现在正在浏览郑凯文博士的 SCI 研究与科管教学平台，试着旋转我或搜索课程关键字吧！`,
+        copiedToast: `已复制：{val}`,
+        ttsReading: `正在朗读：{text}`,
+        ttsUnsupported: `当前浏览器环境不支持语音朗读`,
+        tourStepLabel: `自动巡回焦点 ({idx}/{total})：{name}`,
+        chartIfLabels: [`J. Clean. Prod. (Q1 TOP)`, `Vehic. Commun. (Q1)`, `IEEE Access (Q2)`, `IJCM (ESCI Q2)`, `IJAMT 博论 (Q2)`],
+        chartIfDataset: `期刊影响因子 (Impact Factor)`,
+        chartPerfLabels: [`6G Fuzzy-DT 延迟降幅`, `6G Fuzzy-DT 能耗降幅`, `6G 丢包率降幅`, `MBOA 求解成功率`, `DRQL 成本降幅`, `DRQL 延迟降幅`],
+        chartPerfDataset: `实证指标表现 (%)`
+      },
+      'en': {
+        siteTitle: `Hoi-Man Cheng SCI Research & Tech Management Teaching Platform`,
+        siteSubtitle: `PhD in Technology Management, NYCU | AI Supply Chain Optimization, Tech Commercialization & Practical Curriculum`,
+        btnOverview: `Panorama Overview`,
+        btnCompact: `Focused View`,
+        btnTourPlay: `Tag Tour: Auto-Play`,
+        btnTourPause: `Tag Tour: Pause`,
+        btnTtsOff: `Hover Voice: Off`,
+        btnTtsOn: `Hover Voice: On`,
+        btnDay: `Nival Day Mode`,
+        btnNight: `Starry Night Mode`,
+        tourPauseInline: `Pause Tour`,
+        ttsStop: `Stop Speech`,
+        kpi1Label: `SCIE / ESCI Publications`,
+        kpi1Val: `5 Published (+4 Under Review)`,
+        kpi1Delta: `Peak JCR Q1 TOP | IF 10.7 (Corresponding)`,
+        kpi2Label: `Doctoral & Patent Impact`,
+        kpi2Val: `GPA 4.21 | 1 Patent Citation`,
+        kpi2Delta: `Defense 4.3 | Coursework 4.12`,
+        kpi3Label: `AI Algorithm Empirical Gains`,
+        kpi3Val: `-32% Latency | 93.3% Success`,
+        kpi3Delta: `6G Fuzzy-DT & MBOA Benchmarks`,
+        kpi4Label: `Tech Management Syllabi`,
+        kpi4Val: `5 Courses × 16 Weeks`,
+        kpi4Delta: `80 Weekly Modules | Live Cross-Filter`,
+        profileHeading: `Academic Profile & Research Scope`,
+        profileTag: `Technology Management | Entrepreneurship`,
+        edu1Title: `PhD in Technology Management, National Yang Ming Chiao Tung University (NYCU)`,
+        edu1Desc: `Dissertation: Hybrid manufacturing logistics optimization scheduling algorithm based on intelligent supply chain management and AI, combining multi-objective fitness, chaotic sequences, and fireworks optimization.`,
+        edu2Title: `Master, The Chinese University of Hong Kong | Honours Bachelor, Hong Kong Baptist University`,
+        edu2Desc: `Interdisciplinary training in business administration, technology management, and visual merchandising design.`,
+        exp1Title: `Industry & Teaching: Senior Manager & Consultant at HK | NYCU Teaching Assistant`,
+        exp1Desc: `Operations management, consulting, exhibition planning, government funding, lecturing, patent search, and international journal publishing.`,
+        scopes: [`AI & Machine Learning`, `Business Administration Strategy`, `AI Data Training & Industry Analysis`, `Data Analysis & Visualization`, `Supply Chain Management`, `Workflow Modularization & Automation`, `Entrepreneurship & Project Management`],
+        chartHeading: `Journal Impact Factors & Empirical Performance`,
+        chartIfBtn: `Impact Factor`,
+        chartPerfBtn: `Algorithm Gains`,
+        dashboardsHeading: `SCI Research & Teaching Dashboards (Click to Inspect Details & File Path)`,
+        dashboardsHint: `7 Interactive Research & Studio Projects`,
+        syllabusHeading: `5-Course Tech Management Syllabus & Real-Time Keyword Filter`,
+        searchLabel: `Cross-Course Keyword Search (Live-filters all 5 courses × 16 weeks)`,
+        searchPlaceholder: `Type keywords: LLM, Patent, Pandas, Figma...`,
+        btnClear: `Reset Filter`,
+        allCoursesTab: `All 5 Courses (80 Weeks)`,
+        weekPrefix: `Week `,
+        weekSuffix: ``,
+        creditsLabel: `Credits`,
+        prereqLabel: `Prerequisite`,
+        textbookLabel: `Materials`,
+        noPrereq: `None`,
+        customNotes: `Instructor Lecture Notes`,
+        creditsUnit: `3 Credits`,
+        showingCount: `Showing: {n} weekly units`,
+        emptyTitle: `No syllabus units match "{q}"`,
+        emptyDesc: `Try another keyword (LLM, Patent, Pandas, Figma) or reset filters.`,
+        modalMetaLabel: `Journal / Publication & Identifiers`,
+        modalAbstractLabel: `Core Abstract & Research Scope`,
+        modalInnovationLabel: `Methodological Innovation & Practical Value`,
+        modalFileLabel: `Corresponding GitHub Pages Dashboard File`,
+        modalCopy: `Copy Filename`,
+        modalClose: `Close`,
+        modalSandboxNote: `Note: Running inside a sandboxed viewer; outbound popups are disabled. Copy the filename above to open the GitHub Pages module.`,
+        mascotTitle: `Tech-Mgmt Alien | Holo Guide`,
+        visitorLabel: `What is your name?`,
+        visitorSave: `Say Hi`,
+        mascotHint: `Drag 360° to rotate | Click mascot for Day/Night sky`,
+        mascotAsk: `Hello! I'm the twin-horned Tech-Mgmt Alien 👾 What's your name? Click me to switch between Day and Starry Night!`,
+        mascotGreet: `Welcome, {name}! ✨ Explore Dr. Cheng's SCI research and tech-management syllabi—drag to spin me or filter any topic!`,
+        copiedToast: `Copied: {val}`,
+        ttsReading: `Speaking: {text}`,
+        ttsUnsupported: `Speech synthesis unavailable in this browser`,
+        tourStepLabel: `Auto-Tour Spotlight ({idx}/{total}): {name}`,
+        chartIfLabels: [`J. Clean. Prod. (Q1 TOP)`, `Vehic. Commun. (Q1)`, `IEEE Access (Q2)`, `IJCM (ESCI Q2)`, `IJAMT PhD (Q2)`],
+        chartIfDataset: `Journal Impact Factor`,
+        chartPerfLabels: [`6G Fuzzy-DT Latency Drop`, `6G Fuzzy-DT Energy Drop`, `6G Packet Loss Drop`, `MBOA Solve Rate`, `DRQL Cost Drop`, `DRQL Delay Drop`],
+        chartPerfDataset: `Empirical Benchmark (%)`
+      },
+      'de': {
+        siteTitle: `Hoi-Man Cheng Plattform für SCI-Forschung & Technologiemanagement`,
+        siteSubtitle: `PhD in Technologiemanagement, NYCU | KI-Lieferkettenoptimierung, Kommerzialisierung & Praxislehrpläne`,
+        btnOverview: `Panorama-Übersicht`,
+        btnCompact: `Fokusansicht`,
+        btnTourPlay: `Tag-Tour: Autoplay`,
+        btnTourPause: `Tag-Tour: Pause`,
+        btnTtsOff: `Hover-Sprache: Aus`,
+        btnTtsOn: `Hover-Sprache: Ein`,
+        btnDay: `Nival Tagmodus`,
+        btnNight: `Sternennacht-Modus`,
+        tourPauseInline: `Tour pausieren`,
+        ttsStop: `Vorlesen stoppen`,
+        kpi1Label: `SCIE / ESCI Publikationen`,
+        kpi1Val: `5 Veröffentlicht (+4 Review)`,
+        kpi1Delta: `Top JCR Q1 TOP | IF 10,7 (Korresp.)`,
+        kpi2Label: `Promotion & Patenteinfluss`,
+        kpi2Val: `GPA 4,21 | 1 Patentzitat`,
+        kpi2Delta: `Verteidigung 4,3 | Kurse 4,12`,
+        kpi3Label: `KI-Algorithmus Benchmarks`,
+        kpi3Val: `-32% Latenz | 93,3% Erfolg`,
+        kpi3Delta: `6G Fuzzy-DT & MBOA Ergebnisse`,
+        kpi4Label: `Lehrplan-Matrix`,
+        kpi4Val: `5 Kurse × 16 Wochen`,
+        kpi4Delta: `80 Einheiten | Live-Filter`,
+        profileHeading: `Akademisches Profil & Forschung`,
+        profileTag: `Technologiemanagement | Gründung`,
+        edu1Title: `PhD in Technologiemanagement, National Yang Ming Chiao Tung University (NYCU)`,
+        edu1Desc: `Dissertation: KI-basierter Optimierungsalgorithmus für hybride Fertigungs- und Lieferkettenlogistik mit chaotischen Sequenzen und Feuerwerksalgorithmus.`,
+        edu2Title: `Master, CUHK | Honours Bachelor, Hong Kong Baptist University`,
+        edu2Desc: `Interdisziplinäre Ausbildung in Betriebswirtschaft, Technologiemanagement und Visual Merchandising.`,
+        exp1Title: `Praxis & Lehre: Senior Manager & Berater bei HK | Lehrassistent NYCU `,
+        exp1Desc: `Unternehmensführung, Beratung, Messeplanung, Förderanträge, Lehre, Patentrecherche und internationale Publikationen.`,
+        scopes: [`KI & Maschinelles Lernen`, `Unternehmensstrategie`, `KI-Datentraining & Branchenanalyse`, `Datenanalyse & Visualisierung`, `Supply Chain Management`, `Workflow-Automatisierung`, `Gründung & Projektmanagement`],
+        chartHeading: `Journal Impact Factors & Algorithmus-Leistung`,
+        chartIfBtn: `Impact Factor`,
+        chartPerfBtn: `Effizienzgewinne`,
+        dashboardsHeading: `SCI-Forschung & Lehr-Dashboards (Klicken für Details & Dateipfad)`,
+        dashboardsHint: `7 Interaktive Forschungs- & Studio-Module`,
+        syllabusHeading: `5-Kurse-Lehrplan & Echtzeit-Schlagwortfilter`,
+        searchLabel: `Kursübergreifende Suche (filtert live 5 Kurse × 16 Wochen)`,
+        searchPlaceholder: `Stichwort eingeben: LLM, Patent, Pandas, Figma...`,
+        btnClear: `Filter zurücksetzen`,
+        allCoursesTab: `Alle 5 Kurse (80 Wochen)`,
+        weekPrefix: `Woche `,
+        weekSuffix: ``,
+        creditsLabel: `ECTS / Credits`,
+        prereqLabel: `Vorkenntnisse`,
+        textbookLabel: `Materialien`,
+        noPrereq: `Keine`,
+        customNotes: `Eigene Vorlesungsskripte`,
+        creditsUnit: `3 Credits`,
+        showingCount: `Angezeigt: {n} Wocheneinheiten`,
+        emptyTitle: `Keine Kurseinheiten für „{q}“ gefunden`,
+        emptyDesc: `Versuchen Sie ein anderes Schlagwort (LLM, Patent, Pandas, Figma) oder setzen Sie den Filter zurück.`,
+        modalMetaLabel: `Journal / Veröffentlichung & Kennungen`,
+        modalAbstractLabel: `Zusammenfassung & Forschungsfokus`,
+        modalInnovationLabel: `Methodische Innovation & Praxisnutzen`,
+        modalFileLabel: `Zugehörige GitHub Pages Dashboard-Datei`,
+        modalCopy: `Dateinamen kopieren`,
+        modalClose: `Schließen`,
+        modalSandboxNote: `Hinweis: Aus Sicherheitsgründen sind externe Popups in der Sandbox deaktiviert. Kopieren Sie den Dateinamen oben.`,
+        mascotTitle: `Tech-Mgmt Alien | Holo-Assistent`,
+        visitorLabel: `Wie heißen Sie?`,
+        visitorSave: `Grüßen`,
+        mascotHint: `360° drehen durch Ziehen | Klick für Tag/Nacht`,
+        mascotAsk: `Hallo! Ich bin das zweihörnige Tech-Mgmt-Alien 👾 Wie ist Ihr Name? Klicken Sie mich für Tag- & Sternennacht-Modus!`,
+        mascotGreet: `Willkommen, {name}! ✨ Entdecken Sie Dr. Chengs SCI-Forschung und die 5 Technologiemanagement-Kurse!`,
+        copiedToast: `Kopiert: {val}`,
+        ttsReading: `Vorlesen: {text}`,
+        ttsUnsupported: `Sprachausgabe nicht verfügbar`,
+        tourStepLabel: `Auto-Tour Fokus ({idx}/{total}): {name}`,
+        chartIfLabels: [`J. Clean. Prod. (Q1 TOP)`, `Vehic. Commun. (Q1)`, `IEEE Access (Q2)`, `IJCM (ESCI Q2)`, `IJAMT Diss. (Q2)`],
+        chartIfDataset: `Journal Impact Factor`,
+        chartPerfLabels: [`6G Fuzzy-DT Latenz -%`, `6G Fuzzy-DT Energie -%`, `6G Paketverlust -%`, `MBOA Erfolgsrate`, `DRQL Kosten -%`, `DRQL Verzug -%`],
+        chartPerfDataset: `Empirische Leistung (%)`
+      },
+      'fr': {
+        siteTitle: `Plateforme de Recherche SCI & Enseignement Tech-Mgmt — Dr Hoi-Man Cheng`,
+        siteSubtitle: `Doctorat en Management Technologique, NYCU | Optimisation Supply Chain par IA & Programmes Pratiques`,
+        btnOverview: `Vue Panoramique`,
+        btnCompact: `Vue Focalisée`,
+        btnTourPlay: `Visite Tags : Lecture`,
+        btnTourPause: `Visite Tags : Pause`,
+        btnTtsOff: `Voix au survol : Désactivée`,
+        btnTtsOn: `Voix au survol : Activée`,
+        btnDay: `Mode Jour Nival`,
+        btnNight: `Mode Nuit Étoilée`,
+        tourPauseInline: `Mettre en pause`,
+        ttsStop: `Arrêter la lecture`,
+        kpi1Label: `Publications SCIE / ESCI`,
+        kpi1Val: `5 Publiées (+4 en révision)`,
+        kpi1Delta: `JCR Q1 TOP | IF 10,7 (Auteur corresp.)`,
+        kpi2Label: `Doctorat & Impact Brevets`,
+        kpi2Val: `GPA 4,21 | 1 Citation Brevet`,
+        kpi2Delta: `Soutenance 4,3 | Cours 4,12`,
+        kpi3Label: `Gains Empiriques des Algorithmes IA`,
+        kpi3Val: `-32% Latence | 93,3% Succès`,
+        kpi3Delta: `Performances 6G Fuzzy-DT & MBOA`,
+        kpi4Label: `Matrice Pédagogique`,
+        kpi4Val: `5 Cours × 16 Semaines`,
+        kpi4Delta: `80 Unités | Filtrage en direct`,
+        profileHeading: `Parcours Académique & Axes de Recherche`,
+        profileTag: `Management Technologique | Entrepreneuriat`,
+        edu1Title: `Doctorat en Management Technologique, National Yang Ming Chiao Tung University (NYCU)`,
+        edu1Desc: `Thèse : Algorithme d'ordonnancement logistique hybride fondé sur l'IA et la chaîne d'approvisionnement intelligente (séquences chaotiques & feu d'artifice).`,
+        edu2Title: `Master, CUHK | Licence avec mention, Hong Kong Baptist University`,
+        edu2Desc: `Formation interdisciplinaire en gestion d'entreprise, management technologique et merchandising visuel.`,
+        exp1Title: `Expérience : Senior Manager & Consultant chez HK | Assistant d'enseignement NYCU `,
+        exp1Desc: `Gestion opérationnelle, conseil, scénographie commerciale, subventions publiques, enseignement, veille brevets et publications.`,
+        scopes: [`IA & Machine Learning`, `Stratégie d'Entreprise`, `Données IA & Analyse Industrielle`, `Analyse & Visualisation de Données`, `Gestion Supply Chain`, `Automatisation des Workflows`, `Entrepreneuriat & Gestion de Projet`],
+        chartHeading: `Facteurs d'Impact & Performances Empiriques`,
+        chartIfBtn: `Impact Factor`,
+        chartPerfBtn: `Gains IA`,
+        dashboardsHeading: `Tableaux de Bord Recherche SCI & Studio (Cliquer pour détails & fichier)`,
+        dashboardsHint: `7 Projets Interactifs de Recherche & Pédagogie`,
+        syllabusHeading: `Programmes des 5 Cours & Filtre par Mots-Clés en Temps Réel`,
+        searchLabel: `Recherche transversale (filtre en direct 5 cours × 16 semaines)`,
+        searchPlaceholder: `Mot-clé : LLM, Brevet, Pandas, Figma...`,
+        btnClear: `Réinitialiser`,
+        allCoursesTab: `Tous les 5 Cours (80 Sem.)`,
+        weekPrefix: `Semaine `,
+        weekSuffix: ``,
+        creditsLabel: `Crédits`,
+        prereqLabel: `Prérequis`,
+        textbookLabel: `Support`,
+        noPrereq: `Aucun`,
+        customNotes: `Supports de cours originaux`,
+        creditsUnit: `3 Crédits`,
+        showingCount: `Affichage : {n} unités hebdomadaires`,
+        emptyTitle: `Aucune unité trouvée pour « {q} »`,
+        emptyDesc: `Essayez un autre mot-clé (LLM, Brevet, Pandas, Figma) ou réinitialisez le filtre.`,
+        modalMetaLabel: `Revue / Publication & Identifiants`,
+        modalAbstractLabel: `Résumé Principal & Contenu`,
+        modalInnovationLabel: `Innovation Méthodologique & Valeur Terrain`,
+        modalFileLabel: `Fichier GitHub Pages Dashboard Correspondant`,
+        modalCopy: `Copier le nom du fichier`,
+        modalClose: `Fermer`,
+        modalSandboxNote: `Note : L'ouverture de fenêtres externes est bloquée par le bac à sable. Copiez le nom du fichier ci-dessus.`,
+        mascotTitle: `Alien Tech-Mgmt | Guide Holo`,
+        visitorLabel: `Quel est votre prénom ?`,
+        visitorSave: `Saluer`,
+        mascotHint: `Glisser à 360° | Cliquer pour mode Jour / Nuit`,
+        mascotAsk: `Bonjour ! Je suis l'Alien Tech-Mgmt à deux cornes 👾 Comment vous appelez-vous ? Cliquez-moi pour basculer Jour / Nuit !`,
+        mascotGreet: `Bienvenue, {name} ! ✨ Explorez les travaux SCI et les 5 cours du Dr Cheng en me faisant pivoter ou en filtrant les thèmes !`,
+        copiedToast: `Copié : {val}`,
+        ttsReading: `Lecture : {text}`,
+        ttsUnsupported: `Synthèse vocale indisponible dans ce navigateur`,
+        tourStepLabel: `Visite Automatique ({idx}/{total}) : {name}`,
+        chartIfLabels: [`J. Clean. Prod. (Q1 TOP)`, `Vehic. Commun. (Q1)`, `IEEE Access (Q2)`, `IJCM (ESCI Q2)`, `IJAMT Thèse (Q2)`],
+        chartIfDataset: `Facteur d'Impact (IF)`,
+        chartPerfLabels: [`Latence 6G Fuzzy-DT -%`, `Énergie 6G Fuzzy-DT -%`, `Pertes 6G -%`, `Taux Succès MBOA`, `Coût DRQL -%`, `Retard DRQL -%`],
+        chartPerfDataset: `Indice Empirique (%)`
+      }
+    };
+
+    // =========================================================================
+    // 2. 7 GITHUB RESEARCH & TEACHING DASHBOARD ITEMS
+    // =========================================================================
+    const PROJECTS = [
+      {
+        id: `proj-latest`,
+        badge: { 'zh-TW': `最新研究`, 'zh-CN': `最新研究`, 'en': `Latest Research`, 'de': `Aktuelle Forschung`, 'fr': `Dernière Recherche` },
+        isPrimary: true,
+        file: `https://akirahoiman.github.io/chenghm-sci/AI-and-patent-and-commercialization.html`,
+        title: {
+          'zh-TW': `AI 專利情報與負責任治理：技術商品化橋樑`,
+          'zh-CN': `AI 专利情报与负责任治理：技术商品化桥梁`,
+          'en': `Bridging Tech Commercialization via AI Patent Intelligence & Responsible Governance`,
+          'de': `Technologiekommerzialisierung durch KI-Patentintelligenz & verantwortungsvolle Governance`,
+          'fr': `Commercialisation technologique via l'intelligence des brevets IA et la gouvernance responsable`
+        },
+        summary: {
+          'zh-TW': `結合生成式 AI 專利檢索分析、自由實施（FTO）風險評估與負責任 AI 治理框架，加速科研技術落地與商品化策略。`,
+          'zh-CN': `结合生成式 AI 专利检索分析、自由实施（FTO）风险评估与负责任 AI 治理框架，加速科研技术落地与商品化策略。`,
+          'en': `Integrates AI-driven patent intelligence, Freedom-to-Operate mapping, and responsible governance frameworks to bridge lab innovation to commercial deployment.`,
+          'de': `Verbindet KI-gestützte Patentanalyse, FTO-Risikokartierung und verantwortungsvolle Governance zur Beschleunigung der Technologiekommerzialisierung.`,
+          'fr': `Intègre l'intelligence des brevets par IA, l'analyse FTO et la gouvernance responsable pour accélérer la commercialisation des innovations.`
+        },
+        meta: `GitHub Interactive Research Module｜AI Patent Intelligence & Responsible Commercialization`,
+        abstract: {
+          'zh-TW': `本研究聚焦於高科技新創與產學研發團隊在技術商品化初期面臨的兩大瓶頸：專利地圖分析耗時，以及 AI 模型合規與智財侵權風險。透過大語言模型輔助專利前案檢索、請求項拆解與價值主張對齊，建構可落地之負責任商品化治理儀表板。`,
+          'zh-CN': `本研究聚焦于高科技初创与产学研发团队在技术商品化初期面临的两大瓶颈：专利地图分析耗时，以及 AI 模型合规与知识产权侵权风险。通过大语言模型辅助专利检索、权利要求拆解与价值主张对齐，构建可落地的负责任商品化治理仪表板。`,
+          'en': `Addresses two core bottlenecks in early-stage technology commercialization: labor-intensive patent landscape mapping and AI compliance/IP infringement risk. Combines LLM-assisted prior-art synthesis with a structured responsible governance scorecard.`,
+          'de': `Adressiert zwei Engpässe bei der Kommerzialisierung: aufwendige Patentrecherchen sowie KI-Compliance- und IP-Risiken. Kombiniert LLM-gestützte Stand-der-Technik-Analyse mit einer Governance-Scorecard.`,
+          'fr': `Traite deux verrous majeurs de la commercialisation : l'analyse fastidieuse des brevets et les risques de conformité IA/PI, via un tableau de bord de gouvernance structuré.`
+        },
+        innovation: {
+          'zh-TW': `創新點：將專利說明書語意圖譜與商業化 GTM 階段綁定；實務價值：協助科管與研發團隊在 MVP 階段即完成避險佈局與授權談判準備。`,
+          'zh-CN': `创新点：将专利说明书语义图谱与商业化 GTM 阶段绑定；实务价值：协助科管与研发团队在 MVP 阶段即完成避险布局与授权谈判准备。`,
+          'en': `Innovation: Links semantic patent claims directly to Go-To-Market milestones. Practical Value: Enables R&D teams to execute IP risk mitigation prior to MVP launch.`,
+          'de': `Innovation: Verknüpft semantische Patentansprüche direkt mit GTM-Meilensteinen. Praxisnutzen: Ermöglicht frühzeitige IP-Risikominimierung vor dem MVP-Launch.`,
+          'fr': `Innovation : Relie les revendications sémantiques aux jalons GTM. Valeur pratique : Sécurise la propriété intellectuelle dès la phase MVP.`
+        }
+      },
+      {
+        id: `proj-q1top`,
+        badge: { 'zh-TW': `SCI Q1 Top (IF 10.7)`, 'zh-CN': `SCI Q1 Top (IF 10.7)`, 'en': `SCI Q1 Top (IF 10.7)`, 'de': `SCI Q1 Top (IF 10,7)`, 'fr': `SCI Q1 Top (IF 10,7)` },
+        isPrimary: true,
+        file: `https://akirahoiman.github.io/chenghm-sci/SCIQ1Top-Backbone-resilience.html`,
+        title: {
+          'zh-TW': `城市供給國家—部門生產網路骨幹韌性：持續性、重接與回彈`,
+          'zh-CN': `城市供给国家—部门生产网络骨干韧性：持续性、重接与回弹`,
+          'en': `Backbone resilience of national-sectoral production networks for urban provisioning: Persistence, rewiring, and rebound`,
+          'de': `Backbone-Resilienz national-sektoraler Produktionsnetzwerke für urbane Versorgung`,
+          'fr': `Résilience de l'épine dorsale des réseaux de production nationaux-sectoriels pour l'approvisionnement urbain`
+        },
+        summary: {
+          'zh-TW': `Journal of Cleaner Production (2026)｜通訊作者／二作。基於 OECD ICIO 2018–2022 提出 PAUSB 三階段韌性框架。`,
+          'zh-CN': `Journal of Cleaner Production (2026)｜通讯作者／二作。基于 OECD ICIO 2018–2022 提出 PAUSB 三阶段韧性框架。`,
+          'en': `Journal of Cleaner Production, 568, 148690 (2026) | Corresponding Author. Proposes the PAUSB framework using OECD ICIO 2018–2022.`,
+          'de': `Journal of Cleaner Production (2026) | Korrespondierender Autor. Entwickelt das PAUSB-Framework auf Basis von OECD ICIO 2018–2022.`,
+          'fr': `Journal of Cleaner Production (2026) | Auteur correspondant. Propose le cadre PAUSB sur données OCDE ICIO 2018–2022.`
+        },
+        meta: `Journal of Cleaner Production, 568, 148690 (2026)｜SCIE+SSCI Q1 TOP (IF 10.7, 94%)｜DOI: 10.1016/j.jclepro.2026.148690`,
+        abstract: {
+          'zh-TW': `利用 OECD 跨國投入產出（ICIO）2018 至 2022 年資料建構有向加權國家—部門網路，分析城市糧食、能源、建築、石化與貿易供給骨幹在 2020 年衝擊後的持續性（Persistence）、重接（Rewiring）與回彈（Rebound）。研究發現系統呈現「持續—適應性韌性」，調整主要透過骨幹與週邊邊緣狀態重新配置完成。`,
+          'zh-CN': `利用 OECD 跨国投入产出（ICIO）2018 至 2022 年数据构建有向加权国家—部门网络，分析城市粮食、能源、建筑、石化与贸易供给骨干在 2020 年冲击后的持续性、重接与回弹。研究发现系统呈现“持续—适应性韧性”。`,
+          'en': `Constructs annual directed weighted country-sector networks from OECD ICIO (2018–2022) to examine urban provisioning backbones across food, energy, construction, refined petroleum, chemicals, and trade. Reveals a Persistent-Adaptive Urban Supply Backbone (PAUSB) pattern rather than systemic collapse.`,
+          'de': `Analysiert anhand von OECD-ICIO-Daten (2018–2022) gerichtete Produktionsnetzwerke für urbane Versorgung und identifiziert ein persistent-adaptives Resilienzmuster (PAUSB) über Persistenz, Neuverknüpfung und Erholung.`,
+          'fr': `Modélise les réseaux nationaux-sectoriels via les données OCDE ICIO (2018–2022) et met en évidence une résilience persistante-adaptative (cadre PAUSB) articulant persistance, réacheminement et rebond.`
+        },
+        innovation: {
+          'zh-TW': `創新點：提出 PAUSB 框架，將城市韌性重新定義為外部供應骨幹之多尺度交互作用；落地價值：協助政府與供應鏈治理單位精準配置韌性預算，優先保護核心供給部門。`,
+          'zh-CN': `创新点：提出 PAUSB 框架，将城市韧性重新定义为外部供应骨干的多尺度交互作用；落地价值：协助政府与供应链治理单位精准配置韧性预算。`,
+          'en': `Innovation: Redefines urban resilience via the PAUSB (Persistence + Rewiring + Rebound) multi-scale framework. Practical Value: Guides policymakers on precisely targeting resilience budgets to critical supply backbones.`,
+          'de': `Innovation: Definiert urbane Resilienz über das mehrskalige PAUSB-Framework neu. Praxisnutzen: Hilft Behörden, Resilienzbudgets gezielt auf kritische Versorgungsketten zu lenken.`,
+          'fr': `Innovation : Redéfinit la résilience urbaine via le modèle multi-échelle PAUSB. Valeur pratique : Oriente les budgets publics vers les maillons critiques d'approvisionnement.`
+        }
+      },
+      {
+        id: `proj-q1`,
+        badge: { 'zh-TW': `SCI Q1 (IF 6.5)`, 'zh-CN': `SCI Q1 (IF 6.5)`, 'en': `SCI Q1 (IF 6.5)`, 'de': `SCI Q1 (IF 6,5)`, 'fr': `SCI Q1 (IF 6,5)` },
+        isPrimary: false,
+        file: `https://akirahoiman.github.io/chenghm-sci/SCIQ1-Hybrid-fuzzy-digital-twin-6G-internet-vehicles.html`,
+        title: {
+          'zh-TW': `6G 車聯網預測性任務卸載與資源優化：混合模糊—數位孿生框架`,
+          'zh-CN': `6G 车联网预测性任务卸载与资源优化：混合模糊—数字孪生框架`,
+          'en': `Hybrid fuzzy-digital twin framework for predictive task offloading and resource optimization in 6G-enabled internet of vehicles`,
+          'de': `Hybrides Fuzzy-Digital-Twin-Framework für prädiktives Task-Offloading in 6G-Fahrzeugnetzwerken`,
+          'fr': `Cadre hybride flou-jumeau numérique pour le délestage prédictif dans l'Internet des véhicules 6G`
+        },
+        summary: {
+          'zh-TW': `Vehicular Communications (2026)｜提前 10 秒預測軌跡與拓撲，端到端延遲 -32%、能耗 -28%、丟包率 -41%。`,
+          'zh-CN': `Vehicular Communications (2026)｜提前 10 秒预测轨迹与拓扑，端到端延迟 -32%、能耗 -28%、丢包率 -41%。`,
+          'en': `Vehicular Communications, 59, 101032 (2026) | Predicts topology up to 10s ahead; cuts latency by 32%, energy by 28%, and packet drop by 41%.`,
+          'de': `Vehicular Communications (2026) | Prognose bis zu 10 s voraus; senkt Latenz um 32 %, Energieverbrauch um 28 % und Paketverlust um 41 %.`,
+          'fr': `Vehicular Communications (2026) | Prédiction à 10 s ; réduit la latence de 32 %, l'énergie de 28 % et les pertes de paquets de 41 %.`
+        },
+        meta: `Vehicular Communications, 59, Article 101032 (2026)｜SCIE Q1 (IF 6.5, 83.8%)｜DOI: 10.1016/j.vehcom.2026.101032`,
+        abstract: {
+          'zh-TW': `針對 Level-5 自駕與車載 AR 在高移動性 6G-IoV 下的極端網路波動，整合即時數位孿生（DT）提前 10 秒預測車輛軌跡與邊緣資源可用性，並由改進型模糊推理系統執行先發式任務遷移。於 OMNeT++ 模擬中相較反應式基準降低延遲 32%、能耗 28%、丟包率 41%。`,
+          'zh-CN': `针对 Level-5 自动驾驶与车载 AR 在高移动性 6G-IoV 下的极端网络波动，整合实时数字孪生（DT）提前 10 秒预测车辆轨迹与边缘资源可用性，并由模糊推理系统执行先发式任务迁移。`,
+          'en': `Integrates real-time Digital Twin (DT) forecasting (up to 10s horizon for vehicle trajectory, traffic density, and edge capacity) with an improved fuzzy inference engine for proactive task migration in 6G-IoV. Outperforms reactive fuzzy baselines in OMNeT++ simulations.`,
+          'de': `Kombiniert Echtzeit-Digital-Twin-Prognosen (bis 10 s) mit einem verbesserten Fuzzy-Inferenzsystem für proaktives Task-Offloading in 6G-IoV-Szenarien wie Level-5-Fahren und In-Vehicle-AR.`,
+          'fr': `Associe un jumeau numérique temps réel (horizon 10 s) à une logique floue avancée pour anticiper les ruptures de connexion dans l'Internet des véhicules 6G.`
+        },
+        innovation: {
+          'zh-TW': `創新點：將傳統「斷線後反應」轉為「預測斷線前主動搬運運算」，結合 DT 預判與模糊邏輯處理不確定性；落地價值：保障自駕與智慧交通關鍵 AI 任務不中斷。`,
+          'zh-CN': `创新点：将传统“断线后反应”转为“预测断线前主动搬运运算”；落地价值：保障自动驾驶与智慧交通关键 AI 任务不中断。`,
+          'en': `Innovation: Shifts offloading from reactive recovery to predictive proactive migration under uncertainty. Practical Value: Safeguards mission-critical autonomous driving and vehicular AR workloads.`,
+          'de': `Innovation: Wechselt von reaktiver Fehlerbehandlung zu prädiktiver Aufgabenmigration. Praxisnutzen: Schützt sicherheitskritische KI-Workloads im autonomen Verkehr.`,
+          'fr': `Innovation : Passe d'une reprise réactive à une migration prédictive proactive. Valeur pratique : Sécurise les calculs critiques des véhicules autonomes.`
+        }
+      },
+      {
+        id: `proj-q2phd`,
+        badge: { 'zh-TW': `SCI Q2 (IF 2.9 博士論文)`, 'zh-CN': `SCI Q2 (IF 2.9 博士论文)`, 'en': `SCI Q2 (IF 2.9 PhD Thesis)`, 'de': `SCI Q2 (IF 2,9 Diss.)`, 'fr': `SCI Q2 (IF 2,9 Thèse)` },
+        isPrimary: true,
+        file: `https://akirahoiman.github.io/chenghm-sci/SCIQ2-AI-Hybrid-Manufacturing-Logistics-Optimization-Scheduling-Algorithm-Supply-Chain-Management-Artificial-Intelligence.html`,
+        title: {
+          'zh-TW': `基於智慧供應鏈與 AI 之混合製造物流優化排程演算法`,
+          'zh-CN': `基于智慧供应链与 AI 之混合制造物流优化排程算法`,
+          'en': `Hybrid manufacturing logistics optimization scheduling algorithm based on intelligent supply chain management and AI`,
+          'de': `KI-basierter Optimierungsalgorithmus für hybride Fertigungs- und Lieferkettenlogistik`,
+          'fr': `Algorithme d'ordonnancement logistique de fabrication hybride basé sur l'IA et la supply chain intelligente`
+        },
+        summary: {
+          'zh-TW': `IJAMT (2025)｜第一作者，獲 1 項專利引用。整合混沌序列、煙花演算法與干擾管理模型解決混合製造排程。`,
+          'zh-CN': `IJAMT (2025)｜第一作者，获 1 项专利引用。整合混沌序列、烟花算法与干扰管理模型解决混合制造排程。`,
+          'en': `Int. J. Adv. Manuf. Technol. (2025) | First Author, Referenced by 1 Patent. Integrates chaotic sequences, fireworks optimization, and disruption rescheduling.`,
+          'de': `Int. J. Adv. Manuf. Technol. (2025) | Erstautor, 1 Patentzitat. Verbindet chaotische Sequenzen, Feuerwerksalgorithmus und Störungsmanagement.`,
+          'fr': `Int. J. Adv. Manuf. Technol. (2025) | Premier auteur, cité par 1 brevet. Combine séquences chaotiques, feu d'artifice et replanification.`
+        },
+        meta: `Int. J. Adv. Manuf. Technol. (2025)｜SCIE Q2 (IF 2.9)｜1 Patent Citation｜DOI: 10.1007/s00170-025-15010-2`,
+        abstract: {
+          'zh-TW': `本研究為博士學位核心著作，建構混合製造智慧物流優化調度系統整體框架，將供應鏈資訊、運輸成本估計、多目標適應度函數與干擾管理調度模型串聯為一體。測試結果證明其在降低物流成本與提升突發事件回應速度方面具顯著優勢。`,
+          'zh-CN': `本研究为博士学位核心著作，构建混合制造智慧物流优化调度系统整体框架，将供应链信息、运输成本估计、多目标适应度函数与干扰管理调度模型串联为一体。`,
+          'en': `Core PhD dissertation publication establishing an end-to-end intelligent logistics scheduling framework for hybrid manufacturing—unifying transport cost estimation, multi-objective fitness, chaotic fireworks search, and disruption management.`,
+          'de': `Zentrale Promotionspublikation mit einem durchgängigen KI-Logistik-Framework für hybride Fertigung, das Kostenkalkulation, Produktionsplanung und Störungs-Rescheduling vereint.`,
+          'fr': `Publication centrale de thèse établissant une architecture intégrée d'ordonnancement de fabrication hybride reliant coûts de transport, optimisation multi-objectif et gestion des perturbations.`
+        },
+        innovation: {
+          'zh-TW': `創新點：系統型整合創新，把生產、庫存、車輛與突發干擾納入單一優化排程引擎；落地價值：製造業控制中心可直接導入作為動態生產與物流決策系統（已獲專利引用驗證產業價值）。`,
+          'zh-CN': `创新点：系统型整合创新，把生产、库存、车辆与突发干扰纳入单一优化排程引擎；落地价值：制造业控制中心可直接导入作为动态决策系统。`,
+          'en': `Innovation: Holistic system integration of production, inventory, fleet, and disruption rescheduling. Practical Value: Deployable decision engine for manufacturing control towers, validated by patent citation.`,
+          'de': `Innovation: Ganzheitliche Systemintegration von Produktion, Lager, Flotte und Störungs-Rescheduling. Praxisnutzen: Direkt einsetzbare Entscheidungsplattform (durch Patentzitat belegt).`,
+          'fr': `Innovation : Intégration systémique unifiant production, stocks, flotte et gestion d'aléas. Valeur pratique : Moteur décisionnel industriel validé par une citation de brevet.`
+        }
+      },
+      {
+        id: `proj-q2mboa`,
+        badge: { 'zh-TW': `SCI Q2 (IF 3.4)`, 'zh-CN': `SCI Q2 (IF 3.4)`, 'en': `SCI Q2 (IF 3.4)`, 'de': `SCI Q2 (IF 3,4)`, 'fr': `SCI Q2 (IF 3,4)` },
+        isPrimary: false,
+        file: `https://akirahoiman.github.io/chenghm-sci/SCIQ2-ParameterOptimization-Algorithm.html`,
+        title: {
+          'zh-TW': `多模態蝴蝶優化演算法（MBOA）參數優化與求解效能分析`,
+          'zh-CN': `多模态蝴蝶优化算法（MBOA）参数优化与求解效能分析`,
+          'en': `Parameter Optimization and Solution Performance Analysis of Multi-modal Butterfly Optimization Algorithm`,
+          'de': `Parameteroptimierung und Leistungsanalyse des multimodalen Schmetterlings-Optimierungsalgorithmus`,
+          'fr': `Optimisation des paramètres et analyse de performance de l'algorithme papillon multimodal (MBOA)`
+        },
+        summary: {
+          'zh-TW': `IEEE Access (2024)｜引入儲存、加速偵測與淨化策略，942 例測試成功率 93.314%，平均求解 0.014 秒。`,
+          'zh-CN': `IEEE Access (2024)｜引入存储、加速检测与净化策略，942 例测试成功率 93.314%，平均求解 0.014 秒。`,
+          'en': `IEEE Access, 12, 143163–143176 (2024) | Achieves 93.314% success across 942 test instances with 0.014s mean solve time.`,
+          'de': `IEEE Access (2024) | Erreicht 93,314 % Erfolgsquote über 942 Testfälle bei 0,014 s durchschnittlicher Rechenzeit.`,
+          'fr': `IEEE Access (2024) | Atteint 93,314 % de succès sur 942 instances avec un temps moyen de 0,014 s.`
+        },
+        meta: `IEEE Access, 12, 143163–143176 (2024)｜SCIE Q2 (IF 3.4)｜DOI: 10.1109/ACCESS.2024.3470845`,
+        abstract: {
+          'zh-TW': `為改善傳統優化演算法收斂慢與易陷局部最佳解之問題，本文提出引入「儲存機制」、「加速偵測機制」與「淨化程式策略」之多模態蝴蝶優化演算法（MBOA），應用於 SVM 與 IIR 數位濾波器調參，在第 5 次迭代即達最優解，精確率與召回率均高於 0.9。`,
+          'zh-CN': `为改善传统优化算法收敛慢与易陷局部最优解的问题，本文提出引入“存储机制”、“加速检测机制”与“净化程序策略”的多模态蝴蝶优化算法（MBOA），应用于 SVM 与 IIR 数字滤波器调参。`,
+          'en': `Introduces storage, accelerated detection, and purification mechanisms into Multi-modal Butterfly Optimization (MBOA) for SVM and IIR digital filter tuning. Converges by iteration 5 with precision/recall > 0.9 and 93.314% success across 942 instances.`,
+          'de': `Erweitert MBOA um Speicher-, Schnell-Erkennungs- und Bereinigungsmechanismen für das Tuning von SVM und IIR-Filtern. Konvergiert ab Iteration 5 mit >0,9 Präzision/Recall.`,
+          'fr': `Intègre stockage, détection accélérée et purification dans MBOA pour l'ajustement SVM et filtres IIR, atteignant une convergence dès l'itération 5.`
+        },
+        innovation: {
+          'zh-TW': `創新點：三大機制保留優質歷史解並維持族群多樣性，避免早熟收斂；落地價值：可作為企業機器學習自動調參引擎（Auto-Tuning Engine），省去工程師大量人工試參時間。`,
+          'zh-CN': `创新点：三大机制保留优质历史解并维持种群多样性，避免早熟收敛；落地价值：可作为企业机器学习自动调参引擎。`,
+          'en': `Innovation: Preserves historical optima while purging redundant solutions to prevent premature convergence. Practical Value: Serves as a rapid 0.014s auto-tuning engine for ML pipelines and engineering design.`,
+          'de': `Innovation: Bewahrt historische Bestlösungen bei gleichzeitiger Diversitätssicherung. Praxisnutzen: Einsetzbar als ultraschnelle 0,014-s-Auto-Tuning-Engine.`,
+          'fr': `Innovation : Préserve les optima historiques tout en évitant la convergence prématurée. Valeur pratique : Moteur d'auto-réglage rapide pour modèles ML.`
+        }
+      },
+      {
+        id: `proj-esciq2`,
+        badge: { 'zh-TW': `ESCI Q2 (IF 3.4)`, 'zh-CN': `ESCI Q2 (IF 3.4)`, 'en': `ESCI Q2 (IF 3.4)`, 'de': `ESCI Q2 (IF 3,4)`, 'fr': `ESCI Q2 (IF 3,4)` },
+        isPrimary: false,
+        file: `https://akirahoiman.github.io/chenghm-sci/SCIQ2-Optimal-scheduling-construction-supply-chains-Qlearning.html`,
+        title: {
+          'zh-TW': `不確定性下異地建築供應鏈最優排程：深度遞迴 Q 學習（DRQL）`,
+          'zh-CN': `不确定性下异地建筑供应链最优排程：深度递归 Q 学习（DRQL）`,
+          'en': `Optimal Scheduling of Off-Site Construction Supply Chains under Uncertainty Using Deep Recurrent Q-Learning`,
+          'de': `Optimale Planung externer Bau-Lieferketten unter Unsicherheit mittels Deep Recurrent Q-Learning`,
+          'fr': `Ordonnancement optimal des chaînes logistiques de construction hors site par Deep Recurrent Q-Learning`
+        },
+        summary: {
+          'zh-TW': `IJCM (2026)｜第一作者。DRQL 統一調度生產、批次派遣與倉儲，較基準降低成本 14.45%、降低延遲 14.17%。`,
+          'zh-CN': `IJCM (2026)｜第一作者。DRQL 统一调度生产、批次派遣与仓储，较基准降低成本 14.45%、降低延迟 14.17%。`,
+          'en': `Int. J. Construction Management (2026) | First Author. DRQL controller reduces total cost by 14.45% and delay by 14.17% vs. strong heuristics.`,
+          'de': `Int. J. Construction Management (2026) | Erstautor. DRQL senkt Gesamtkosten um 14,45 % und Verzögerungen um 14,17 %.`,
+          'fr': `Int. J. Construction Management (2026) | Premier auteur. Le contrôleur DRQL réduit les coûts de 14,45 % et les retards de 14,17 %.`
+        },
+        meta: `International Journal of Construction Management (2026)｜ESCI Q2 (IF 3.4, 73.2%)｜DOI: 10.1080/15623599.2026.2632970`,
+        abstract: {
+          'zh-TW': `提出深度遞迴 Q 學習（DRQL）調度器，在隨機週期時間與動態交期下統一協調異地建築的生產分配、批次派遣與倉庫控制。在含鋼拱架與異質車隊限制之隧道案例中，總成本降至 746,909.43 單位、總延遲降至 842 小時，較主要啟發式基準節省 14.45% 成本與 14.17% 延遲。`,
+          'zh-CN': `提出深度递归 Q 学习（DRQL）调度器，在随机周期时间与动态交期下统一协调异地建筑的生产分配、批次派遣与仓库控制，较主要启发式基准节省 14.45% 成本与 14.17% 延迟。`,
+          'en': `Proposes a Deep Recurrent Q-Learning (DRQL) scheduler unifying production allocation, batching/dispatch, and warehouse control under stochastic cycle times. In a tunnel steel-arch case, cuts total cost by 14.45% (to 746,909.43 MU) and delay by 14.17% (to 842h).`,
+          'de': `Entwickelt einen DRQL-Scheduler zur gemeinsamen Steuerung von Produktion, Versand und Lager bei stochastischen Zykluszeiten. Senkt Kosten um 14,45 % und Verzögerungen um 14,17 %.`,
+          'fr': `Propose un ordonnanceur DRQL unifiant production, expédition et entrepôt sous incertitude stochastique, réduisant coûts (-14,45 %) et retards (-14,17 %).`
+        },
+        innovation: {
+          'zh-TW': `創新點：讓強化學習預判當前生產決策對後續倉儲爆倉與未滿載派車的連鎖影響；落地價值：適用於預鑄建築、隧道與大型模組化構件配送控制。`,
+          'zh-CN': `创新点：让强化学习预判当前生产决策对后续仓储爆仓与未满载派车的连锁影响；落地价值：适用于预制建筑与模块化构件配送。`,
+          'en': `Innovation: Learns long-horizon cascading effects between factory overproduction, warehouse saturation, and underfilled dispatch. Practical Value: Built for modular & precast construction logistics.`,
+          'de': `Innovation: Prognostiziert langfristige Kaskadeneffekte zwischen Überproduktion, Lagerüberlastung und Transportauslastung. Praxisnutzen: Ideal für den Modul- und Fertigteilbau.`,
+          'fr': `Innovation : Anticipe les effets en cascade entre surproduction, saturation d'entrepôt et transport. Valeur pratique : Idéal pour la construction modulaire.`
+        }
+      },
+      {
+        id: `proj-studio`,
+        badge: { 'zh-TW': `教學 Dashboard`, 'zh-CN': `教学 Dashboard`, 'en': `Teaching Studio`, 'de': `Lehr-Dashboard`, 'fr': `Studio Pédagogique` },
+        isPrimary: false,
+        file: `https://akirahoiman.github.io/chenghm-sci/SmartMMDIAF-Studio.html`,
+        title: {
+          'zh-TW': `SmartMMDIAF-Studio：多模態消費者治理與教學實作平台`,
+          'zh-CN': `SmartMMDIAF-Studio：多模态消费者治理与教学实作平台`,
+          'en': `SmartMMDIAF-Studio: Multimodal Consumer Governance`,
+          'de': `SmartMMDIAF-Studio: Multimodale Consumer Governance`,
+          'fr': `SmartMMDIAF-Studio : Gouvernance Multimodale des Consommateurs`
+        },
+        summary: {
+          'zh-TW': `整合視覺設計、數據洞察與 AI 消費者行為治理之科技管理教學實作 Studio，連結電商行銷與危機合規模組。`,
+          'zh-CN': `整合视觉设计、数据洞察与 AI 消费者行为治理之科技管理教学实作 Studio，连结电商营销与危机合规模块。`,
+          'en': `Interactive teaching studio integrating multimodal consumer analytics, visual merchandising, and AI governance frameworks for tech management courses.`,
+          'de': `Interaktives Lehr-Studio für multimodale Konsumentenanalyse, Visual Merchandising und KI-Governance in Technologiemanagement-Kursen.`,
+          'fr': `Studio pédagogique interactif intégrant analytique multimodale des consommateurs, merchandising visuel et gouvernance IA.`
+        },
+        meta: `Interactive Teaching Studio｜Multimodal Consumer Governance & Tech Management Lab`,
+        abstract: {
+          'zh-TW': `專為科技管理與數位商務課程打造的互動實作環境，結合多模態消費者訊號解析、生成式行銷視覺評估與 AI 隱私合規審查，讓學生在課堂中直接模擬企業導入 AI 行銷與客服機器人時的治理決策。`,
+          'zh-CN': `专为科技管理与数字商务课程打造的互动实作环境，结合多模态消费者信号解析、生成式营销视觉评估与 AI 隐私合规审查。`,
+          'en': `Purpose-built teaching lab combining multimodal consumer signal diagnostics, generative marketing review, and AI privacy compliance checks so students can simulate real-world governance decisions.`,
+          'de': `Praxisnahes Lehrlabor zur Analyse multimodaler Konsumentensignale, generativer Marketing-Assets und KI-Datenschutz-Compliance.`,
+          'fr': `Laboratoire pédagogique combinant diagnostic multimodal, évaluation marketing générative et conformité vie privée IA.`
+        },
+        innovation: {
+          'zh-TW': `創新點：將視覺展示設計、Python 數據分析與 AI 倫理治理整合於單一教學工作台；落地價值：強化商管與科管學生跨工程、設計與法務的實戰協作力。`,
+          'zh-CN': `创新点：将视觉展示设计、Python 数据分析与 AI 伦理治理整合于单一教学工作台；落地价值：强化跨工程、设计与法务的实战协作力。`,
+          'en': `Innovation: Unifies visual design, Python data analytics, and AI governance in one classroom workbench. Practical Value: Trains cross-functional collaboration across engineering, design, and compliance.`,
+          'de': `Innovation: Vereint Visual Design, Python-Datenanalyse und KI-Governance in einer Lernumgebung. Praxisnutzen: Stärkt interdisziplinäre Teamkompetenz.`,
+          'fr': `Innovation : Réunit design visuel, analyse Python et gouvernance IA. Valeur pratique : Développe la collaboration interdisciplinaire.`
+        }
+      }
+    ];
+
+    // =========================================================================
+    // 3. 5 COURSES × 16 WEEKS SYLLABI (FULL 5-LANGUAGE TRANSLATION)
+    // =========================================================================
+    const QUICK_KEYWORDS = [
+      { key: `LLM`, label: { 'zh-TW': `LLM`, 'zh-CN': `LLM`, 'en': `LLM`, 'de': `LLM`, 'fr': `LLM` } },
+      { key: `專利`, matchAlts: [`專利`, `专利`, `Patent`, `Brevet`], label: { 'zh-TW': `專利`, 'zh-CN': `专利`, 'en': `Patent`, 'de': `Patent`, 'fr': `Brevet` } },
+      { key: `Pandas`, label: { 'zh-TW': `Pandas`, 'zh-CN': `Pandas`, 'en': `Pandas`, 'de': `Pandas`, 'fr': `Pandas` } },
+      { key: `Figma`, label: { 'zh-TW': `Figma`, 'zh-CN': `Figma`, 'en': `Figma`, 'de': `Figma`, 'fr': `Figma` } },
+      { key: `Agent`, label: { 'zh-TW': `Agent`, 'zh-CN': `Agent`, 'en': `Agent`, 'de': `Agent`, 'fr': `Agent` } },
+      { key: `敏捷`, matchAlts: [`敏捷`, `Agile`], label: { 'zh-TW': `敏捷 Agile`, 'zh-CN': `敏捷 Agile`, 'en': `Agile`, 'de': `Agile`, 'fr': `Agile` } },
+      { key: `AIoT`, label: { 'zh-TW': `AIoT`, 'zh-CN': `AIoT`, 'en': `AIoT`, 'de': `AIoT`, 'fr': `AIoT` } },
+      { key: `Seaborn`, label: { 'zh-TW': `Seaborn`, 'zh-CN': `Seaborn`, 'en': `Seaborn`, 'de': `Seaborn`, 'fr': `Seaborn` } }
+    ];
+
+    const COURSES = [
+      {
+        id: `c1`,
+        name: {
+          'zh-TW': `1. AI 創新創業`,
+          'zh-CN': `1. AI 创新创业`,
+          'en': `1. AI Innovation & Entrepreneurship`,
+          'de': `1. KI-Innovation & Unternehmertum`,
+          'fr': `1. Innovation & Entrepreneuriat IA`
+        },
+        overview: {
+          'zh-TW': `專為理解並應用人工智慧進行商業創新的學生設計，涵蓋新型 AI 創業商業策略（SaaS、API、Agent）、機器學習原理、成本算力預算控管、AI 市場需求預測、企業數位轉型與危機處理機制。`,
+          'zh-CN': `专为理解并应用人工智能进行商业创新的学生设计，涵盖新型 AI 创业商业策略（SaaS、API、Agent）、机器学习原理、成本算力预算控管、AI 市场需求预测、企业数字化转型与危机处理机制。`,
+          'en': `Designed for students applying AI to business innovation—covering AI startup models (SaaS, API, Agent), ML fundamentals, compute/API budgeting, AI demand forecasting, enterprise transformation, and AI crisis governance.`,
+          'de': `Vermittelt KI-Geschäftsmodelle (SaaS, API, Agent), ML-Grundlagen, Rechenkosten-Budgetierung, KI-Bedarfsprognosen, Unternehmens-Transformation und KI-Krisenmanagement.`,
+          'fr': `Conçu pour appliquer l'IA à l'innovation commerciale : modèles SaaS/API/Agent, bases du ML, budget calcul/API, prévision de la demande, transformation BPR et gestion des risques IA.`
+        },
+        weeks: [
+          { 'zh-TW': `課程導論：AI 創新創業趨勢與市場前景分析`, 'zh-CN': `课程导论：AI 创新创业趋势与市场前景分析`, 'en': `Introduction: AI Entrepreneurship Trends & Market Outlook`, 'de': `Einführung: KI-Gründungstrends & Marktausblick`, 'fr': `Introduction : Tendances et perspectives de l'entrepreneuriat IA` },
+          { 'zh-TW': `新型 AI 創業公司類型與核心三大商業模式（SaaS、API、Agent）`, 'zh-CN': `新型 AI 创业公司类型与核心三大商业模式（SaaS、API、Agent）`, 'en': `AI Startup Typologies & Three Core Business Models (SaaS, API, Agent)`, 'de': `KI-Startup-Typen & Geschäftsmodelle (SaaS, API, Agent)`, 'fr': `Typologies de startups IA & modèles clés (SaaS, API, Agent)` },
+          { 'zh-TW': `AI 新創案例深度解析：成功與失敗經驗探討`, 'zh-CN': `AI 新创案例深度解析：成功与失败经验探讨`, 'en': `AI Startup Case Studies: Successes & Failure Post-Mortems`, 'de': `KI-Startup-Fallstudien: Erfolgs- & Misserfolgsanalyse`, 'fr': `Études de cas de startups IA : succès et échecs` },
+          { 'zh-TW': `人工智慧基礎入門：AI 與機器學習（ML）基本概念`, 'zh-CN': `人工智能基础入门：AI 与机器学习（ML）基本概念`, 'en': `AI Foundations: Core Concepts of AI & Machine Learning (ML)`, 'de': `KI-Grundlagen: Basiswissen zu KI & Machine Learning (ML)`, 'fr': `Bases de l'IA : Concepts fondamentaux de l'IA et du ML` },
+          { 'zh-TW': `機器學習核心原理：監督式、非監督式與增強學習`, 'zh-CN': `机器学习核心原理：监督式、非监督式与强化学习`, 'en': `ML Core Paradigms: Supervised, Unsupervised & Reinforcement Learning`, 'de': `ML-Kernprinzipien: Überwachtes, unüberwachtes & bestärkendes Lernen`, 'fr': `Principes du ML : Apprentissage supervisé, non supervisé et par renforcement` },
+          { 'zh-TW': `生成式 AI 與大型語言模型（LLM）商業應用邊界`, 'zh-CN': `生成式 AI 与大型语言模型（LLM）商业应用边界`, 'en': `Generative AI & Large Language Models (LLM) Commercial Boundaries`, 'de': `Generative KI & LLM: Kommerzielle Anwendungsgrenzen`, 'fr': `IA générative & LLM : Limites d'application commerciale` },
+          { 'zh-TW': `商業管理分析（一）：市場需求洞察與價值主張定位`, 'zh-CN': `商业管理分析（一）：市场需求洞察与价值主张定位`, 'en': `Business Analysis (I): Market Insights & Value Proposition Positioning`, 'de': `Geschäftsanalyse (I): Marktbedarf & Value Proposition`, 'fr': `Analyse commerciale (I) : Besoins du marché et proposition de valeur` },
+          { 'zh-TW': `商業管理分析（二）：競品分析與 AI 技術壁壘建立`, 'zh-CN': `商业管理分析（二）：竞品分析与 AI 技术壁垒建立`, 'en': `Business Analysis (II): Competitor Analysis & Building AI Moats`, 'de': `Geschäftsanalyse (II): Wettbewerbsanalyse & KI-Burggräben`, 'fr': `Analyse commerciale (II) : Concurrence et barrières technologiques IA` },
+          { 'zh-TW': `期中專案報告：AI 創新創業構想與商業模式簡報`, 'zh-CN': `期中项目报告：AI 创新创业构想与商业模式简报`, 'en': `Midterm Project Pitch: AI Startup Concept & Business Model`, 'de': `Zwischenpräsentation: KI-Gründungskonzept & Geschäftsmodell`, 'fr': `Présentation mi-parcours : Concept startup IA et modèle économique` },
+          { 'zh-TW': `財務與成本預算（一）：AI 運算資源、算力與 API 費用估算`, 'zh-CN': `财务与成本预算（一）：AI 运算资源、算力与 API 费用估算`, 'en': `Finance & Budgeting (I): Compute, GPU & API Token Cost Estimation`, 'de': `Finanzen & Budget (I): Rechenleistung, GPU- & API-Kostenkalkulation`, 'fr': `Finance & Budget (I) : Estimation des coûts de calcul et d'API` },
+          { 'zh-TW': `財務與成本預算（二）：營運資金規劃與獲利模型建造`, 'zh-CN': `财务与成本预算（二）：营运资金规划与盈利模型建造`, 'en': `Finance & Budgeting (II): Working Capital & Profit Model Design`, 'de': `Finanzen & Budget (II): Kapitalplanung & Gewinnmodellierung`, 'fr': `Finance & Budget (II) : Fonds de roulement et modèle de rentabilité` },
+          { 'zh-TW': `AI 需求預測模型（一）：時間序列分析與銷售趨勢預測`, 'zh-CN': `AI 需求预测模型（一）：时间序列分析与销售趋势预测`, 'en': `AI Demand Forecasting (I): Time-Series & Sales Trend Prediction`, 'de': `KI-Bedarfsprognose (I): Zeitreihenanalyse & Absatzprognosen`, 'fr': `Prévision de la demande par IA (I) : Séries temporelles et tendances` },
+          { 'zh-TW': `AI 需求預測模型（二）：消費者行為分析與庫存最佳化`, 'zh-CN': `AI 需求预测模型（二）：消费者行为分析与库存最优化`, 'en': `AI Demand Forecasting (II): Consumer Behavior & Inventory Optimization`, 'de': `KI-Bedarfsprognose (II): Konsumentenverhalten & Bestandsoptimierung`, 'fr': `Prévision de la demande par IA (II) : Comportement client et stocks` },
+          { 'zh-TW': `傳統企業轉型策略：導入 AI 之轉型路徑與阻力消除`, 'zh-CN': `传统企业转型策略：导入 AI 之转型路径与阻力消除`, 'en': `Enterprise AI Transformation: Adoption Roadmaps & Change Management`, 'de': `Transformationsstrategie: KI-Einführungspfade & Akzeptanzsicherung`, 'fr': `Transformation des entreprises : Feuille de route IA et conduite du changement` },
+          { 'zh-TW': `企業 AI 化內部流程再造（BPR）與組織架構調整`, 'zh-CN': `企业 AI 化内部流程再造（BPR）与组织架构调整`, 'en': `AI Business Process Reengineering (BPR) & Organizational Redesign`, 'de': `KI-gestütztes Business Process Reengineering (BPR) & Organisationsstruktur`, 'fr': `Réingénierie des processus (BPR) par l'IA et refonte organisationnelle` },
+          { 'zh-TW': `危機處理：AI 模型偏誤、資安威脅與隱私合規風險`, 'zh-CN': `危机处理：AI 模型偏误、资安威胁与隐私合规风险`, 'en': `Crisis Governance: AI Model Bias, Cybersecurity & Privacy Compliance`, 'de': `Krisenmanagement: KI-Bias, Cybersicherheit & Datenschutz-Compliance`, 'fr': `Gestion de crise : Biais IA, cybersécurité et conformité vie privée` }
+        ]
+      },
+      {
+        id: `c2`,
+        name: {
+          'zh-TW': `2. 產品開發專案管理與專利`,
+          'zh-CN': `2. 产品开发项目管理与专利`,
+          'en': `2. Product Development Project Management & Patents`,
+          'de': `2. Produktentwicklung, Projektmanagement & Patente`,
+          'fr': `2. Gestion de Projet Produit & Brevets`
+        },
+        overview: {
+          'zh-TW': `前 12 週聚焦產品開發專案管理（Agile / Waterfall、PRD、WBS、甘特圖）、工程團隊分工與 MVP 上市；後 4 週專注智慧財產權、專利檢索與地圖分析、說明書撰寫及授權避險實務。`,
+          'zh-CN': `前 12 周聚焦产品开发项目管理（Agile / Waterfall、PRD、WBS、甘特图）、工程团队分工与 MVP 上市；后 4 周专注知识产权、专利检索与地图分析、说明书撰写及授权避险实务。`,
+          'en': `Weeks 1–12 cover NPD project management (Agile/Waterfall, PRD, WBS, Gantt/Kanban, engineering team division, QA, MVP & GTM); Weeks 13–16 focus on IP, patent search/mapping, drafting, and licensing risk mitigation.`,
+          'de': `Wochen 1–12 behandeln Produktentwicklung (Agile/Waterfall, PRD, WBS, MVP, GTM); Wochen 13–16 fokussieren auf geistiges Eigentum, Patentrecherche, Patentkarten & Verträge.`,
+          'fr': `Semaines 1–12 : gestion de projet NPD (Agile/Waterfall, PRD, WBS, MVP, GTM) ; semaines 13–16 : propriété intellectuelle, recherche/cartographie de brevets, rédaction et licences.`
+        },
+        weeks: [
+          { 'zh-TW': `課程簡介與產品開發流程總覽（NPD）`, 'zh-CN': `课程简介与产品开发流程总览（NPD）`, 'en': `Course Intro & New Product Development (NPD) Lifecycle`, 'de': `Kurseinführung & Überblick New Product Development (NPD)`, 'fr': `Introduction & cycle complet de développement produit (NPD)` },
+          { 'zh-TW': `專案管理基礎：Agile 敏捷開發與 Waterfall 瀑布式架構`, 'zh-CN': `项目管理基础：Agile 敏捷开发与 Waterfall 瀑布式架构`, 'en': `Project Management Foundations: Agile vs. Waterfall Frameworks`, 'de': `Projektmanagement-Basis: Agile vs. Waterfall-Architektur`, 'fr': `Bases de gestion de projet : Agile vs Cascade (Waterfall)` },
+          { 'zh-TW': `產品需求文件（PRD）撰寫與規格定義`, 'zh-CN': `产品需求文档（PRD）撰写与规格定义`, 'en': `Writing Product Requirements Documents (PRD) & Spec Definition`, 'de': `Product Requirements Document (PRD) & Spezifikation`, 'fr': `Rédaction du cahier des charges produit (PRD) et spécifications` },
+          { 'zh-TW': `專案實作技巧（一）：WBS 工作分解結構與時程安排`, 'zh-CN': `项目实作技巧（一）：WBS 工作分解结构与时程安排`, 'en': `PM Practice (I): Work Breakdown Structure (WBS) & Scheduling`, 'de': `Projektpraxis (I): Work Breakdown Structure (WBS) & Zeitplanung`, 'fr': `Pratique projet (I) : Structure WBS et planification` },
+          { 'zh-TW': `專案實作技巧（二）：甘特圖、看板管理與關鍵路徑法`, 'zh-CN': `项目实作技巧（二）：甘特图、看板管理与关键路径法`, 'en': `PM Practice (II): Gantt Charts, Kanban Boards & Critical Path Method`, 'de': `Projektpraxis (II): Gantt-Diagramme, Kanban & Netzplantechnik`, 'fr': `Pratique projet (II) : Diagramme de Gantt, Kanban et chemin critique` },
+          { 'zh-TW': `工程師類別解析：前端、後端、全端、AI 工程師職能分工`, 'zh-CN': `工程师类别解析：前端、后端、全栈、AI 工程师职能分工`, 'en': `Engineering Roles: Frontend, Backend, Full-Stack & AI Engineers`, 'de': `Entwicklerrollen: Frontend-, Backend-, Full-Stack- & KI-Ingenieure`, 'fr': `Rôles d'ingénierie : Frontend, Backend, Full-Stack et Ingénieur IA` },
+          { 'zh-TW': `人力資源分工與跨領域團隊協作（跨工程、設計與產品營運）`, 'zh-CN': `人力资源分工与跨领域团队协作（跨工程、设计与产品运营）`, 'en': `Cross-Functional Team Collaboration (Engineering, Design & Product Ops)`, 'de': `Ressourcenverteilung & interdisziplinäre Teamarbeit`, 'fr': `Collaboration interfonctionnelle (Ingénierie, Design et Opérations)` },
+          { 'zh-TW': `專案範疇變更管理與風險控制實務`, 'zh-CN': `项目范围变更管理与风险控制实务`, 'en': `Scope Change Management & Practical Project Risk Control`, 'de': `Scope-Change-Management & Risikokontrolle in der Praxis`, 'fr': `Gestion des changements de périmètre et maîtrise des risques` },
+          { 'zh-TW': `期中簡報：商品化服務設計構想與初步專案計畫`, 'zh-CN': `期中简报：商品化服务设计构想与初步项目计划`, 'en': `Midterm Pitch: Commercial Service Design & Initial Project Plan`, 'de': `Zwischenpräsentation: Service-Design-Konzept & Projektplan`, 'fr': `Présentation mi-parcours : Conception de service et plan projet` },
+          { 'zh-TW': `產品開發成本估算、範疇管控與質量保證（QA）`, 'zh-CN': `产品开发成本估算、范围管控与质量保证（QA）`, 'en': `Development Cost Estimation, Scope Control & Quality Assurance (QA)`, 'de': `Entwicklungskostenschätzung, Scope-Steuerung & Qualitätssicherung (QA)`, 'fr': `Estimation des coûts, contrôle du périmètre et assurance qualité (QA)` },
+          { 'zh-TW': `用戶測試、MVP（最小可行性產品）驗證與迭代`, 'zh-CN': `用户测试、MVP（最小可行性产品）验证与迭代`, 'en': `User Testing, MVP (Minimum Viable Product) Validation & Iteration`, 'de': `Nutzertests, MVP-Validierung & iterative Produktentwicklung`, 'fr': `Tests utilisateurs, validation MVP et itérations produit` },
+          { 'zh-TW': `商品化上市（GTM）策略與盈利模式設計`, 'zh-CN': `商品化上市（GTM）策略与盈利模式设计`, 'en': `Go-To-Market (GTM) Launch Strategy & Monetization Design`, 'de': `Go-To-Market-Strategie (GTM) & Erlösmodelldesign`, 'fr': `Stratégie de lancement (GTM) et modèle de monétisation` },
+          { 'zh-TW': `專利與法務（一）：智慧財產權基礎與專利類型介紹`, 'zh-CN': `专利与法务（一）：知识产权基础与专利类型介绍`, 'en': `Patents & IP Law (I): Intellectual Property Basics & Patent Types`, 'de': `Patente & Recht (I): Grundlagen des geistigen Eigentums & Patentarten`, 'fr': `Brevets & Droit (I) : Bases de la propriété intellectuelle et types de brevets` },
+          { 'zh-TW': `專利與法務（二）：專利檢索、前案調查與專利地圖分析`, 'zh-CN': `专利与法务（二）：专利检索、现有技术调查与专利地图分析`, 'en': `Patents & IP Law (II): Patent Search, Prior Art & Patent Landscape Maps`, 'de': `Patente & Recht (II): Patentrecherche, Stand der Technik & Patentkarten`, 'fr': `Brevets & Droit (II) : Recherche d'antériorité et cartographie des brevets` },
+          { 'zh-TW': `專利與法務（三）：專利說明書撰寫要點與申請流程`, 'zh-CN': `专利与法务（三）：专利说明书撰写要点与申请流程`, 'en': `Patents & IP Law (III): Patent Specification Drafting & Filing Process`, 'de': `Patente & Recht (III): Patentschrift-Erstellung & Anmeldeverfahren`, 'fr': `Brevets & Droit (III) : Rédaction des revendications et procédure de dépôt` },
+          { 'zh-TW': `專利與法務（四）：商業合約、授權條款與智慧財產侵權避險`, 'zh-CN': `专利与法务（四）：商业合约、授权条款与知识产权侵权避险`, 'en': `Patents & IP Law (IV): Commercial Contracts, Licensing & IP Risk Mitigation`, 'de': `Patente & Recht (IV): Verträge, Lizenzklauseln & Schutz vor IP-Verletzungen`, 'fr': `Brevets & Droit (IV) : Contrats commerciaux, licences et gestion des risques PI` }
+        ]
+      },
+      {
+        id: `c3`,
+        name: {
+          'zh-TW': `3. 技術商品化與輕量化企業`,
+          'zh-CN': `3. 技术商品化与轻量化企业`,
+          'en': `3. Tech Commercialization & Lightweight Enterprises`,
+          'de': `3. Technologiekommerzialisierung & schlanke Unternehmen`,
+          'fr': `3. Commercialisation Tech & Entreprise Légère`
+        },
+        overview: {
+          'zh-TW': `在 AI 一人公司（Solo Entrepreneurship）崛起下，教授低成本高產出實戰策略、國際外包整合、AIoT 邊緣運算與無伺服器（Serverless）雲端架構，並以 AI 代理人（Agent）自動化跨平台多項目工作流。`,
+          'zh-CN': `在 AI 一人公司（Solo Entrepreneurship）崛起下，教授低成本高产出实战策略、国际外包整合、AIoT 边缘计算与无服务器（Serverless）云端架构，并以 AI 代理（Agent）自动化跨平台工作流。`,
+          'en': `Explores AI Solo Entrepreneurship: lean high-leverage operations, global outsourcing (Upwork/Fiverr), AIoT & edge computing, Serverless cloud stacks (AWS/GCP/Azure), and multi-workflow AI Agent automation.`,
+          'de': `Lehrt Solo-Entrepreneurship mit KI: Lean-Strategien, globales Outsourcing, AIoT & Edge Computing, Serverless-Cloud-Architekturen und Multi-Agent-Workflow-Automatisierung.`,
+          'fr': `Explore l'entrepreneuriat solo par l'IA : leviers lean, externalisation mondiale, AIoT et edge computing, architectures Serverless et automatisation multi-agents.`
+        },
+        weeks: [
+          { 'zh-TW': `課程導論：AI 一人公司崛起與輕量化企業新趨勢`, 'zh-CN': `课程导论：AI 一人公司崛起与轻量化企业新趋势`, 'en': `Intro: Rise of AI Solo Entrepreneurship & Lightweight Enterprises`, 'de': `Einführung: Aufstieg von KI-Solo-Unternehmen & schlanken Strukturen`, 'fr': `Intro : Essor de l'entreprise solo IA et structures légères` },
+          { 'zh-TW': `輕量化企業核心槓桿：低成本、高產出的實戰策略`, 'zh-CN': `轻量化企业核心杠杆：低成本、高产出的实战策略`, 'en': `Core Leverage: Low-Cost, High-Output Operational Tactics`, 'de': `Kernhebel schlanker Firmen: Niedrige Kosten, hoher Output`, 'fr': `Leviers clés : Stratégies opérationnelles à faible coût et haut rendement` },
+          { 'zh-TW': `案例研究（一）：國內外成功 AI 一人公司案例深度剖析`, 'zh-CN': `案例研究（一）：国内外成功 AI 一人公司案例深度剖析`, 'en': `Case Study (I): Global & Local AI Solo-Founder Successes`, 'de': `Fallstudie (I): Erfolgreiche KI-Solo-Unternehmen weltweit`, 'fr': `Étude de cas (I) : Entreprises solo IA réussies` },
+          { 'zh-TW': `案例研究（二）：精實創業（Lean Startup）在輕量企業的應用`, 'zh-CN': `案例研究（二）：精益创业（Lean Startup）在轻量企业的应用`, 'en': `Case Study (II): Applying Lean Startup to Lightweight Ventures`, 'de': `Fallstudie (II): Lean Startup in schlanken Unternehmen`, 'fr': `Étude de cas (II) : Application du Lean Startup aux structures légères` },
+          { 'zh-TW': `外包服務與全球人才網絡（Upwork, Fiverr 等平台整合）`, 'zh-CN': `外包服务与全球人才网络（Upwork, Fiverr 等平台整合）`, 'en': `Global Talent Networks & Outsourcing Platforms (Upwork, Fiverr)`, 'de': `Outsourcing & globale Talentnetzwerke (Upwork, Fiverr)`, 'fr': `Externalisation & réseaux mondiaux de talents (Upwork, Fiverr)` },
+          { 'zh-TW': `外包管理技巧：規格書定義、品質控管與交付合約`, 'zh-CN': `外包管理技巧：规格书定义、品质控管与交付合约`, 'en': `Outsourcing Governance: Specs, Quality Control & Delivery Contracts`, 'de': `Outsourcing-Steuerung: Spezifikationen, Qualität & Verträge`, 'fr': `Gestion de la sous-traitance : Spécifications, qualité et contrats` },
+          { 'zh-TW': `AIoT（人工智慧物聯網）技術簡介與邊緣運算應用入門`, 'zh-CN': `AIoT（人工智能物联网）技术简介与边缘计算应用入门`, 'en': `Intro to AIoT (Artificial Intelligence of Things) & Edge Computing`, 'de': `Einführung in AIoT & Edge-Computing-Anwendungen`, 'fr': `Initiation à l'AIoT et au calcul en périphérie (Edge Computing)` },
+          { 'zh-TW': `AIoT 於輕量化企業中的硬體與數據應用場景`, 'zh-CN': `AIoT 于轻量化企业中的硬件与数据应用场景`, 'en': `AIoT Hardware & Data Scenarios in Lightweight Enterprises`, 'de': `AIoT-Hardware- & Datenszenarien in schlanken Betrieben`, 'fr': `Scénarios matériels et données AIoT pour entreprises légères` },
+          { 'zh-TW': `期中提案：一人企業構想與 AI 工作流雛形構想`, 'zh-CN': `期中提案：一人企业构想与 AI 工作流雏形构想`, 'en': `Midterm Proposal: Solo Venture Concept & AI Workflow Prototype`, 'de': `Zwischenvorschlag: Solo-Unternehmensidee & KI-Workflow-Prototyp`, 'fr': `Proposition mi-parcours : Projet solo et prototype de workflow IA` },
+          { 'zh-TW': `雲端服務與 SaaS 基礎設施：AWS, GCP, Azure 雲端資源`, 'zh-CN': `云端服务与 SaaS 基础设施：AWS, GCP, Azure 云端资源`, 'en': `Cloud & SaaS Infrastructure: AWS, GCP & Azure Resources`, 'de': `Cloud- & SaaS-Infrastruktur: AWS, GCP & Azure Ressourcen`, 'fr': `Infrastructure Cloud & SaaS : Ressources AWS, GCP et Azure` },
+          { 'zh-TW': `無伺服器（Serverless）架構與雲端工具如何輕量化企業`, 'zh-CN': `无服务器（Serverless）架构与云端工具如何轻量化企业`, 'en': `Serverless Architecture & Cloud Tools for Lean Operations`, 'de': `Serverless-Architektur & Cloud-Tools zur Unternehmensverschlankung`, 'fr': `Architecture Serverless et outils Cloud pour alléger l'entreprise` },
+          { 'zh-TW': `雲端服務輕量化之利弊分析：成本控制 vs 系統依賴風險`, 'zh-CN': `云端服务轻量化之利弊分析：成本控制 vs 系统依赖风险`, 'en': `Cloud Trade-Offs: Cost Control vs. Vendor Lock-In & Dependency Risk`, 'de': `Cloud-Abwägung: Kostenkontrolle vs. Systemabhängigkeit`, 'fr': `Compromis Cloud : Maîtrise des coûts vs dépendance technique` },
+          { 'zh-TW': `自動化工作流建置（一）：利用 AI 整合跨平臺資料流`, 'zh-CN': `自动化工作流建置（一）：利用 AI 整合跨平台数据流`, 'en': `Workflow Automation (I): Cross-Platform AI Data Integration`, 'de': `Workflow-Automatisierung (I): Plattformübergreifende KI-Datenflüsse`, 'fr': `Automatisation (I) : Intégration de flux de données inter-plateformes par IA` },
+          { 'zh-TW': `自動化工作流建置（二）：多項目工作流設計與代理人（Agent）部署`, 'zh-CN': `自动化工作流建置（二）：多项目工作流设计与代理（Agent）部署`, 'en': `Workflow Automation (II): Multi-Project Pipelines & AI Agent Deployment`, 'de': `Workflow-Automatisierung (II): Multi-Projekt-Pipelines & Agent-Deployment`, 'fr': `Automatisation (II) : Pipelines multi-projets et déploiement d'Agents IA` },
+          { 'zh-TW': `一人企業的財務控管、法律合規與風險分散機制`, 'zh-CN': `一人企业的财务控管、法律合规与风险分散机制`, 'en': `Solo Venture Finance, Legal Compliance & Risk Diversification`, 'de': `Finanzkontrolle, Compliance & Risikostreuung für Solo-Gründer`, 'fr': `Gestion financière, conformité légale et diversification des risques` },
+          { 'zh-TW': `一人企業營運實作：行銷、客服與營運自動化測試`, 'zh-CN': `一人企业营运实作：营销、客服与营运自动化测试`, 'en': `Solo Operations Lab: Marketing, Support & Ops Automation Testing`, 'de': `Praxislabor: Automatisierung von Marketing, Support & Betrieb`, 'fr': `Lab opérationnel : Tests d'automatisation marketing, SAV et opérations` }
+        ]
+      },
+      {
+        id: `c4`,
+        name: {
+          'zh-TW': `4. Python 數據分析`,
+          'zh-CN': `4. Python 数据分析`,
+          'en': `4. Python Data Analysis`,
+          'de': `4. Python-Datenanalyse`,
+          'fr': `4. Analyse de Données avec Python`
+        },
+        overview: {
+          'zh-TW': `專為科技管理與商科學生設計，無須程式基礎。從 Anaconda 與 Spyder 環境安裝出發，循序掌握 Python 語法、NumPy、Pandas 資料清洗與彙整，並透過 Matplotlib 與 Seaborn 繪製商業視覺化故事報告。`,
+          'zh-CN': `专为科技管理与商科学生设计，无需编程基础。从 Anaconda 与 Spyder 环境安装出发，循序掌握 Python 语法、NumPy、Pandas 数据清洗与汇总，并通过 Matplotlib 与 Seaborn 绘制商业可视化故事报告。`,
+          'en': `Zero-prerequisite Python course for management students: starts with Anaconda/Spyder setup, progresses through syntax, NumPy, Pandas data wrangling, and culminates in Matplotlib/Seaborn business storytelling dashboards.`,
+          'de': `Einsteigerkurs ohne Vorkenntnisse: von Anaconda & Spyder über Python-Grundlagen, NumPy und Pandas-Datenbereinigung bis zu Matplotlib- und Seaborn-Visualisierungen.`,
+          'fr': `Cours d'initiation sans prérequis : installation Anaconda/Spyder, syntaxe Python, NumPy, nettoyage de données Pandas et visualisation commerciale Matplotlib/Seaborn.`
+        },
+        weeks: [
+          { 'zh-TW': `Python 與數據分析簡介：商務應用與實務場景`, 'zh-CN': `Python 与数据分析简介：商务应用与实务场景`, 'en': `Intro to Python & Data Analytics: Business Use Cases`, 'de': `Einführung in Python & Datenanalyse im Business-Kontext`, 'fr': `Intro à Python et l'analyse de données : cas d'usage métier` },
+          { 'zh-TW': `開發環境建置：Anaconda 安裝與 Spyder 介面操作`, 'zh-CN': `开发环境建置：Anaconda 安装与 Spyder 界面操作`, 'en': `Environment Setup: Installing Anaconda & Navigating Spyder IDE`, 'de': `Einrichtung: Anaconda-Installation & Spyder-Oberfläche`, 'fr': `Environnement : Installation d'Anaconda et prise en main de Spyder` },
+          { 'zh-TW': `Python 基礎語法（一）：變數、資料型態（數字、字串、列表）`, 'zh-CN': `Python 基础语法（一）：变量、数据类型（数字、字符串、列表）`, 'en': `Python Basics (I): Variables & Data Types (Numbers, Strings, Lists)`, 'de': `Python-Grundlagen (I): Variablen & Datentypen (Zahlen, Strings, Listen)`, 'fr': `Bases Python (I) : Variables et types (nombres, chaînes, listes)` },
+          { 'zh-TW': `Python 基礎語法（二）：邏輯判斷（if-else）與迴圈（for/while）`, 'zh-CN': `Python 基础语法（二）：逻辑判断（if-else）与循环（for/while）`, 'en': `Python Basics (II): Conditionals (if-else) & Loops (for/while)`, 'de': `Python-Grundlagen (II): Bedingungen (if-else) & Schleifen (for/while)`, 'fr': `Bases Python (II) : Conditions (if-else) et boucles (for/while)` },
+          { 'zh-TW': `Python 函數與自訂模組編寫基礎`, 'zh-CN': `Python 函数与自定义模块编写基础`, 'en': `Functions & Custom Python Module Authoring`, 'de': `Funktionen & Erstellung eigener Python-Module`, 'fr': `Fonctions Python et création de modules personnalisés` },
+          { 'zh-TW': `數據分析核心套件（一）：NumPy 陣列運算與數值分析`, 'zh-CN': `数据分析核心套件（一）：NumPy 数组运算与数值分析`, 'en': `Core Data Libraries (I): NumPy Arrays & Numerical Computing`, 'de': `Kernbibliotheken (I): NumPy-Arrays & numerische Analysen`, 'fr': `Bibliothèques clés (I) : Tableaux NumPy et calcul numérique` },
+          { 'zh-TW': `數據分析核心套件（二）：Pandas DataFrame 資料結構入門`, 'zh-CN': `数据分析核心套件（二）：Pandas DataFrame 数据结构入门`, 'en': `Core Data Libraries (II): Intro to Pandas DataFrame Structures`, 'de': `Kernbibliotheken (II): Einführung in Pandas DataFrames`, 'fr': `Bibliothèques clés (II) : Introduction aux DataFrames Pandas` },
+          { 'zh-TW': `商業數據匯入與匯出（CSV、Excel 檔讀寫與欄位操作）`, 'zh-CN': `商业数据导入与导出（CSV、Excel 文件读写与字段操作）`, 'en': `Business Data I/O: Reading/Writing CSV & Excel Files`, 'de': `Daten-I/O: Lesen & Schreiben von CSV- und Excel-Dateien`, 'fr': `Import/Export de données métier : lecture/écriture CSV et Excel` },
+          { 'zh-TW': `期中實作測驗：Python 語法與基礎數據資料處理`, 'zh-CN': `期中实作测验：Python 语法与基础数据资料处理`, 'en': `Midterm Practical Exam: Python Syntax & Data Manipulation`, 'de': `Praxisprüfung Mitte Semester: Python-Syntax & Datenverarbeitung`, 'fr': `Examen pratique mi-parcours : Syntaxe Python et manipulation de données` },
+          { 'zh-TW': `數據清洗技巧（一）：缺失值、重複值與異常值處理`, 'zh-CN': `数据清洗技巧（一）：缺失值、重复值与异常值处理`, 'en': `Data Cleaning (I): Handling Missing Values, Duplicates & Outliers`, 'de': `Datenbereinigung (I): Fehlende Werte, Duplikate & Ausreißer`, 'fr': `Nettoyage (I) : Valeurs manquantes, doublons et valeurs aberrantes` },
+          { 'zh-TW': `數據清洗技巧（二）：資料合併（Merge/Concat）與轉置`, 'zh-CN': `数据清洗技巧（二）：资料合并（Merge/Concat）与转置`, 'en': `Data Cleaning (II): Merging, Concatenating & Pivoting Tables`, 'de': `Datenbereinigung (II): Zusammenführen (Merge/Concat) & Pivotieren`, 'fr': `Nettoyage (II) : Fusion (Merge/Concat) et transposition` },
+          { 'zh-TW': `商業數據統計分析：描述性統計、GROUPBY 與數據彙整`, 'zh-CN': `商业数据统计分析：描述性统计、GROUPBY 与数据汇总`, 'en': `Business Statistics: Descriptive Stats, GroupBy & Aggregation`, 'de': `Geschäftsstatistik: Deskriptive Statistik, GroupBy & Aggregation`, 'fr': `Statistiques métier : Statistiques descriptives, GroupBy et agrégation` },
+          { 'zh-TW': `資料視覺化基礎：Matplotlib 套件圖表繪製（折線圖、條形圖）`, 'zh-CN': `资料可视化基础：Matplotlib 套件图表绘制（折线图、条形图）`, 'en': `Visualization Basics: Plotting Line & Bar Charts with Matplotlib`, 'de': `Visualisierungsbasis: Linien- & Balkendiagramme mit Matplotlib`, 'fr': `Visualisation de base : Graphiques linéaires et barres avec Matplotlib` },
+          { 'zh-TW': `進階商業視覺化：Seaborn 套件應用（散佈圖、直方圖、熱力圖）`, 'zh-CN': `进阶商业可视化：Seaborn 套件应用（散点图、直方图、热力图）`, 'en': `Advanced Business Viz: Seaborn Scatter, Histogram & Heatmaps`, 'de': `Erweiterte Visualisierung: Seaborn Streu-, Histogramm- & Heatmaps`, 'fr': `Visualisation avancée : Nuages, histogrammes et heatmaps Seaborn` },
+          { 'zh-TW': `視覺化圖表設計原則：商務簡報中的圖表美化與數據故事化`, 'zh-CN': `可视化图表设计原则：商务简报中的图表美化与数据故事化`, 'en': `Chart Design Principles: Executive Styling & Data Storytelling`, 'de': `Designprinzipien: Präsentationsreife Diagramme & Data Storytelling`, 'fr': `Principes de design graphique : Esthétique et storytelling des données` },
+          { 'zh-TW': `商業案例實戰分析：銷售數據分析與客戶分群分析`, 'zh-CN': `商业案例实战分析：销售数据分析与客户分群分析`, 'en': `Capstone Business Case: Sales Analytics & Customer Segmentation`, 'de': `Praxis-Fallstudie: Absatzanalyse & Kundensegmentierung`, 'fr': `Cas pratique final : Analyse des ventes et segmentation client` }
+        ]
+      },
+      {
+        id: `c5`,
+        name: {
+          'zh-TW': `5. 電商創業與視覺行銷`,
+          'zh-CN': `5. 电商创业与视觉营销`,
+          'en': `5. E-Commerce Entrepreneurship & Visual Marketing`,
+          'de': `5. E-Commerce-Gründung & Visuelles Marketing`,
+          'fr': `5. Entrepreneuriat E-Commerce & Marketing Visuel`
+        },
+        overview: {
+          'zh-TW': `高度強調實作的自營電商課程：涵蓋品牌視覺建構、2 課 Figma UI 設計、4 課生成式設計與短影音製作、2 課電商平台流量策略、3 課 Make/Zapier 行銷自動化工作流，以及 1 課 AI 客服機器人實作。`,
+          'zh-CN': `高度强调实作的自营电商课程：涵盖品牌视觉建构、2 课 Figma UI 设计、4 课生成式设计与短视频制作、2 课电商平台流量策略、3 课 Make/Zapier 营销自动化工作流，以及 1 课 AI 客服机器人实作。`,
+          'en': `Hands-on e-commerce venture course covering brand VI, 2 Figma UI labs, 4 generative design/video labs, 2 channel traffic analytics modules, 3 Make/Zapier marketing automation workflows, and AI customer service chatbots.`,
+          'de': `Praxisorientierter E-Commerce-Kurs: Brand-VI, Figma-UI-Design, generative Produktbilder & Kurzvideos, Plattformanalyse, Make/Zapier-Automatisierung und KI-Support-Chatbots.`,
+          'fr': `Cours pratique d'e-commerce : identité visuelle, design UI sur Figma, design génératif et vidéo courte, trafic e-commerce, automatisation Make/Zapier et chatbot IA.`
+        },
+        weeks: [
+          { 'zh-TW': `電商創業總論與生成式 AI 視覺行銷趨勢`, 'zh-CN': `电商创业总论与生成式 AI 视觉营销趋势`, 'en': `E-Commerce Entrepreneurship & Generative AI Visual Marketing Trends`, 'de': `E-Commerce-Gründung & Trends im generativen visuellen Marketing`, 'fr': `Entrepreneuriat e-commerce et tendances du marketing visuel par IA` },
+          { 'zh-TW': `自營電商定位與品牌視覺風格（VI）建構`, 'zh-CN': `自营电商定位与品牌视觉风格（VI）建构`, 'en': `Storefront Positioning & Brand Visual Identity (VI) Design`, 'de': `Shop-Positionierung & Aufbau der Brand Visual Identity (VI)`, 'fr': `Positionnement boutique et identité visuelle de marque (VI)` },
+          { 'zh-TW': `Figma UI 設計實作（一）：介面基礎與電商首頁元件設計`, 'zh-CN': `Figma UI 设计实作（一）：界面基础与电商首页组件设计`, 'en': `Figma UI Lab (I): Interface Basics & Storefront Home Components`, 'de': `Figma UI-Praxis (I): Grundlagen & Startseiten-Komponenten`, 'fr': `Atelier Figma UI (I) : Bases d'interface et composants d'accueil` },
+          { 'zh-TW': `Figma UI 設計實作（二）：商品詳情頁與行動端 UI 產品設計`, 'zh-CN': `Figma UI 设计实作（二）：商品详情页与移动端 UI 产品设计`, 'en': `Figma UI Lab (II): Product Detail Pages & Mobile UI Design`, 'de': `Figma UI-Praxis (II): Produktdetailseiten & Mobile-UI-Design`, 'fr': `Atelier Figma UI (II) : Fiches produits et UI mobile` },
+          { 'zh-TW': `生成式設計軟體（一）：生成式網頁、商業商品圖生成與 Prompt 技巧`, 'zh-CN': `生成式设计软件（一）：生成式网页、商业商品图生成与 Prompt 技巧`, 'en': `Generative Design (I): AI Web Pages, Product Imagery & Prompting`, 'de': `Generatives Design (I): KI-Webseiten, Produktfotos & Prompting`, 'fr': `Design génératif (I) : Pages web, visuels produits et prompts` },
+          { 'zh-TW': `生成式設計軟體（二）：生成式網頁與 AI 設計案例分析`, 'zh-CN': `生成式设计软件（二）：生成式网页与 AI 设计案例分析`, 'en': `Generative Design (II): AI Web Builders & Design Case Studies`, 'de': `Generatives Design (II): KI-Webseiten & Design-Fallstudien`, 'fr': `Design génératif (II) : Études de cas de design et sites générés par IA` },
+          { 'zh-TW': `生成式設計軟體（三）：AI 影音生成工具短影音製作`, 'zh-CN': `生成式设计软件（三）：AI 影音生成工具短视频制作`, 'en': `Generative Design (III): AI Short-Form Video Production`, 'de': `Generatives Design (III): Kurzvideo-Produktion mit KI-Tools`, 'fr': `Design génératif (III) : Création de vidéos courtes par outils IA` },
+          { 'zh-TW': `生成式設計軟體（四）：AI 文案與行銷自動化批量生成`, 'zh-CN': `生成式设计软件（四）：AI 文案与营销自动化批量生成`, 'en': `Generative Design (IV): Batch AI Copywriting & Campaign Assets`, 'de': `Generatives Design (IV): KI-Werbetexte & automatisierte Kampagnen`, 'fr': `Design génératif (IV) : Rédaction IA en masse et contenus marketing` },
+          { 'zh-TW': `期中案例研討與自營電商平台視覺設計初稿發表`, 'zh-CN': `期中案例研讨与自营电商平台视觉设计初稿发表`, 'en': `Midterm Review: Case Seminar & E-Commerce Visual Design Drafts`, 'de': `Zwischenreview: Fallseminar & erste Shop-Design-Entwürfe`, 'fr': `Revue mi-parcours : Étude de cas et maquettes visuelles e-commerce` },
+          { 'zh-TW': `電商行銷平台分析（一）：自營電商平台比較`, 'zh-CN': `电商营销平台分析（一）：自营电商平台比较`, 'en': `E-Commerce Channel Analysis (I): Direct-to-Consumer Platform Comparison`, 'de': `Plattformanalyse (I): Vergleich von Eigen-Shop-Systemen`, 'fr': `Analyse plateformes (I) : Comparatif des solutions e-commerce` },
+          { 'zh-TW': `電商行銷平台分析（二）：社交電商與跨境電商渠道流量策略`, 'zh-CN': `电商营销平台分析（二）：社交电商与跨境电商渠道流量策略`, 'en': `E-Commerce Channel Analysis (II): Social & Cross-Border Traffic Tactics`, 'de': `Plattformanalyse (II): Social-Commerce & Cross-Border-Traffic`, 'fr': `Analyse plateformes (II) : Social commerce et trafic transfrontalier` },
+          { 'zh-TW': `自動化工作流用於行銷（一）：Make/Zapier 整合社群媒體自動發文`, 'zh-CN': `自动化工作流用于营销（一）：Make/Zapier 整合社交媒体自动发文`, 'en': `Marketing Automation (I): Make/Zapier Social Media Auto-Publishing`, 'de': `Marketing-Automation (I): Make/Zapier Social-Media-Workflows`, 'fr': `Automatisation marketing (I) : Publication sociale via Make/Zapier` },
+          { 'zh-TW': `自動化工作流用於行銷（二）：AI 自動化生成個人化 Email 行銷信件`, 'zh-CN': `自动化工作流用于营销（二）：AI 自动化生成个性化 Email 营销信件`, 'en': `Marketing Automation (II): AI-Personalized Email Campaigns`, 'de': `Marketing-Automation (II): KI-personalisierte E-Mail-Kampagnen`, 'fr': `Automatisation marketing (II) : E-mails personnalisés générés par IA` },
+          { 'zh-TW': `自動化工作流用於行銷（三）：廣告投放數據追蹤與自動化成效報表`, 'zh-CN': `自动化工作流用于营销（三）：广告投放数据追踪与自动化成效报表`, 'en': `Marketing Automation (III): Ad Attribution & Automated KPI Reports`, 'de': `Marketing-Automation (III): Ad-Tracking & automatische Reports`, 'fr': `Automatisation marketing (III) : Suivi publicitaire et rapports auto` },
+          { 'zh-TW': `客戶服務機器人：Chatbot 設定與 AI 客服助手訓練實作`, 'zh-CN': `客户服务机器人：Chatbot 设置与 AI 客服助手训练实作`, 'en': `Customer Service Chatbot: Setup & AI Support Assistant Training`, 'de': `Kundenservice-Chatbot: Einrichtung & Training von KI-Assistenten`, 'fr': `Chatbot SAV : Configuration et entraînement d'assistant client IA` },
+          { 'zh-TW': `電商創業案例研究：成功生成式 AI 行銷實戰剖析`, 'zh-CN': `电商创业案例研究：成功生成式 AI 营销实战剖析`, 'en': `E-Commerce Capstone: Anatomy of Successful GenAI Marketing Campaigns`, 'de': `Abschluss-Fallstudie: Erfolgreiche GenAI-Marketingkampagnen`, 'fr': `Étude de cas finale : Campagnes réussies de marketing par IA générative` }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 4. APPLICATION STATE
+    // =========================================================================
+    const appState = {
+      lang: 'zh-TW',
+      theme: 'day', // 'day' | 'night'
+      overviewMode: true,
+      tourPlaying: false,
+      tourIndex: 0,
+      tourTimerId: null,
+      ttsEnabled: false,
+      activeCourseId: 'c1', // 'all' | 'c1'..'c5'
+      searchQuery: '',
+      activeKeywordKey: '',
+      chartMode: 'if', // 'if' | 'perf'
+      visitorName: '',
+      bubbleCollapsed: false,
+      activeModalProjectId: null
+    };
+
+    let chartInstance = null;
+    let mascotRotY = 0.35;
+    let mascotRotX = 0.15;
+    let mascotVelY = 0.005;
+    let mascotVelX = 0;
+
+    // =========================================================================
+    // 5. STATE PERSISTENCE (notebookAppApi)
+    // =========================================================================
+    async function persistAppState() {
+      if (!window.notebookAppApi || typeof window.notebookAppApi.setAppState !== 'function') return;
+      try {
+        await window.notebookAppApi.setAppState({
+          lang: appState.lang,
+          theme: appState.theme,
+          overviewMode: appState.overviewMode,
+          activeCourseId: appState.activeCourseId,
+          searchQuery: appState.searchQuery,
+          activeKeywordKey: appState.activeKeywordKey,
+          chartMode: appState.chartMode,
+          visitorName: appState.visitorName
+        });
+      } catch (e) {
+        // Ignore persistence errors silently in preview
+      }
+    }
+
+    async function loadPersistedState() {
+      if (!window.notebookAppApi || typeof window.notebookAppApi.getAppState !== 'function') return;
+      try {
+        const saved = await window.notebookAppApi.getAppState();
+        if (saved && typeof saved === 'object') {
+          if (saved.lang && I18N[saved.lang]) appState.lang = saved.lang;
+          if (saved.theme === 'day' || saved.theme === 'night') appState.theme = saved.theme;
+          if (typeof saved.overviewMode === 'boolean') appState.overviewMode = saved.overviewMode;
+          if (saved.activeCourseId) appState.activeCourseId = saved.activeCourseId;
+          if (typeof saved.searchQuery === 'string') appState.searchQuery = saved.searchQuery;
+          if (typeof saved.activeKeywordKey === 'string') appState.activeKeywordKey = saved.activeKeywordKey;
+          if (saved.chartMode === 'if' || saved.chartMode === 'perf') appState.chartMode = saved.chartMode;
+          if (typeof saved.visitorName === 'string') appState.visitorName = saved.visitorName;
+        }
+      } catch (e) {
+        // Default state fallback
+      }
+    }
+
+    // =========================================================================
+    // 6. HELPERS & UI RENDERING
+    // =========================================================================
+    function t(key) {
+      const pack = I18N[appState.lang] || I18N['zh-TW'];
+      return pack[key] !== undefined ? pack[key] : (I18N['zh-TW'][key] || '');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast-msg');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.add('is-shown');
+      clearTimeout(el._hideTimer);
+      el._hideTimer = setTimeout(function() {
+        el.classList.remove('is-shown');
+      }, 2200);
+    }
+
+    function copyTextValue(val) {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(val).catch(function() {});
+      }
+      showToast(t('copiedToast').replace('{val}', val));
+    }
+
+    function applyThemeDom() {
+      document.documentElement.setAttribute('data-theme', appState.theme);
+      const btn = document.getElementById('btn-theme-toggle');
+      const label = document.getElementById('ui-btn-theme');
+      if (btn) btn.setAttribute('aria-pressed', appState.theme === 'night' ? 'true' : 'false');
+      if (label) label.textContent = appState.theme === 'night' ? t('btnNight') : t('btnDay');
+      renderImpactChart();
+    }
+
+    function renderAllTranslations() {
+      const htmlMap = {
+        'zh-TW': 'zh-Hant-TW',
+        'zh-CN': 'zh-Hans-CN',
+        'en': 'en',
+        'de': 'de',
+        'fr': 'fr'
+      };
+      document.documentElement.lang = htmlMap[appState.lang] || 'zh-Hant-TW';
+
+      const setTxt = function(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      };
+
+      setTxt('ui-site-title', t('siteTitle'));
+      setTxt('ui-site-subtitle', t('siteSubtitle'));
+      setTxt('ui-btn-overview', appState.overviewMode ? t('btnOverview') : t('btnCompact'));
+      setTxt('ui-btn-tour', appState.tourPlaying ? t('btnTourPause') : t('btnTourPlay'));
+      setTxt('ui-btn-tts', appState.ttsEnabled ? t('btnTtsOn') : t('btnTtsOff'));
+      setTxt('ui-btn-theme', appState.theme === 'night' ? t('btnNight') : t('btnDay'));
+      setTxt('ui-tour-pause-inline', t('tourPauseInline'));
+      setTxt('ui-tts-stop', t('ttsStop'));
+
+      setTxt('kpi-1-label', t('kpi1Label'));
+      setTxt('kpi-1-val', t('kpi1Val'));
+      setTxt('kpi-1-delta', t('kpi1Delta'));
+      setTxt('kpi-2-label', t('kpi2Label'));
+      setTxt('kpi-2-val', t('kpi2Val'));
+      setTxt('kpi-2-delta', t('kpi2Delta'));
+      setTxt('kpi-3-label', t('kpi3Label'));
+      setTxt('kpi-3-val', t('kpi3Val'));
+      setTxt('kpi-3-delta', t('kpi3Delta'));
+      setTxt('kpi-4-label', t('kpi4Label'));
+      setTxt('kpi-4-val', t('kpi4Val'));
+      setTxt('kpi-4-delta', t('kpi4Delta'));
+
+      setTxt('ui-profile-heading', t('profileHeading'));
+      setTxt('ui-profile-tag', t('profileTag'));
+      setTxt('edu-1-title', t('edu1Title'));
+      setTxt('edu-1-desc', t('edu1Desc'));
+      setTxt('edu-2-title', t('edu2Title'));
+      setTxt('edu-2-desc', t('edu2Desc'));
+      setTxt('exp-1-title', t('exp1Title'));
+      setTxt('exp-1-desc', t('exp1Desc'));
+
+      setTxt('ui-chart-heading', t('chartHeading'));
+      setTxt('btn-chart-if', t('chartIfBtn'));
+      setTxt('btn-chart-perf', t('chartPerfBtn'));
+
+      setTxt('ui-dashboards-heading', t('dashboardsHeading'));
+      setTxt('ui-dashboards-hint', t('dashboardsHint'));
+      setTxt('ui-syllabus-heading', t('syllabusHeading'));
+      setTxt('ui-search-label', t('searchLabel'));
+      const searchInput = document.getElementById('syllabus-search');
+      if (searchInput) {
+        searchInput.placeholder = t('searchPlaceholder');
+        searchInput.value = appState.searchQuery;
+      }
+      setTxt('ui-btn-clear', t('btnClear'));
+
+      setTxt('ui-modal-meta-label', t('modalMetaLabel'));
+      setTxt('ui-modal-abstract-label', t('modalAbstractLabel'));
+      setTxt('ui-modal-innovation-label', t('modalInnovationLabel'));
+      setTxt('ui-modal-file-label', t('modalFileLabel'));
+      setTxt('ui-modal-copy', t('modalCopy'));
+      setTxt('ui-modal-close', t('modalClose'));
+      setTxt('modal-sandbox-note', t('modalSandboxNote'));
+
+      setTxt('mascot-title-label', t('mascotTitle'));
+      setTxt('ui-visitor-label', t('visitorLabel'));
+      setTxt('ui-visitor-save', t('visitorSave'));
+      setTxt('mascot-hint-label', t('mascotHint'));
+
+      ['zh-TW', 'zh-CN', 'en', 'de', 'fr'].forEach(function(code) {
+        const b = document.getElementById('lang-' + code);
+        if (b) b.setAttribute('aria-pressed', appState.lang === code ? 'true' : 'false');
+      });
+
+      renderScopes();
+      renderDashboardsGrid();
+      renderKeywordChips();
+      renderCourseTabs();
+      renderSyllabusContent();
+      renderMascotGreeting();
+      renderImpactChart();
+      if (appState.activeModalProjectId) {
+        openProjectModal(appState.activeModalProjectId);
+      }
+    }
+
+    function renderScopes() {
+      const container = document.getElementById('research-scopes-list');
+      if (!container) return;
+      const list = t('scopes');
+      container.innerHTML = list.map(function(item) {
+        return `<span class="chip">${escapeHtml(item)}</span>`;
+      }).join('');
+    }
+
+    function renderDashboardsGrid() {
+      const container = document.getElementById('dashboards-grid');
+      if (!container) return;
+      const tourItems = getTourItems();
+      const focusedId = appState.tourPlaying && tourItems[appState.tourIndex] ? tourItems[appState.tourIndex].id : null;
+
+      container.innerHTML = PROJECTS.map(function(proj) {
+        const badge = proj.badge[appState.lang] || proj.badge['zh-TW'];
+        const title = proj.title[appState.lang] || proj.title['zh-TW'];
+        const summary = proj.summary[appState.lang] || proj.summary['zh-TW'];
+        const focusClass = focusedId === proj.id ? ' is-tour-focus' : '';
+        const chipClass = proj.isPrimary ? 'status-chip is-primary' : 'status-chip';
+
+        return `
+          <button type="button" class="project-card tts-zone${focusClass}" id="card-${proj.id}" onclick="openProjectModal('${proj.id}')">
+            <div>
+              <div class="project-badge-row">
+                <span class="${chipClass}">${escapeHtml(badge)}</span>
+              </div>
+              <h3 class="project-title" style="margin-top: var(--space-xs);">${escapeHtml(title)}</h3>
+              <p class="project-summary" style="margin-top: var(--space-xs);">${escapeHtml(summary)}</p>
+            </div>
+            <div class="project-footer">
+              <span class="filename-code">${escapeHtml(proj.file)}</span>
+              <span aria-hidden="true">↗</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderKeywordChips() {
+      const row = document.getElementById('keyword-chips-row');
+      if (!row) return;
+      row.innerHTML = QUICK_KEYWORDS.map(function(kw) {
+        const label = kw.label[appState.lang] || kw.key;
+        const isActive = appState.activeKeywordKey === kw.key;
+        return `<button type="button" class="tag-btn" aria-pressed="${isActive ? 'true' : 'false'}" onclick="toggleKeywordChip('${kw.key}')">${escapeHtml(label)}</button>`;
+      }).join('');
+    }
+
+    function renderCourseTabs() {
+      const row = document.getElementById('course-tabs-row');
+      if (!row) return;
+      const tourItems = getTourItems();
+      const focusedId = appState.tourPlaying && tourItems[appState.tourIndex] ? tourItems[appState.tourIndex].id : null;
+
+      const allBtn = `<button type="button" class="course-tag-btn" aria-pressed="${appState.activeCourseId === 'all' ? 'true' : 'false'}" onclick="selectCourseTab('all')">${escapeHtml(t('allCoursesTab'))}</button>`;
+      const courseBtns = COURSES.map(function(c) {
+        const cname = c.name[appState.lang] || c.name['zh-TW'];
+        const isActive = appState.activeCourseId === c.id;
+        const focusCls = focusedId === c.id ? ' is-tour-focus' : '';
+        return `<button type="button" class="course-tag-btn${focusCls}" aria-pressed="${isActive ? 'true' : 'false'}" onclick="selectCourseTab('${c.id}')">${escapeHtml(cname)}</button>`;
+      }).join('');
+
+      row.innerHTML = allBtn + courseBtns;
+    }
+
+    function highlightText(text, terms) {
+      let safe = escapeHtml(text);
+      if (!terms.length) return safe;
+      const escapedTerms = terms
+        .filter(Boolean)
+        .map(function(term) { return term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
+      if (!escapedTerms.length) return safe;
+      const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+      return safe.replace(regex, `<mark class="kw-hit">$1</mark>`);
+    }
+
+    function getActiveMatchTerms() {
+      const q = appState.searchQuery.trim();
+      if (!q && !appState.activeKeywordKey) return [];
+      if (appState.activeKeywordKey) {
+        const found = QUICK_KEYWORDS.find(function(k) { return k.key === appState.activeKeywordKey; });
+        if (found && found.matchAlts && (!q || q.toLowerCase() === found.key.toLowerCase())) {
+          return found.matchAlts;
+        }
+      }
+      return q ? [q] : [];
+    }
+
+    function renderSyllabusContent() {
+      const metaEl = document.getElementById('course-meta-banner');
+      const gridEl = document.getElementById('weeks-grid');
+      const countEl = document.getElementById('syllabus-count-badge');
+      if (!metaEl || !gridEl || !countEl) return;
+
+      const terms = getActiveMatchTerms();
+      const hasSearch = terms.length > 0;
+
+      // If a keyword search is active, filter across ALL 5 courses (unless a specific course tab is clicked after, or cross-course!)
+      // User requested: "點擊或輸入時能動態跨課程過濾週次與主題" -> cross-course filtering when searching!
+      const targetCourses = hasSearch
+        ? (appState.activeCourseId === 'all' ? COURSES : COURSES)
+        : (appState.activeCourseId === 'all' ? COURSES : COURSES.filter(function(c) { return c.id === appState.activeCourseId; }));
+
+      if (hasSearch || appState.activeCourseId === 'all') {
+        metaEl.innerHTML = `
+          <div class="course-meta-row">
+            <span>${escapeHtml(t('allCoursesTab'))}</span>
+            <span>${escapeHtml(t('creditsLabel'))}: ${escapeHtml(t('creditsUnit'))}</span>
+            <span>${escapeHtml(t('prereqLabel'))}: ${escapeHtml(t('noPrereq'))}</span>
+            <span>${escapeHtml(t('textbookLabel'))}: ${escapeHtml(t('customNotes'))}</span>
+          </div>
+          <p style="margin: 0; font-size: 0.9rem; color: var(--on-surface-variant);">${escapeHtml(t('searchLabel'))}</p>
+        `;
+      } else {
+        const activeCourse = COURSES.find(function(c) { return c.id === appState.activeCourseId; }) || COURSES[0];
+        const cname = activeCourse.name[appState.lang] || activeCourse.name['zh-TW'];
+        const coverview = activeCourse.overview[appState.lang] || activeCourse.overview['zh-TW'];
+        metaEl.innerHTML = `
+          <div class="course-meta-row">
+            <span>${escapeHtml(cname)}</span>
+            <span>${escapeHtml(t('creditsLabel'))}: ${escapeHtml(t('creditsUnit'))}</span>
+            <span>${escapeHtml(t('prereqLabel'))}: ${escapeHtml(t('noPrereq'))}</span>
+            <span>${escapeHtml(t('textbookLabel'))}: ${escapeHtml(t('customNotes'))}</span>
+          </div>
+          <p style="margin: 0; font-size: 0.92rem; color: var(--on-surface);">${escapeHtml(coverview)}</p>
+        `;
+      }
+
+      const cards = [];
+      targetCourses.forEach(function(course) {
+        const cname = course.name[appState.lang] || course.name['zh-TW'];
+        course.weeks.forEach(function(weekObj, idx) {
+          const topic = weekObj[appState.lang] || weekObj['zh-TW'];
+          const allLangTopics = Object.values(weekObj).join(' ');
+          const matchable = `${cname} ${topic} ${allLangTopics}`.toLowerCase();
+
+          if (terms.length > 0) {
+            const matched = terms.some(function(term) {
+              return matchable.indexOf(term.toLowerCase()) !== -1;
+            });
+            if (!matched) return;
+          }
+
+          const weekLabel = `${t('weekPrefix')}${idx + 1}${t('weekSuffix')}`;
+          cards.push(`
+            <article class="week-card tts-zone" tabindex="0">
+              <div class="week-badge-line">
+                <span>${escapeHtml(weekLabel)}</span>
+                <span>${escapeHtml(cname)}</span>
+              </div>
+              <div class="week-topic">${highlightText(topic, terms)}</div>
+            </article>
+          `);
+        });
+      });
+
+      countEl.textContent = t('showingCount').replace('{n}', String(cards.length));
+
+      if (!cards.length) {
+        gridEl.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <strong style="font-size: 1.05rem;">${escapeHtml(t('emptyTitle').replace('{q}', appState.searchQuery || appState.activeKeywordKey))}</strong>
+            <span style="color: var(--on-surface-variant);">${escapeHtml(t('emptyDesc'))}</span>
+            <button type="button" class="btn-control" onclick="clearSyllabusFilter()">${escapeHtml(t('btnClear'))}</button>
+          </div>
+        `;
+      } else {
+        gridEl.innerHTML = cards.join('');
+      }
+    }
+
+    function renderMascotGreeting() {
+      const el = document.getElementById('mascot-greeting-text');
+      const input = document.getElementById('visitor-name-input');
+      if (!el) return;
+      if (input && input.value !== appState.visitorName) {
+        input.value = appState.visitorName;
+      }
+      if (appState.visitorName.trim()) {
+        el.textContent = t('mascotGreet').replace('{name}', appState.visitorName.trim());
+      } else {
+        el.textContent = t('mascotAsk');
+      }
+    }
+
+    // =========================================================================
+    // 7. INTERACTIVE HANDLERS (Hoisted Functions)
+    // =========================================================================
+    function setLanguage(langCode) {
+      if (!I18N[langCode]) return;
+      appState.lang = langCode;
+      stopSpeaking();
+      renderAllTranslations();
+      persistAppState();
+    }
+
+    function toggleDayNightTheme() {
+      appState.theme = appState.theme === 'day' ? 'night' : 'day';
+      applyThemeDom();
+      persistAppState();
+    }
+
+    function toggleOverviewMode() {
+      appState.overviewMode = !appState.overviewMode;
+      const shell = document.getElementById('app-shell');
+      const btn = document.getElementById('btn-overview-mode');
+      const lbl = document.getElementById('ui-btn-overview');
+      if (shell) shell.classList.toggle('is-compact', !appState.overviewMode);
+      if (btn) btn.setAttribute('aria-pressed', appState.overviewMode ? 'true' : 'false');
+      if (lbl) lbl.textContent = appState.overviewMode ? t('btnOverview') : t('btnCompact');
+      persistAppState();
+    }
+
+    function getTourItems() {
+      const items = [];
+      PROJECTS.forEach(function(p) {
+        items.push({ type: 'project', id: p.id, label: p.title[appState.lang] || p.title['zh-TW'] });
+      });
+      COURSES.forEach(function(c) {
+        items.push({ type: 'course', id: c.id, label: c.name[appState.lang] || c.name['zh-TW'] });
+      });
+      return items;
+    }
+
+    function applyTourStep() {
+      const items = getTourItems();
+      if (!items.length) return;
+      const current = items[appState.tourIndex % items.length];
+      const statusEl = document.getElementById('tour-status-text');
+      if (statusEl) {
+        statusEl.textContent = t('tourStepLabel')
+          .replace('{idx}', String((appState.tourIndex % items.length) + 1))
+          .replace('{total}', String(items.length))
+          .replace('{name}', current.label);
+      }
+      if (current.type === 'course') {
+        appState.activeCourseId = current.id;
+        appState.searchQuery = '';
+        appState.activeKeywordKey = '';
+        const searchInput = document.getElementById('syllabus-search');
+        if (searchInput) searchInput.value = '';
+        renderKeywordChips();
+        renderSyllabusContent();
+      }
+      renderDashboardsGrid();
+      renderCourseTabs();
+    }
+
+    function toggleTourAnimation() {
+      appState.tourPlaying = !appState.tourPlaying;
+      const btn = document.getElementById('btn-tour-toggle');
+      const lbl = document.getElementById('ui-btn-tour');
+      const banner = document.getElementById('tour-banner');
+      if (btn) btn.setAttribute('aria-pressed', appState.tourPlaying ? 'true' : 'false');
+      if (lbl) lbl.textContent = appState.tourPlaying ? t('btnTourPause') : t('btnTourPlay');
+      if (banner) banner.classList.toggle('is-visible', appState.tourPlaying);
+
+      if (appState.tourTimerId) {
+        clearInterval(appState.tourTimerId);
+        appState.tourTimerId = null;
+      }
+
+      if (appState.tourPlaying) {
+        applyTourStep();
+        appState.tourTimerId = setInterval(function() {
+          const items = getTourItems();
+          appState.tourIndex = (appState.tourIndex + 1) % items.length;
+          applyTourStep();
+        }, 2800);
+      } else {
+        renderDashboardsGrid();
+        renderCourseTabs();
+      }
+    }
+
+    function toggleTtsMode() {
+      appState.ttsEnabled = !appState.ttsEnabled;
+      const btn = document.getElementById('btn-tts-toggle');
+      const lbl = document.getElementById('ui-btn-tts');
+      if (btn) btn.setAttribute('aria-pressed', appState.ttsEnabled ? 'true' : 'false');
+      if (lbl) lbl.textContent = appState.ttsEnabled ? t('btnTtsOn') : t('btnTtsOff');
+      document.body.classList.toggle('tts-enabled', appState.ttsEnabled);
+      if (!appState.ttsEnabled) {
+        stopSpeaking();
+      }
+    }
+
+    function stopSpeaking() {
+      if (typeof window.speechSynthesis !== 'undefined' && typeof window.speechSynthesis.cancel === 'function') {
+        window.speechSynthesis.cancel();
+      }
+      const bar = document.getElementById('tts-status-bar');
+      if (bar) bar.classList.remove('is-visible');
+    }
+
+    function speakTextRegion(rawText) {
+      if (!appState.ttsEnabled) return;
+      const clean = String(rawText || '').replace(/\s+/g, ' ').trim();
+      if (!clean) return;
+      const bar = document.getElementById('tts-status-bar');
+      const statusTxt = document.getElementById('tts-status-text');
+
+      if (typeof window.speechSynthesis === 'undefined' || typeof window.SpeechSynthesisUtterance === 'undefined') {
+        if (statusTxt) statusTxt.textContent = t('ttsUnsupported');
+        if (bar) bar.classList.add('is-visible');
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(clean.slice(0, 320));
+      const langVoiceMap = {
+        'zh-TW': { lang: 'zh-TW', rate: 3.0 },
+        'zh-CN': { lang: 'zh-CN', rate: 1.4 },
+        'en': { lang: 'en-US', rate: 1.2 },
+        'de': { lang: 'de-DE', rate: 1.2 },
+        'fr': { lang: 'fr-FR', rate: 1.2 }
+      };
+      const cfg = langVoiceMap[appState.lang] || langVoiceMap['zh-TW'];
+      utter.lang = cfg.lang;
+      utter.rate = cfg.rate;
+
+      if (statusTxt) {
+        statusTxt.textContent = t('ttsReading').replace('{text}', clean.slice(0, 48) + (clean.length > 48 ? '…' : ''));
+      }
+      if (bar) bar.classList.add('is-visible');
+
+      utter.onend = function() {
+        if (bar) bar.classList.remove('is-visible');
+      };
+      utter.onerror = function() {
+        if (bar) bar.classList.remove('is-visible');
+      };
+      window.speechSynthesis.speak(utter);
+    }
+
+    function onSearchInput(val) {
+      appState.searchQuery = val;
+      if (!val.trim()) {
+        appState.activeKeywordKey = '';
+      }
+      renderKeywordChips();
+      renderSyllabusContent();
+      persistAppState();
+    }
+
+    function toggleKeywordChip(key) {
+      if (appState.activeKeywordKey === key) {
+        appState.activeKeywordKey = '';
+        appState.searchQuery = '';
+      } else {
+        appState.activeKeywordKey = key;
+        const kwObj = QUICK_KEYWORDS.find(function(k) { return k.key === key; });
+        appState.searchQuery = kwObj ? (kwObj.label[appState.lang] || key) : key;
+      }
+      const input = document.getElementById('syllabus-search');
+      if (input) input.value = appState.searchQuery;
+      renderKeywordChips();
+      renderSyllabusContent();
+      persistAppState();
+    }
+
+    function selectCourseTab(courseId) {
+      appState.activeCourseId = courseId;
+      appState.searchQuery = '';
+      appState.activeKeywordKey = '';
+      const input = document.getElementById('syllabus-search');
+      if (input) input.value = '';
+      renderKeywordChips();
+      renderCourseTabs();
+      renderSyllabusContent();
+      persistAppState();
+    }
+
+    function clearSyllabusFilter() {
+      appState.searchQuery = '';
+      appState.activeKeywordKey = '';
+      appState.activeCourseId = 'c1';
+      const input = document.getElementById('syllabus-search');
+      if (input) input.value = '';
+      renderKeywordChips();
+      renderCourseTabs();
+      renderSyllabusContent();
+      persistAppState();
+    }
+
+    function switchChartMode(mode) {
+      appState.chartMode = mode;
+      const b1 = document.getElementById('btn-chart-if');
+      const b2 = document.getElementById('btn-chart-perf');
+      if (b1) b1.setAttribute('aria-pressed', mode === 'if' ? 'true' : 'false');
+      if (b2) b2.setAttribute('aria-pressed', mode === 'perf' ? 'true' : 'false');
+      renderImpactChart();
+      persistAppState();
+    }
+
+    function openProjectModal(projectId) {
+      const proj = PROJECTS.find(function(p) { return p.id === projectId; });
+      if (!proj) return;
+      appState.activeModalProjectId = projectId;
+      const modal = document.getElementById('detail-modal');
+      if (!modal) return;
+
+      const setTxt = function(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+      setTxt('modal-badge', proj.badge[appState.lang] || proj.badge['zh-TW']);
+      setTxt('modal-title', proj.title[appState.lang] || proj.title['zh-TW']);
+      setTxt('modal-meta', proj.meta);
+      setTxt('modal-abstract', proj.abstract[appState.lang] || proj.abstract['zh-TW']);
+      setTxt('modal-innovation', proj.innovation[appState.lang] || proj.innovation['zh-TW']);
+      setTxt('modal-filename', proj.file);
+
+      modal.classList.add('is-open');
+    }
+
+    function closeProjectModal() {
+      appState.activeModalProjectId = null;
+      const modal = document.getElementById('detail-modal');
+      if (modal) modal.classList.remove('is-open');
+    }
+
+    function handleModalBackdropClick(ev) {
+      if (ev.target && ev.target.id === 'detail-modal') {
+        closeProjectModal();
+      }
+    }
+
+    function copyCurrentModalFile() {
+      const el = document.getElementById('modal-filename');
+      if (el && el.textContent) {
+        copyTextValue(el.textContent);
+      }
+    }
+
+    function saveVisitorName() {
+      const input = document.getElementById('visitor-name-input');
+      if (!input) return;
+      appState.visitorName = input.value.trim();
+      renderMascotGreeting();
+      persistAppState();
+    }
+
+    function toggleMascotBubble() {
+      appState.bubbleCollapsed = !appState.bubbleCollapsed;
+      const bubble = document.getElementById('mascot-bubble');
+      const showBtn = document.getElementById('btn-show-bubble');
+      if (bubble) bubble.classList.toggle('is-collapsed', appState.bubbleCollapsed);
+      if (showBtn) showBtn.style.display = appState.bubbleCollapsed ? 'inline-flex' : 'none';
+    }
+
+    function handleMascotKey(ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        toggleDayNightTheme();
+      }
+    }
+
+    // =========================================================================
+    // 8. CHART.JS ANALYTICS
+    // =========================================================================
+    function getThemeVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#466985';
+    }
+
+    function renderImpactChart() {
+      const canvas = document.getElementById('impactChart');
+      if (!canvas || typeof Chart === 'undefined') return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const textColor = getThemeVar('--on-surface-variant');
+      const gridColor = getThemeVar('--outline-variant');
+      const dataColor1 = getThemeVar('--data-1');
+      const dataColor2 = getThemeVar('--data-2');
+      const dataColor3 = getThemeVar('--data-3');
+
+      const isIf = appState.chartMode === 'if';
+      const labels = isIf ? t('chartIfLabels') : t('chartPerfLabels');
+      const values = isIf ? [10.7, 6.5, 3.4, 3.4, 2.9] : [32, 28, 41, 93.314, 14.45, 14.17];
+      const bgColors = isIf
+        ? [dataColor1, dataColor2, dataColor3, dataColor3, dataColor1]
+        : [dataColor1, dataColor1, dataColor2, dataColor2, dataColor3, dataColor3];
+
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: isIf ? t('chartIfDataset') : t('chartPerfDataset'),
+            data: values,
+            backgroundColor: bgColors,
+            borderRadius: 4,
+            barPercentage: 0.65
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: isIf ? 'y' : 'x',
+          plugins: {
+            legend: {
+              labels: { color: textColor, font: { size: 11 } }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { size: 11 } }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 9. 3D RISING DANDELION JUNGLE & NIGHT STARRY HORIZON CANVAS
+    // =========================================================================
+    let bgAnimId = null;
+    const stars = [];
+    const dandelions = [];
+
+    function initBackgroundParticles() {
+      stars.length = 0;
+      for (let i = 0; i < 110; i++) {
+        stars.push({
+          x: Math.random(),
+          y: Math.random() * 0.45,
+          r: 0.6 + Math.random() * 1.6,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.015 + Math.random() * 0.025
+        });
+      }
+      dandelions.length = 0;
+      for (let i = 0; i < 42; i++) {
+        dandelions.push({
+          x: (Math.random() - 0.5) * 2.2,
+          y: 0.42 + Math.random() * 0.68,
+          z: 0.25 + Math.random() * 1.4,
+          riseSpeed: 0.00035 + Math.random() * 0.00075,
+          swayPhase: Math.random() * Math.PI * 2,
+          swayFreq: 0.6 + Math.random() * 0.8,
+          springOffset: 0,
+          size: 10 + Math.random() * 16,
+          spokes: 7 + Math.floor(Math.random() * 5)
+        });
+      }
+    }
+
+    function startBackgroundLoop() {
+      const canvas = document.getElementById('bg-scene-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let tick = 0;
+
+      function resize() {
+        canvas.width = window.innerWidth || 1280;
+        canvas.height = window.innerHeight || 720;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      function renderFrame() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const horizonY = h * 0.42;
+
+        const skyTop = getThemeVar('--sky-top');
+        const skyHorizon = getThemeVar('--sky-horizon');
+        const horizonLine = getThemeVar('--horizon-line');
+        const stemColor = getThemeVar('--dandelion-stem');
+        const seedColor = getThemeVar('--dandelion-seed');
+        const glowColor = getThemeVar('--dandelion-glow');
+        const starColor = getThemeVar('--star-color');
+
+        // Sky gradient above horizon
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, skyTop);
+        grad.addColorStop(0.42, skyHorizon);
+        grad.addColorStop(1, skyTop);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Starry sky in night mode
+        if (appState.theme === 'night') {
+          stars.forEach(function(s) {
+            const twinkle = 0.35 + 0.65 * Math.abs(Math.sin(tick * s.speed + s.phase));
+            ctx.globalAlpha = twinkle;
+            ctx.fillStyle = starColor;
+            ctx.beginPath();
+            ctx.arc(s.x * w, s.y * h, s.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.globalAlpha = 1;
+        }
+
+        // Subtle atmospheric horizon line
+        ctx.strokeStyle = horizonLine;
+        ctx.globalAlpha = 0.45;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, horizonY);
+        ctx.lineTo(w, horizonY);
+        ctx.stroke();
+
+        // 3D floating rising dandelion jungle below the horizon
+        dandelions.sort(function(a, b) { return b.z - a.z; });
+        dandelions.forEach(function(d) {
+          if (!reduceMotion) {
+            d.y -= d.riseSpeed / d.z;
+            if (d.y < 0.40) {
+              d.y = 1.08;
+              d.x = (Math.random() - 0.5) * 2.2;
+            }
+          }
+          const sway = Math.sin(tick * 0.018 * d.swayFreq + d.swayPhase) * 18;
+          const elasticX = Math.sin(tick * 0.03 + d.swayPhase) * 6;
+          const scale = 1 / d.z;
+          const px = w * 0.5 + d.x * w * 0.46 * scale + sway * scale;
+          const py = d.y * h;
+          const r = d.size * scale;
+
+          if (py < horizonY - 12 || py > h + 40) return;
+
+          const alpha = Math.max(0.14, Math.min(0.62, (1.4 - d.z * 0.65) * 0.48));
+          ctx.globalAlpha = alpha;
+
+          // Stem curving downward with soft elasticity
+          ctx.strokeStyle = stemColor;
+          ctx.lineWidth = Math.max(0.7, 1.4 * scale);
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.quadraticCurveTo(px + elasticX, py + r * 1.4, px - sway * 0.3, py + r * 3.1);
+          ctx.stroke();
+
+          // Soft halo
+          ctx.fillStyle = glowColor;
+          ctx.beginPath();
+          ctx.arc(px, py, r * 0.9, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Pappus spokes
+          ctx.strokeStyle = seedColor;
+          ctx.lineWidth = Math.max(0.6, 1.1 * scale);
+          for (let k = 0; k < d.spokes; k++) {
+            const ang = (k / d.spokes) * Math.PI * 2 + tick * 0.003;
+            const ex = px + Math.cos(ang) * r;
+            const ey = py + Math.sin(ang) * r;
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+
+            ctx.fillStyle = seedColor;
+            ctx.beginPath();
+            ctx.arc(ex, ey, Math.max(1, 1.8 * scale), 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+
+        ctx.globalAlpha = 1;
+        tick += 1;
+        if (!reduceMotion) {
+          bgAnimId = requestAnimationFrame(renderFrame);
+        }
+      }
+
+      if (bgAnimId) cancelAnimationFrame(bgAnimId);
+      renderFrame();
+    }
+
+    // =========================================================================
+    // 10. 3D HOLOGRAPHIC AMOEBA MASCOT (360° DRAG + CLICK FOR DAY/NIGHT)
+    // =========================================================================
+    let mascotAnimId = null;
+
+    function startMascotLoop() {
+      const canvas = document.getElementById('mascot-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      let dragging = false;
+      let dragDist = 0;
+      let lastX = 0;
+      let lastY = 0;
+
+      canvas.addEventListener('pointerdown', function(ev) {
+        dragging = true;
+        dragDist = 0;
+        lastX = ev.clientX;
+        lastY = ev.clientY;
+        if (typeof canvas.setPointerCapture === 'function') {
+          canvas.setPointerCapture(ev.pointerId);
+        }
+      });
+
+      canvas.addEventListener('pointermove', function(ev) {
+        if (!dragging) return;
+        const dx = ev.clientX - lastX;
+        const dy = ev.clientY - lastY;
+        dragDist += Math.hypot(dx, dy);
+        mascotRotY += dx * 0.015;
+        mascotRotX = Math.max(-1.2, Math.min(1.2, mascotRotX + dy * 0.015));
+        mascotVelY = dx * 0.002;
+        mascotVelX = dy * 0.002;
+        lastX = ev.clientX;
+        lastY = ev.clientY;
+      });
+
+      canvas.addEventListener('pointerup', function() {
+        if (!dragging) return;
+        dragging = false;
+        if (dragDist < 6) {
+          toggleDayNightTheme();
+        }
+      });
+
+      // Build 3D point sphere for soft amoeba mesh
+      const pts = [];
+      const rings = 10;
+      const segs = 16;
+      for (let r = 0; r <= rings; r++) {
+        const theta = (r / rings) * Math.PI;
+        for (let s = 0; s < segs; s++) {
+          const phi = (s / segs) * Math.PI * 2;
+          pts.push({ theta: theta, phi: phi });
+        }
+      }
+
+      let tClock = 0;
+      function project3D(x, y, z) {
+        const cy = Math.cos(mascotRotY), sy = Math.sin(mascotRotY);
+        const cx = Math.cos(mascotRotX), sx = Math.sin(mascotRotX);
+        // Rotate Y
+        const x1 = x * cy - z * sy;
+        const z1 = x * sy + z * cy;
+        // Rotate X
+        const y2 = y * cx - z1 * sx;
+        const z2 = y * sx + z1 * cx;
+        const persp = 260 / (260 + z2);
+        return { x: 132 + x1 * persp, y: 140 + y2 * persp, z: z2, s: persp };
+      }
+
+      function renderMascot() {
+        ctx.clearRect(0, 0, 264, 264);
+        if (!dragging) {
+          mascotRotY += mascotVelY;
+          mascotVelY = mascotVelY * 0.96 + 0.008 * 0.04;
+          mascotRotX *= 0.98;
+        }
+        tClock += 0.045;
+
+        const bodyA = getThemeVar('--mascot-body-a');
+        const bodyB = getThemeVar('--mascot-body-b');
+        const hornCol = getThemeVar('--mascot-horn');
+        const eyeCol = getThemeVar('--mascot-eye');
+        const ringCol = getThemeVar('--mascot-ring');
+
+        // Holographic orbital rings
+        ctx.strokeStyle = ringCol;
+        ctx.lineWidth = 1.6;
+        ctx.globalAlpha = 0.42;
+        ctx.beginPath();
+        ctx.ellipse(132, 146, 98, 28, Math.sin(tClock * 0.3) * 0.15, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Project 3D Amoeba Body vertices with soft organic wobble
+        const projPts = pts.map(function(p) {
+          const wobble = 1 + 0.09 * Math.sin(p.theta * 3 + tClock) * Math.cos(p.phi * 2 - tClock * 0.8);
+          const rad = 58 * wobble;
+          const x = rad * Math.sin(p.theta) * Math.cos(p.phi);
+          const y = rad * Math.cos(p.theta) * 0.92;
+          const z = rad * Math.sin(p.theta) * Math.sin(p.phi);
+          return project3D(x, y, z);
+        });
+
+        // Sort back-to-front for volumetric holographic amoeba glow
+        projPts.sort(function(a, b) { return b.z - a.z; });
+        const bodyGrad = ctx.createRadialGradient(116, 118, 12, 132, 140, 74);
+        bodyGrad.addColorStop(0, bodyA);
+        bodyGrad.addColorStop(1, bodyB);
+
+        // Smooth amoeba silhouette
+        ctx.fillStyle = bodyGrad;
+        ctx.globalAlpha = 0.88;
+        ctx.beginPath();
+        for (let a = 0; a < 36; a++) {
+          const ang = (a / 36) * Math.PI * 2;
+          const squish = 1 + 0.06 * Math.sin(ang * 3 + tClock) + 0.04 * Math.cos(ang * 2 - tClock * 1.3);
+          const px = 132 + Math.cos(ang) * 62 * squish;
+          const py = 142 + Math.sin(ang) * 56 * squish;
+          if (a === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Holographic wireframe nodes on top of amoeba body
+        projPts.forEach(function(pt) {
+          const depthAlpha = Math.max(0.15, Math.min(0.85, (1 - pt.z / 70) * 0.55));
+          ctx.globalAlpha = depthAlpha;
+          ctx.fillStyle = hornCol;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 1.9 * pt.s, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+
+        // 2 Cute Curved Horns in 3D space
+        [-1, 1].forEach(function(side) {
+          const base = project3D(side * 24, -46, 8);
+          const tip = project3D(side * 38, -82 + Math.sin(tClock * 1.4) * 3, 14);
+          ctx.strokeStyle = hornCol;
+          ctx.lineWidth = 10 * base.s;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(base.x, base.y);
+          ctx.quadraticCurveTo((base.x + tip.x) * 0.5 + side * 6, (base.y + tip.y) * 0.5, tip.x, tip.y);
+          ctx.stroke();
+
+          ctx.fillStyle = bodyA;
+          ctx.beginPath();
+          ctx.arc(tip.x, tip.y, 5.5 * tip.s, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Cute Eyes in 3D space (visible when facing front)
+        const leftEye = project3D(-18, -8, 56);
+        const rightEye = project3D(18, -8, 56);
+        const blink = Math.sin(tClock * 0.45) > 0.97 ? 0.2 : 1;
+        [leftEye, rightEye].forEach(function(eye) {
+          if (eye.z < 30) {
+            ctx.fillStyle = eyeCol;
+            ctx.beginPath();
+            ctx.ellipse(eye.x, eye.y, 6.2 * eye.s, 7.5 * eye.s * blink, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (blink > 0.5) {
+              ctx.fillStyle = hornCol;
+              ctx.beginPath();
+              ctx.arc(eye.x - 2, eye.y - 2, 2.2 * eye.s, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        });
+
+        mascotAnimId = requestAnimationFrame(renderMascot);
+      }
+
+      if (mascotAnimId) cancelAnimationFrame(mascotAnimId);
+      renderMascot();
+    }
+
+    // =========================================================================
+    // 11. HOVER / FOCUS TTS DELEGATION
+    // =========================================================================
+    function bindTtsHoverDelegation() {
+      let hoverTimer = null;
+      document.addEventListener('mouseover', function(ev) {
+        if (!appState.ttsEnabled) return;
+        const zone = ev.target && ev.target.closest ? ev.target.closest('.tts-zone') : null;
+        if (!zone) return;
+        if (ev.relatedTarget && zone.contains(ev.relatedTarget)) return;
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(function() {
+          speakTextRegion(zone.innerText || zone.textContent);
+        }, 160);
+      });
+      document.addEventListener('focusin', function(ev) {
+        if (!appState.ttsEnabled) return;
+        const zone = ev.target && ev.target.closest ? ev.target.closest('.tts-zone') : null;
+        if (!zone) return;
+        speakTextRegion(zone.innerText || zone.textContent);
+      });
+    }
+
+    // =========================================================================
+    // 12. BOOTSTRAP
+    // =========================================================================
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadPersistedState();
+      applyThemeDom();
+      renderAllTranslations();
+
+      const shell = document.getElementById('app-shell');
+      const btnOv = document.getElementById('btn-overview-mode');
+      if (shell) shell.classList.toggle('is-compact', !appState.overviewMode);
+      if (btnOv) btnOv.setAttribute('aria-pressed', appState.overviewMode ? 'true' : 'false');
+
+      if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+
+      initBackgroundParticles();
+      startBackgroundLoop();
+      startMascotLoop();
+      bindTtsHoverDelegation();
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
+        window.notebookAppApi.notifyAppReady();
+      }
+    });
+  </script>
+</body>
+</html>
